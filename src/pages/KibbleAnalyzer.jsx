@@ -40,7 +40,9 @@ export default function KibbleAnalyzer() {
   });
 
   const [results, setResults] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzingNutrition, setAnalyzingNutrition] = useState(false);
+  const [analyzingIngredients, setAnalyzingIngredients] = useState(false);
+  const [analyzingPrice, setAnalyzingPrice] = useState(false);
 
   const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
@@ -50,28 +52,23 @@ export default function KibbleAnalyzer() {
     setFoodData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoUpload = async (event) => {
+  const handleNutritionPhotoUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setAnalyzing(true);
+    setAnalyzingNutrition(true);
     try {
-      // Upload the file
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Extract nutritional data using AI vision
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this dog food label/packaging image and extract all available information. Look for: 
+        prompt: `Analyze this dog food nutritional label and extract all nutritional values. Look for: 
         - Product name and brand
-        - Ingredients list (as comma-separated text)
         - Recommended feeding amounts (cups/day)
         - Calorie content (kcal/kg and kcal/cup)
         - Omega-3 %, omega-6 %
         - Vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg)
         - Crude protein %, crude fat %, crude fiber %, moisture %
         - Taurine %, glucosamine (mg/kg), chondroitin (mg/kg)
-        - PRICE: Look for retail price, MSRP, or price sticker (in USD)
-        - BAG WEIGHT: Look for net weight in lbs or kg
         
         Extract any values you can find. If a value is not visible, return null for that field.`,
         file_urls: [file_url],
@@ -80,7 +77,6 @@ export default function KibbleAnalyzer() {
           type: "object",
           properties: {
             dogFood: { type: "string" },
-            ingredients: { type: "string" },
             recommendedFeeding: { type: "number" },
             kcalKg: { type: "number" },
             kcalCup: { type: "number" },
@@ -95,18 +91,14 @@ export default function KibbleAnalyzer() {
             moisture: { type: "number" },
             taurine: { type: "number" },
             glucosamine: { type: "number" },
-            chondroitin: { type: "number" },
-            priceBag: { type: "number" },
-            bagWeight: { type: "number" }
+            chondroitin: { type: "number" }
           }
         }
       });
 
-      // Auto-fill the form with extracted data
       setFoodData(prev => ({
         ...prev,
         ...(result.dogFood && { dogFood: result.dogFood }),
-        ...(result.ingredients && { ingredients: result.ingredients }),
         ...(result.recommendedFeeding && { recommendedFeeding: result.recommendedFeeding.toString() }),
         ...(result.kcalKg && { kcalKg: result.kcalKg.toString() }),
         ...(result.kcalCup && { kcalCup: result.kcalCup.toString() }),
@@ -121,16 +113,82 @@ export default function KibbleAnalyzer() {
         ...(result.moisture && { moisture: result.moisture.toString() }),
         ...(result.taurine && { taurine: result.taurine.toString() }),
         ...(result.glucosamine && { glucosamine: result.glucosamine.toString() }),
-        ...(result.chondroitin && { chondroitin: result.chondroitin.toString() }),
-        ...(result.priceBag && { priceBag: result.priceBag.toString() }),
-        ...(result.bagWeight && { bagWeight: result.bagWeight.toString() })
+        ...(result.chondroitin && { chondroitin: result.chondroitin.toString() })
       }));
 
       alert('Nutritional data extracted! Please review and adjust any values as needed.');
     } catch (error) {
       alert('Error analyzing photo: ' + error.message);
     } finally {
-      setAnalyzing(false);
+      setAnalyzingNutrition(false);
+    }
+  };
+
+  const handleIngredientsPhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAnalyzingIngredients(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this dog food ingredients label and extract the complete ingredients list. Return all ingredients as a comma-separated text string in the exact order they appear on the label.`,
+        file_urls: [file_url],
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            ingredients: { type: "string" }
+          }
+        }
+      });
+
+      setFoodData(prev => ({
+        ...prev,
+        ...(result.ingredients && { ingredients: result.ingredients })
+      }));
+
+      alert('Ingredients extracted! Please review and adjust if needed.');
+    } catch (error) {
+      alert('Error analyzing ingredients: ' + error.message);
+    } finally {
+      setAnalyzingIngredients(false);
+    }
+  };
+
+  const handlePricePhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAnalyzingPrice(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this image and extract pricing information for dog food. Look for: retail price, MSRP, price tag, or any price sticker (in USD). Also look for bag weight/size in lbs or kg. Extract numerical values only.`,
+        file_urls: [file_url],
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            priceBag: { type: "number" },
+            bagWeight: { type: "number" }
+          }
+        }
+      });
+
+      setFoodData(prev => ({
+        ...prev,
+        ...(result.priceBag && { priceBag: result.priceBag.toString() }),
+        ...(result.bagWeight && { bagWeight: result.bagWeight.toString() })
+      }));
+
+      alert('Price and bag weight extracted! Please review and adjust if needed.');
+    } catch (error) {
+      alert('Error analyzing price: ' + error.message);
+    } finally {
+      setAnalyzingPrice(false);
     }
   };
 
@@ -545,11 +603,11 @@ export default function KibbleAnalyzer() {
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={handlePhotoUpload}
-                      disabled={analyzing}
+                      onChange={handleNutritionPhotoUpload}
+                      disabled={analyzingNutrition}
                       className="flex-1"
                     />
-                    {analyzing && (
+                    {analyzingNutrition && (
                       <div className="flex items-center gap-2 text-blue-600">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span className="text-sm">Analyzing...</span>
@@ -557,7 +615,7 @@ export default function KibbleAnalyzer() {
                     )}
                   </div>
                   <p className="text-xs text-gray-600 mt-2">
-                    Upload a clear photo of the nutritional label to auto-fill the form
+                    Upload a clear photo of the nutritional label to auto-fill nutrition data
                   </p>
                 </div>
                 <div className="md:col-span-2">
@@ -567,6 +625,30 @@ export default function KibbleAnalyzer() {
                     value={foodData.dogFood}
                     onChange={(e) => handleFoodChange('dogFood', e.target.value)}
                   />
+                </div>
+
+                <div className="md:col-span-2 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <Label className="text-base font-semibold text-green-700 mb-2 block">
+                    📸 Quick Fill: Upload Photo of Ingredients List
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleIngredientsPhotoUpload}
+                      disabled={analyzingIngredients}
+                      className="flex-1"
+                    />
+                    {analyzingIngredients && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span className="text-sm">Analyzing...</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    Upload a clear photo of the ingredients list to auto-fill
+                  </p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -734,6 +816,30 @@ export default function KibbleAnalyzer() {
                   />
                 </div>
 
+                <div className="md:col-span-2 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <Label className="text-base font-semibold text-orange-700 mb-2 block">
+                    📸 Quick Fill: Upload Photo of Price Tag
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePricePhotoUpload}
+                      disabled={analyzingPrice}
+                      className="flex-1"
+                    />
+                    {analyzingPrice && (
+                      <div className="flex items-center gap-2 text-orange-600">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span className="text-sm">Analyzing...</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    Upload a clear photo of the price tag or bag label showing price and weight
+                  </p>
+                </div>
+
                 <div>
                   <Label>Price per Bag (USD)</Label>
                   <Input
@@ -760,20 +866,11 @@ export default function KibbleAnalyzer() {
 
         <Button
           onClick={analyzeKibble}
-          disabled={analyzing}
+          disabled={analyzingNutrition || analyzingIngredients || analyzingPrice}
           className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6 mt-6"
         >
-          {analyzing ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Calculator className="w-5 h-5 mr-2" />
-              Analyze Kibble
-            </>
-          )}
+          <Calculator className="w-5 h-5 mr-2" />
+          Analyze Kibble
         </Button>
 
         {results && (
