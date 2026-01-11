@@ -12,6 +12,7 @@ export default function KibbleAnalyzer() {
     dogSize: 'medium',
     dogWeight: '',
     activityLevel: 'neutered adult',
+    dogFoodGoal: 'overall health',
     zipCode: '',
     ageYears: '',
     ageMonths: ''
@@ -559,6 +560,23 @@ export default function KibbleAnalyzer() {
                       <SelectItem value="neutered adult">Neutered Adult (Average)</SelectItem>
                       <SelectItem value="active/intact adult">Active/Intact Adult</SelectItem>
                       <SelectItem value="highly active/working">Highly Active/Working</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Dog Food Goal</Label>
+                  <Select value={dogData.dogFoodGoal} onValueChange={(val) => handleDogChange('dogFoodGoal', val)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="overall health">Overall Health</SelectItem>
+                      <SelectItem value="allergies">Allergies</SelectItem>
+                      <SelectItem value="skin/coat health">Skin/Coat Health</SelectItem>
+                      <SelectItem value="heart health">Heart Health</SelectItem>
+                      <SelectItem value="joint health">Joint Health</SelectItem>
+                      <SelectItem value="reproduction">Reproduction</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
