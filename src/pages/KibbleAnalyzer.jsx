@@ -79,8 +79,9 @@ export default function KibbleAnalyzer() {
     const dailyFoodGrams = cupsNeeded * gramsPerCup;
     const dailyFoodKg = dailyFoodGrams / 1000;
     
-    // For percentage nutrients: kg × (percentage/100) × 1000 = mg
-    const dailyOmega3 = Math.round(dailyFoodKg * (parseFloat(foodData.omega3) || 0) * 10); // mg/day
+    // For percentage nutrients to mg: kg × (percentage/100) × 1000 × 1000 = kg × percentage × 10000
+    const dailyOmega3 = Math.round(dailyFoodKg * (parseFloat(foodData.omega3) || 0) * 10000); // mg/day
+    // For percentage nutrients to g: kg × (percentage/100) × 1000 = kg × percentage × 10
     const dailyOmega6 = (dailyFoodKg * (parseFloat(foodData.omega6) || 0) * 10).toFixed(1); // g/day
     
     // For mg/kg nutrients: kg × concentration(mg/kg) = mg
