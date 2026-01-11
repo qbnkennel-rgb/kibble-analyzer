@@ -254,13 +254,25 @@ export default function KibbleAnalyzer() {
       try {
         ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
           prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}". 
-          
+
           Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
+
           1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
-          2. Ingredient Quality Grade (A-F): Based on digestibility, bioavailability, and nutritional value for dogs. Consider whole proteins vs by-products, whole grains vs fillers, synthetic vs natural nutrients.
+
+          2. Ingredient Quality Score (1-100 scale, where 1 is very bad and 100 is excellent):
+             Parse each ingredient and score using this system:
+             - Whole proteins (e.g., chicken, beef, salmon, lamb): +25 points each
+             - Meals (e.g., chicken meal, fish meal): +15 points each
+             - By-products (e.g., chicken by-product, meat by-product): -1 point each
+             - Red flag ingredients (artificial colors/preservatives like BHA, BHT, ethoxyquin, controversial grains, low-quality proteins): -5 points each
+             - Health-contributing ingredients (ingredients that significantly contribute to dog's health based on university sources): +2 points each
+             - Neutral ingredients (don't significantly contribute but not flagged): +1 point each
+
+             Calculate total score and cap between 1-100. Provide detailed breakdown showing each ingredient category and points awarded.
+
           3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
-          
-          Return structured data with university citations.`,
+
+          Return structured data with university citations and detailed scoring breakdown.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -277,8 +289,19 @@ export default function KibbleAnalyzer() {
               ingredient_grade: {
                 type: "object",
                 properties: {
-                  grade: { type: "string" },
                   score: { type: "number" },
+                  breakdown: {
+                    type: "object",
+                    properties: {
+                      whole_proteins: { type: "array", items: { type: "string" } },
+                      meals: { type: "array", items: { type: "string" } },
+                      byproducts: { type: "array", items: { type: "string" } },
+                      red_flags_scored: { type: "array", items: { type: "string" } },
+                      health_contributing: { type: "array", items: { type: "string" } },
+                      neutral: { type: "array", items: { type: "string" } }
+                    }
+                  },
+                  points_breakdown: { type: "string" },
                   reasoning: { type: "string" },
                   university_source: { type: "string" }
                 }
@@ -958,12 +981,68 @@ export default function KibbleAnalyzer() {
                   <CardTitle className="text-2xl text-blue-700">Ingredient Quality Analysis</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     <div className="text-center p-6 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2">Overall Grade</p>
-                      <p className="text-6xl font-bold text-blue-800">{results.ingredientAnalysis.ingredient_grade.grade}</p>
-                      <p className="text-2xl text-gray-700 mt-2">{results.ingredientAnalysis.ingredient_grade.score}/100</p>
+                      <p className="text-sm text-gray-600 mb-2">Quality Score (1-100)</p>
+                      <p className="text-6xl font-bold text-blue-800">{results.ingredientAnalysis.ingredient_grade.score}</p>
+                      <p className="text-sm text-gray-500 mt-2">1 = Very Bad | 100 = Excellent</p>
                     </div>
+
+                    {results.ingredientAnalysis.ingredient_grade.breakdown && (
+                      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                        <p className="font-semibold text-gray-800 text-lg">Scoring Breakdown:</p>
+
+                        {results.ingredientAnalysis.ingredient_grade.breakdown.whole_proteins?.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-green-700">Whole Proteins (+25 each):</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.whole_proteins.join(', ')}</p>
+                          </div>
+                        )}
+
+                        {results.ingredientAnalysis.ingredient_grade.breakdown.meals?.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-blue-700">Meals (+15 each):</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.meals.join(', ')}</p>
+                          </div>
+                        )}
+
+                        {results.ingredientAnalysis.ingredient_grade.breakdown.byproducts?.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-orange-700">By-products (-1 each):</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.byproducts.join(', ')}</p>
+                          </div>
+                        )}
+
+                        {results.ingredientAnalysis.ingredient_grade.breakdown.red_flags_scored?.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-red-700">Red Flags (-5 each):</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.red_flags_scored.join(', ')}</p>
+                          </div>
+                        )}
+
+                        {results.ingredientAnalysis.ingredient_grade.breakdown.health_contributing?.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-green-600">Health-Contributing (+2 each):</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.health_contributing.join(', ')}</p>
+                          </div>
+                        )}
+
+                        {results.ingredientAnalysis.ingredient_grade.breakdown.neutral?.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-gray-600">Neutral (+1 each):</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.neutral.join(', ')}</p>
+                          </div>
+                        )}
+
+                        {results.ingredientAnalysis.ingredient_grade.points_breakdown && (
+                          <div className="pt-3 border-t border-gray-300">
+                            <p className="text-sm font-semibold text-gray-800">Total Points Calculation:</p>
+                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.points_breakdown}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div className="space-y-3">
                       <p className="text-gray-800"><strong>Quality Assessment:</strong></p>
                       <p className="text-gray-700">{results.ingredientAnalysis.ingredient_grade.reasoning}</p>
