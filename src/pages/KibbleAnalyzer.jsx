@@ -233,10 +233,10 @@ export default function KibbleAnalyzer() {
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    const glucoScore = Math.min((glucosamine / 625) * 100, 100);
-    const chondroScore = Math.min((chondroitin / 375) * 100, 100);
-    const omega3Score = Math.min((omega3 / (weight * 10)) * 100, 100);
-    return Math.round((glucoScore + chondroScore + omega3Score) / 3 * 0.75);
+    const glucoScore = Math.min((glucosamine / 400) * 100, 100);
+    const chondroScore = Math.min((chondroitin / 250) * 100, 100);
+    const omega3Score = Math.min((omega3 / (weight * 8)) * 100, 100);
+    return Math.round((glucoScore + chondroScore + omega3Score) / 3);
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
@@ -279,15 +279,15 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateHeartScore = (taurine, omega3) => {
-    const taurineScore = taurine >= 400 ? 100 : (taurine / 400) * 100;
-    const omega3Score = omega3 >= 300 ? 100 : (omega3 / 300) * 100;
-    return Math.round((taurineScore + omega3Score) / 2 * 0.75);
+    const taurineScore = taurine >= 350 ? 100 : (taurine / 350) * 100;
+    const omega3Score = omega3 >= 250 ? 100 : (omega3 / 250) * 100;
+    return Math.round((taurineScore + omega3Score) / 2);
   };
 
   const calculateEyeScore = (vitE, omega3) => {
-    const vitEScore = vitE >= 20 ? 100 : (vitE / 20) * 100;
-    const omega3Score = omega3 >= 300 ? 100 : (omega3 / 300) * 100;
-    return Math.round((vitEScore + omega3Score) / 2 * 0.85);
+    const vitEScore = vitE >= 15 ? 100 : (vitE / 15) * 100;
+    const omega3Score = omega3 >= 250 ? 100 : (omega3 / 250) * 100;
+    return Math.round((vitEScore + omega3Score) / 2);
   };
 
   const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
