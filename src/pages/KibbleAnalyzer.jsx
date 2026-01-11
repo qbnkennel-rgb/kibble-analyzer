@@ -86,7 +86,7 @@ export default function KibbleAnalyzer() {
     
     // For IU/kg and mg/kg nutrients: kg × concentration = result
     const dailyVitaminE = Math.round(dailyFoodKg * (parseFloat(foodData.vitaminE) || 0)); // IU/day
-    const dailySelenium = (dailyFoodKg * (parseFloat(foodData.selenium) || 0) / 1000).toFixed(3); // mg/day (selenium in µg/kg, divide by 1000)
+    const dailySelenium = (dailyFoodKg * (parseFloat(foodData.selenium) || 0)).toFixed(3); // mg/day (selenium in mg/kg)
     const dailyZinc = Math.round(dailyFoodKg * (parseFloat(foodData.zinc) || 0)); // mg/day
     const dailyGlucosamine = Math.round(dailyFoodKg * (parseFloat(foodData.glucosamine) || 0)); // mg/day
     const dailyChondroitin = Math.round(dailyFoodKg * (parseFloat(foodData.chondroitin) || 0)); // mg/day
