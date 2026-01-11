@@ -61,7 +61,19 @@ export default function KibbleAnalyzer() {
 
       // Extract nutritional data using AI vision
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this dog food nutritional label and extract all available information. Look for: product name, ingredients list (as comma-separated text), recommended feeding amounts, calorie content (kcal/kg and kcal/cup), omega-3 %, omega-6 %, vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg), crude protein %, crude fat %, crude fiber %, moisture %, taurine %, glucosamine (mg/kg), chondroitin (mg/kg), bag price, and bag weight. Extract any values you can find. If a value is not visible, return null for that field.`,
+        prompt: `Analyze this dog food label/packaging image and extract all available information. Look for: 
+        - Product name and brand
+        - Ingredients list (as comma-separated text)
+        - Recommended feeding amounts (cups/day)
+        - Calorie content (kcal/kg and kcal/cup)
+        - Omega-3 %, omega-6 %
+        - Vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg)
+        - Crude protein %, crude fat %, crude fiber %, moisture %
+        - Taurine %, glucosamine (mg/kg), chondroitin (mg/kg)
+        - PRICE: Look for retail price, MSRP, or price sticker (in USD)
+        - BAG WEIGHT: Look for net weight in lbs or kg
+        
+        Extract any values you can find. If a value is not visible, return null for that field.`,
         file_urls: [file_url],
         add_context_from_internet: false,
         response_json_schema: {
