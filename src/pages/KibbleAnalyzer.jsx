@@ -645,76 +645,159 @@ export default function KibbleAnalyzer() {
         </Button>
 
         {results && (
-          <Card className="mt-8 bg-blue-50 border-blue-200">
-            <CardHeader>
-              <CardTitle className="text-2xl text-blue-700">Analysis Results</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold text-gray-700">Daily Calorie Needs</h3>
-                  <p className="text-3xl font-bold text-blue-600">{results.dailyCalories} kcal</p>
+          <div className="mt-8 space-y-6">
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-2xl text-blue-700">Analysis for {results.dogName}</CardTitle>
+                <p className="text-lg text-gray-700 mt-2">Daily Price per Serving: <span className="font-bold">${results.costPerServing}</span></p>
+                <p className="text-gray-600">Life Stage: <span className="font-semibold">{results.lifeStage}</span></p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 p-3 text-left font-semibold">Nutrient</th>
+                        <th className="border border-gray-300 p-3 text-left font-semibold">Your Dog Gets</th>
+                        <th className="border border-gray-300 p-3 text-left font-semibold">Recommendation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.nutrients.map((nutrient, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 p-3">{nutrient.name}</td>
+                          <td className="border border-gray-300 p-3">{nutrient.actual}</td>
+                          <td className="border border-gray-300 p-3">{nutrient.recommended}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-xl text-blue-700">Concluding Scoring Table</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 p-3 text-left font-semibold">Health Area</th>
+                        <th className="border border-gray-300 p-3 text-center font-semibold">Score (1-100)</th>
+                        <th className="border border-gray-300 p-3 text-left font-semibold">Reasoning</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.healthScores.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 p-3">{item.area}</td>
+                          <td className="border border-gray-300 p-3 text-center font-bold text-lg">{item.score}</td>
+                          <td className="border border-gray-300 p-3 text-sm">{item.reasoning}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-6 p-4 bg-blue-100 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-blue-800">Overall Score: {results.overallScore}/100</p>
+                  <p className="text-xl font-bold text-blue-700 mt-2">Total Value Score: {results.overallScore}/100</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300">
+              <CardHeader>
+                <CardTitle className="text-xl text-red-700">Improve Your Overall Score</CardTitle>
+                <p className="text-lg font-semibold text-gray-800 mt-2">
+                  From {results.overallScore}/100 to {results.improvedOverallScore}/100
+                </p>
+                <p className="text-gray-700 mt-2">
+                  Increasing your dog's life expectancy between 10-15% and quality of life between 50-70%
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <a 
+                    href="https://nuvet.com/513237" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold text-lg px-8 py-4 rounded-lg shadow-lg"
+                  >
+                    Order NuVet (Green Bottle) & NuJoint DS (Blue Bottle) w/ AutoShip Today! →
+                  </a>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold text-gray-700">Recommended Cups/Day</h3>
-                  <p className="text-3xl font-bold text-blue-600">{results.recommendedCups} cups</p>
-                  <p className="text-sm text-gray-600">Brand suggests: {results.brandCups} cups</p>
+                <div className="bg-white p-6 rounded-lg">
+                  <h3 className="font-bold text-lg text-gray-800 mb-3">NuVet & NuJoint DS Recommendation (Tied to Kibble Benefits)</h3>
+                  
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">Added Benefits to Kibble:</h4>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      NuVet Plus boosts kibble's nutrient profiles with 30+ ingredients (e.g., extra vitamins A/B/C/D/E/K, minerals like magnesium/phosphorus, enzymes/prebiotics for digestion, antioxidants like beta-carotene/pine bark for immune/skin). NuJoint DS doubles down on kibble's low joint nutrients (e.g., adds 500mg glucosamine/250mg chondroitin per wafer, vs. kibble's 0-750mg/kg daily intake). Together, they enhance all kibbles by filling gaps: stronger immune/digestion from NuVet, superior joint lubrication from NuJoint.
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">Pathologies Prevented:</h4>
+                    <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                      <li>Joint/arthritis degeneration (NuJoint's glucosamine/chondroitin prevent cartilage loss per UC Davis)</li>
+                      <li>Immune deficiencies/infections (NuVet's antioxidants reduce oxidative stress/cancer risk per Cornell)</li>
+                      <li>Heart issues like DCM (NuVet's taurine/vitamin E support cardiac function per Texas A&M)</li>
+                      <li>Skin/coat allergies/dryness (omegas/vitamins prevent dermatitis per Cornell)</li>
+                      <li>Digestive disorders/malnutrition (enzymes/prebiotics aid absorption per Purdue)</li>
+                      <li>Eye degeneration (beta-carotene/vitamin E prevent retinal issues per Cornell)</li>
+                      <li>Reproduction/hormone imbalances (zinc/vitamin E support fertility per Purdue)</li>
+                    </ul>
+                  </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold text-gray-700">Cost Per Day</h3>
-                  <p className="text-3xl font-bold text-green-600">${results.costPerDay}</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse bg-white">
+                    <thead>
+                      <tr className="bg-green-100">
+                        <th className="border border-gray-300 p-2 text-left text-sm font-semibold">Health Area</th>
+                        <th className="border border-gray-300 p-2 text-center text-sm font-semibold">Original Score</th>
+                        <th className="border border-gray-300 p-2 text-center text-sm font-semibold">Improved Score</th>
+                        <th className="border border-gray-300 p-2 text-center text-sm font-semibold">Improvement</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.improvements.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 p-2 text-sm">{item.area}</td>
+                          <td className="border border-gray-300 p-2 text-center font-semibold">{item.original}</td>
+                          <td className="border border-gray-300 p-2 text-center font-bold text-green-700">{item.improved}</td>
+                          <td className="border border-gray-300 p-2 text-center font-bold text-green-600">+{item.improved - item.original}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold text-gray-700">Cost Per Month</h3>
-                  <p className="text-3xl font-bold text-green-600">${results.costPerMonth}</p>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="font-semibold text-lg text-gray-700 mb-3">Nutritional Analysis</h3>
-                <div className="space-y-2">
-                  <p className="text-gray-700">
-                    <span className="font-semibold">Omega-6 to Omega-3 Ratio:</span> {results.omega6to3Ratio}:1
-                    {parseFloat(results.omega6to3Ratio) > 10 && 
-                      <span className="text-orange-600 ml-2">(High)</span>
-                    }
+                <div className="bg-white p-4 rounded-lg text-center">
+                  <p className="text-lg font-bold text-gray-800 mb-2">NuVet Plus & NuJoint DS % Improvements</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="bg-green-50 p-4 rounded">
+                      <p className="font-semibold text-gray-800">Life Expectancy</p>
+                      <p className="text-3xl font-bold text-green-700">+10-15%</p>
+                      <p className="text-xs text-gray-600 mt-1">Antioxidants reduce age-related diseases</p>
+                    </div>
+                    <div className="bg-blue-50 p-4 rounded">
+                      <p className="font-semibold text-gray-800">Quality of Life</p>
+                      <p className="text-3xl font-bold text-blue-700">+50-70%</p>
+                      <p className="text-xs text-gray-600 mt-1">Improved cognition/mobility</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 mt-4">
+                    Buy using code 513237 at <a href="https://nuvet.com/513237" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline">https://nuvet.com/513237</a> on autoship for 15% off.
                   </p>
                 </div>
-              </div>
-
-              {results.recommendations.length > 0 && (
-                <div className="bg-orange-50 border border-orange-200 p-6 rounded-lg">
-                  <h3 className="font-semibold text-lg text-orange-800 mb-3">Recommendations</h3>
-                  <ul className="space-y-2">
-                    {results.recommendations.map((rec, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-orange-600 mt-1">•</span>
-                        <span className="text-gray-700">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div className="bg-white p-6 rounded-lg shadow border-2 border-red-200">
-                <h3 className="font-semibold text-lg text-gray-700 mb-2">Recommended Supplement</h3>
-                <p className="text-gray-600 mb-3">
-                  For optimal health, consider adding high-quality supplements to your dog's diet:
-                </p>
-                <a 
-                  href="https://www.nuvet.com/54321" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-red-600 font-bold underline text-lg hover:text-red-700"
-                >
-                  Check out NuVet Plus Supplements →
-                </a>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>
