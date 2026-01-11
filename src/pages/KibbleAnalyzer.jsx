@@ -395,7 +395,8 @@ export default function KibbleAnalyzer() {
                   <Label>Recommended Feeding (cups/day)</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 3"
+                    step="0.01"
+                    placeholder="e.g., 3.5"
                     value={foodData.recommendedFeeding}
                     onChange={(e) => handleFoodChange('recommendedFeeding', e.target.value)}
                   />
