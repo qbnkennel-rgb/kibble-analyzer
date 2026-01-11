@@ -71,14 +71,25 @@ export default function KibbleAnalyzer() {
     setProcessing(true);
     try {
       const { data: { text } } = await Tesseract.recognize(file);
+      console.log('OCR Text:', text);
       
-      // Parse nutrients from OCR text
-      const omega3Match = text.match(/Omega[- ]?3\s*[:=]?\s*(\d+\.?\d*)/i);
-      const omega6Match = text.match(/Omega[- ]?6\s*[:=]?\s*(\d+\.?\d*)/i);
-      const proteinMatch = text.match(/Protein\s*[:=]?\s*(\d+\.?\d*)/i);
-      const fatMatch = text.match(/Fat\s*[:=]?\s*(\d+\.?\d*)/i);
-      const fiberMatch = text.match(/Fiber\s*[:=]?\s*(\d+\.?\d*)/i);
-      const moistureMatch = text.match(/Moisture\s*[:=]?\s*(\d+\.?\d*)/i);
+      // Parse nutrients from OCR text with multiple pattern attempts
+      const omega3Match = text.match(/Omega[- ]?3[^\d]*(\d+\.?\d*)\s*%?/i) || 
+                          text.match(/Omega-3[^\d]*(\d+\.?\d*)/i);
+      const omega6Match = text.match(/Omega[- ]?6[^\d]*(\d+\.?\d*)\s*%?/i) || 
+                          text.match(/Omega-6[^\d]*(\d+\.?\d*)/i);
+      const proteinMatch = text.match(/(?:Crude\s+)?Protein[^\d]*(\d+\.?\d*)\s*%/i);
+      const fatMatch = text.match(/(?:Crude\s+)?Fat[^\d]*(\d+\.?\d*)\s*%/i);
+      const fiberMatch = text.match(/(?:Crude\s+)?Fiber[^\d]*(\d+\.?\d*)\s*%/i);
+      const moistureMatch = text.match(/Moisture[^\d]*(\d+\.?\d*)\s*%/i);
+      const vitEMatch = text.match(/Vitamin\s+E[^\d]*(\d+\.?\d*)\s*(?:IU|iu)/i);
+      const seleniumMatch = text.match(/Selenium[^\d]*(\d+\.?\d*)\s*mg/i);
+      const zincMatch = text.match(/Zinc[^\d]*(\d+\.?\d*)\s*mg/i);
+      const taurineMatch = text.match(/Taurine[^\d]*(\d+\.?\d*)\s*%?/i);
+      const glucosamineMatch = text.match(/Glucosamine[^\d]*(\d+\.?\d*)\s*mg/i);
+      const chondroitinMatch = text.match(/Chondroitin[^\d]*(\d+\.?\d*)\s*mg/i);
+      const kcalKgMatch = text.match(/(\d+\.?\d*)\s*kcal\/kg/i);
+      const kcalCupMatch = text.match(/(\d+\.?\d*)\s*kcal\/cup/i);
       
       if (omega3Match) handleFoodChange('omega3', omega3Match[1]);
       if (omega6Match) handleFoodChange('omega6', omega6Match[1]);
@@ -86,8 +97,19 @@ export default function KibbleAnalyzer() {
       if (fatMatch) handleFoodChange('crudeFat', fatMatch[1]);
       if (fiberMatch) handleFoodChange('crudeFiber', fiberMatch[1]);
       if (moistureMatch) handleFoodChange('moisture', moistureMatch[1]);
+      if (vitEMatch) handleFoodChange('vitaminE', vitEMatch[1]);
+      if (seleniumMatch) handleFoodChange('selenium', seleniumMatch[1]);
+      if (zincMatch) handleFoodChange('zinc', zincMatch[1]);
+      if (taurineMatch) handleFoodChange('taurine', taurineMatch[1]);
+      if (glucosamineMatch) handleFoodChange('glucosamine', glucosamineMatch[1]);
+      if (chondroitinMatch) handleFoodChange('chondroitin', chondroitinMatch[1]);
+      if (kcalKgMatch) handleFoodChange('kcalKg', kcalKgMatch[1]);
+      if (kcalCupMatch) handleFoodChange('kcalCup', kcalCupMatch[1]);
+      
+      alert('Photo processed! Check the form to see extracted data.');
     } catch (err) {
       console.error('OCR error:', err);
+      alert('Error processing photo. Please try again or enter data manually.');
     }
     setProcessing(false);
   };
@@ -233,10 +255,12 @@ export default function KibbleAnalyzer() {
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    const glucoScore = Math.min((glucosamine / 350) * 100, 100);
-    const chondroScore = Math.min((chondroitin / 150) * 100, 100);
-    const omega3Score = Math.min((omega3 / (weight * 6.5)) * 100, 100);
-    return Math.round((glucoScore + chondroScore + omega3Score) / 3);
+    // More lenient scoring - minimum recommended values
+    const glucoScore = Math.min((glucosamine / 300) * 100, 100);
+    const chondroScore = Math.min((chondroitin / 120) * 100, 100);
+    const omega3Score = Math.min((omega3 / (weight * 5)) * 100, 100);
+    // Weight glucosamine/chondroitin more heavily as they're primary joint nutrients
+    return Math.round((glucoScore * 0.4 + chondroScore * 0.4 + omega3Score * 0.2));
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
