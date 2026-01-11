@@ -299,8 +299,8 @@ export default function KibbleAnalyzer() {
 
           2. Ingredient Quality Score (1-100 scale, where 1 is very bad and 100 is excellent):
              Parse each ingredient and score using this system:
-             - Whole proteins (e.g., chicken, beef, salmon, lamb): +20 points each
-             - Meals (e.g., chicken meal, fish meal): +10 points each
+             - Whole proteins (e.g., chicken, beef, salmon, lamb): +15 points each
+             - Meals (e.g., chicken meal, fish meal): +5 points each
              - By-products (e.g., chicken by-product, meat by-product): -1 point each
              - Red flag ingredients (artificial colors/preservatives like BHA, BHT, ethoxyquin, controversial grains, low-quality proteins): -5 points each
              - Health-contributing ingredients (ingredients that significantly contribute to dog's health based on university sources): +2 points each
@@ -1032,14 +1032,14 @@ export default function KibbleAnalyzer() {
 
                         {results.ingredientAnalysis.ingredient_grade.breakdown.whole_proteins?.length > 0 && (
                           <div>
-                            <p className="text-sm font-semibold text-green-700">Whole Proteins (+20 each):</p>
+                            <p className="text-sm font-semibold text-green-700">Whole Proteins (+15 each):</p>
                             <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.whole_proteins.join(', ')}</p>
                           </div>
                         )}
 
                         {results.ingredientAnalysis.ingredient_grade.breakdown.meals?.length > 0 && (
                           <div>
-                            <p className="text-sm font-semibold text-blue-700">Meals (+10 each):</p>
+                            <p className="text-sm font-semibold text-blue-700">Meals (+5 each):</p>
                             <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.meals.join(', ')}</p>
                           </div>
                         )}
