@@ -155,15 +155,24 @@ export default function KibbleAnalyzer() {
     const cupsNeeded = dailyCalories / kcalCup;
     const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0;
     
-    // Calculate daily nutrient intake - simplified formulas matching original program
-    const dailyOmega3 = Math.round((parseFloat(foodData.omega3) || 0) * cupsNeeded * 10); // % * cups * 10 = mg/day
-    const dailyOmega6 = ((parseFloat(foodData.omega6) || 0) * cupsNeeded * 0.04).toFixed(1); // % * cups * 0.04 = g/day
-    const dailyVitaminE = Math.round((parseFloat(foodData.vitaminE) || 0) * cupsNeeded * 0.113); // IU/kg * cups * 0.113 kg/cup
-    const dailySelenium = ((parseFloat(foodData.selenium) || 0) * cupsNeeded * 0.113).toFixed(2); // mg/kg * cups * 0.113 kg/cup
-    const dailyZinc = Math.round((parseFloat(foodData.zinc) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
-    const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) * cupsNeeded * 1150); // % * cups * 115g/cup * 10 = mg/day
-    const dailyGlucosamine = Math.round((parseFloat(foodData.glucosamine) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
-    const dailyChondroitin = Math.round((parseFloat(foodData.chondroitin) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
+    // Calculate daily nutrient intake using Google AI formula: cups × 115g/cup = grams/day
+    const gramsPerCup = 115; // Standard cup weight
+    const dailyFoodGrams = cupsNeeded * gramsPerCup;
+    const dailyFoodKg = dailyFoodGrams / 1000;
+    
+    // For percentage nutrients: kg × (percentage/100) × 1000 = mg
+    const dailyOmega3 = Math.round(dailyFoodKg * (parseFloat(foodData.omega3) || 0) * 10); // mg/day
+    const dailyOmega6 = (dailyFoodKg * (parseFloat(foodData.omega6) || 0) * 10).toFixed(1); // g/day
+    
+    // For mg/kg nutrients: kg × concentration(mg/kg) = mg
+    const dailyVitaminE = Math.round(dailyFoodKg * (parseFloat(foodData.vitaminE) || 0)); // IU/day
+    const dailySelenium = (dailyFoodKg * (parseFloat(foodData.selenium) || 0)).toFixed(2); // mg/day
+    const dailyZinc = Math.round(dailyFoodKg * (parseFloat(foodData.zinc) || 0)); // mg/day
+    const dailyGlucosamine = Math.round(dailyFoodKg * (parseFloat(foodData.glucosamine) || 0)); // mg/day
+    const dailyChondroitin = Math.round(dailyFoodKg * (parseFloat(foodData.chondroitin) || 0)); // mg/day
+    
+    // For taurine (percentage): kg × (percentage/100) × 1000 × 1000 = mg
+    const dailyTaurine = Math.round(dailyFoodKg * (parseFloat(foodData.taurine) || 0) * 10000); // mg/day
 
     // Recommended ranges based on weight
     const omega3Rec = `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day`;
