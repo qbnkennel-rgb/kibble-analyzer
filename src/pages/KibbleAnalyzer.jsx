@@ -4,10 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Calculator, Upload } from "lucide-react";
-import { BrowserMultiFormatReader } from '@zxing/library';
-import Tesseract from 'tesseract.js';
+import { Calculator } from "lucide-react";
 
 export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
@@ -41,7 +38,6 @@ export default function KibbleAnalyzer() {
   });
 
   const [results, setResults] = useState(null);
-  const [processing, setProcessing] = useState(false);
 
   const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
@@ -49,86 +45,6 @@ export default function KibbleAnalyzer() {
 
   const handleFoodChange = (field, value) => {
     setFoodData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const processBarcodePhoto = async (file) => {
-    if (!file) return;
-    setProcessing(true);
-    try {
-      const codeReader = new BrowserMultiFormatReader();
-      const imageUrl = URL.createObjectURL(file);
-      const result = await codeReader.decodeFromImageUrl(imageUrl);
-      handleFoodChange('dogFood', result.text);
-      URL.revokeObjectURL(imageUrl);
-    } catch (err) {
-      console.error('Barcode scan error:', err);
-    }
-    setProcessing(false);
-  };
-
-  const processLabelPhoto = async (file) => {
-    if (!file) return;
-    setProcessing(true);
-    try {
-      const { data: { text } } = await Tesseract.recognize(file);
-      console.log('OCR Text:', text);
-      
-      // Parse nutrients from OCR text with multiple pattern attempts
-      const omega3Match = text.match(/Omega[- ]?3[^\d]*(\d+\.?\d*)\s*%?/i) || 
-                          text.match(/Omega-3[^\d]*(\d+\.?\d*)/i);
-      const omega6Match = text.match(/Omega[- ]?6[^\d]*(\d+\.?\d*)\s*%?/i) || 
-                          text.match(/Omega-6[^\d]*(\d+\.?\d*)/i);
-      const proteinMatch = text.match(/(?:Crude\s+)?Protein[^\d]*(\d+\.?\d*)\s*%/i);
-      const fatMatch = text.match(/(?:Crude\s+)?Fat[^\d]*(\d+\.?\d*)\s*%/i);
-      const fiberMatch = text.match(/(?:Crude\s+)?Fiber[^\d]*(\d+\.?\d*)\s*%/i);
-      const moistureMatch = text.match(/Moisture[^\d]*(\d+\.?\d*)\s*%/i);
-      const vitEMatch = text.match(/Vitamin\s+E[^\d]*(\d+\.?\d*)\s*(?:IU|iu)/i);
-      const seleniumMatch = text.match(/Selenium[^\d]*(\d+\.?\d*)\s*mg/i);
-      const zincMatch = text.match(/Zinc[^\d]*(\d+\.?\d*)\s*mg/i);
-      const taurineMatch = text.match(/Taurine[^\d]*(\d+\.?\d*)\s*%?/i);
-      const glucosamineMatch = text.match(/Glucosamine[^\d]*(\d+\.?\d*)\s*mg/i);
-      const chondroitinMatch = text.match(/Chondroitin[^\d]*(\d+\.?\d*)\s*mg/i);
-      const kcalKgMatch = text.match(/(\d+\.?\d*)\s*kcal\/kg/i);
-      const kcalCupMatch = text.match(/(\d+\.?\d*)\s*kcal\/cup/i);
-      
-      if (omega3Match) handleFoodChange('omega3', omega3Match[1]);
-      if (omega6Match) handleFoodChange('omega6', omega6Match[1]);
-      if (proteinMatch) handleFoodChange('crudeProtein', proteinMatch[1]);
-      if (fatMatch) handleFoodChange('crudeFat', fatMatch[1]);
-      if (fiberMatch) handleFoodChange('crudeFiber', fiberMatch[1]);
-      if (moistureMatch) handleFoodChange('moisture', moistureMatch[1]);
-      if (vitEMatch) handleFoodChange('vitaminE', vitEMatch[1]);
-      if (seleniumMatch) handleFoodChange('selenium', seleniumMatch[1]);
-      if (zincMatch) handleFoodChange('zinc', zincMatch[1]);
-      if (taurineMatch) handleFoodChange('taurine', taurineMatch[1]);
-      if (glucosamineMatch) handleFoodChange('glucosamine', glucosamineMatch[1]);
-      if (chondroitinMatch) handleFoodChange('chondroitin', chondroitinMatch[1]);
-      if (kcalKgMatch) handleFoodChange('kcalKg', kcalKgMatch[1]);
-      if (kcalCupMatch) handleFoodChange('kcalCup', kcalCupMatch[1]);
-      
-      alert('Photo processed! Check the form to see extracted data.');
-    } catch (err) {
-      console.error('OCR error:', err);
-      alert('Error processing photo. Please try again or enter data manually.');
-    }
-    setProcessing(false);
-  };
-
-  const processPricePhoto = async (file) => {
-    if (!file) return;
-    setProcessing(true);
-    try {
-      const { data: { text } } = await Tesseract.recognize(file);
-      
-      const priceMatch = text.match(/\$(\d+\.?\d*)/);
-      const weightMatch = text.match(/(\d+)\s*lb/i);
-      
-      if (priceMatch) handleFoodChange('priceBag', priceMatch[1]);
-      if (weightMatch) handleFoodChange('bagWeight', weightMatch[1]);
-    } catch (err) {
-      console.error('Price OCR error:', err);
-    }
-    setProcessing(false);
   };
 
   const analyzeKibble = () => {
@@ -373,18 +289,12 @@ export default function KibbleAnalyzer() {
               <span>🐶</span> Kibble Analyzer App
             </CardTitle>
             <p className="text-center text-gray-600 mt-2">
-              Enter your dog's details and food label data, or upload photos to auto-fill
+              Enter your dog's details and food label data
             </p>
           </CardHeader>
         </Card>
 
-        <Tabs defaultValue="manual" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-            <TabsTrigger value="photos">Photo Upload</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="manual" className="space-y-6">
+        <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl text-blue-600">Dog Information</CardTitle>
@@ -651,65 +561,8 @@ export default function KibbleAnalyzer() {
                   />
                 </div>
               </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="photos" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl text-blue-600">Upload Photos to Auto-Fill</CardTitle>
-                <p className="text-sm text-gray-600">Upload clear photos of the barcode, label, and price tag</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Camera className="w-4 h-4" />
-                    Barcode Photo
-                  </Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => processBarcodePhoto(e.target.files[0])}
-                    disabled={processing}
-                  />
-                </div>
-
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Camera className="w-4 h-4" />
-                    Label Photo (Nutrition Facts)
-                  </Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => processLabelPhoto(e.target.files[0])}
-                    disabled={processing}
-                  />
-                </div>
-
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Camera className="w-4 h-4" />
-                    Price Tag Photo
-                  </Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => processPricePhoto(e.target.files[0])}
-                    disabled={processing}
-                  />
-                </div>
-
-                {processing && (
-                  <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-sm text-gray-600 mt-2">Processing image...</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </Card>
+              </div>
 
         <Button
           onClick={analyzeKibble}
