@@ -263,6 +263,7 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateImmuneScore = (vitE, zinc, selenium, weight) => {
+    if (!weight) return 0;
     const vitETarget = weight * 0.48;
     const zincTarget = weight * 0.69;
     const seleniumTarget = weight * 0.0022;
@@ -273,7 +274,7 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateAllergyScore = (foodName) => {
-    const grainFree = !/wheat|corn|soy/i.test(foodName);
+    const grainFree = !/wheat|corn|soy/i.test(foodName || '');
     return grainFree ? 85 : 65;
   };
 
