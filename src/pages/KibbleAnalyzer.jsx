@@ -229,17 +229,17 @@ export default function KibbleAnalyzer() {
       costPerServing: costPerDay.toFixed(2),
       lifeStage: 'Adult',
       nutrients: [
-        { name: 'Omega-3', actual: `${Math.round(dailyOmega3)} mg/day`, recommended: omega3Rec, maximum: `${Math.round((dailyCalories / 1000) * 2800)} mg/day` },
-        { name: 'Omega-6', actual: `${dailyOmega6.toFixed(1)} g/day`, recommended: omega6Rec, maximum: `${((dailyCalories / 1000) * 16.3).toFixed(1)} g/day` },
-        { name: 'Vitamin E', actual: `${Math.round(dailyVitaminE)} IU/day`, recommended: vitERec, maximum: `${Math.round((dailyCalories / 1000) * 1000)} IU/day` },
-        { name: 'Selenium', actual: `${dailySelenium.toFixed(2)} mg/day`, recommended: seleniumRec, maximum: `${((dailyCalories / 1000) * 2.0).toFixed(2)} mg/day` },
-        { name: 'Zinc', actual: `${Math.round(dailyZinc)} mg/day`, recommended: zincRec, maximum: `${Math.round((dailyCalories / 1000) * 250)} mg/day` },
-        { name: 'Crude Protein', actual: `${foodData.crudeProtein}%`, recommended: '18–25%', maximum: 'No established max' },
-        { name: 'Crude Fat', actual: `${foodData.crudeFat}%`, recommended: '10–15%', maximum: `${((dailyCalories / 1000) * 82.5).toFixed(0)}% DM` },
-        { name: 'Crude Fiber', actual: `${foodData.crudeFiber}%`, recommended: '2.5–4.5%', maximum: '10% max' },
-        { name: 'Taurine', actual: `${Math.round(dailyTaurine)} mg/day`, recommended: taurineRec, maximum: '5000 mg/day (safe)' },
-        { name: 'Glucosamine', actual: `${Math.round(dailyGlucosamine)} mg/day`, recommended: glucosamineRec, maximum: '1500 mg/day (safe)' },
-        { name: 'Chondroitin', actual: `${Math.round(dailyChondroitin)} mg/day`, recommended: chondroitinRec, maximum: '1200 mg/day (safe)' }
+        { name: 'Omega-3', actual: `${Math.round(dailyOmega3)} mg/day`, recommended: omega3Rec },
+        { name: 'Omega-6', actual: `${dailyOmega6.toFixed(1)} g/day`, recommended: omega6Rec },
+        { name: 'Vitamin E', actual: `${Math.round(dailyVitaminE)} IU/day`, recommended: vitERec },
+        { name: 'Selenium', actual: `${dailySelenium.toFixed(2)} mg/day`, recommended: seleniumRec },
+        { name: 'Zinc', actual: `${Math.round(dailyZinc)} mg/day`, recommended: zincRec },
+        { name: 'Crude Protein', actual: `${foodData.crudeProtein}%`, recommended: '22–32%' },
+        { name: 'Crude Fat', actual: `${foodData.crudeFat}%`, recommended: '12–18%' },
+        { name: 'Crude Fiber', actual: `${foodData.crudeFiber}%`, recommended: '<6% max' },
+        { name: 'Taurine', actual: `${Math.round(dailyTaurine)} mg/day`, recommended: taurineRec },
+        { name: 'Glucosamine', actual: `${Math.round(dailyGlucosamine)} mg/day`, recommended: glucosamineRec },
+        { name: 'Chondroitin', actual: `${Math.round(dailyChondroitin)} mg/day`, recommended: chondroitinRec }
       ],
       healthScores: [
         { area: 'Reproduction', score: scores.reproduction, reasoning: 'Good omega ratio & zinc (Purdue); selenium low deducts.' },
@@ -734,8 +734,7 @@ export default function KibbleAnalyzer() {
                       <tr className="bg-gray-100">
                         <th className="border border-gray-300 p-3 text-left font-semibold">Nutrient</th>
                         <th className="border border-gray-300 p-3 text-left font-semibold">Your Dog Gets</th>
-                        <th className="border border-gray-300 p-3 text-left font-semibold">Maintenance Recommendation</th>
-                        <th className="border border-gray-300 p-3 text-left font-semibold">Maximum Safe Level</th>
+                        <th className="border border-gray-300 p-3 text-left font-semibold">Recommendation</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -744,7 +743,6 @@ export default function KibbleAnalyzer() {
                           <td className="border border-gray-300 p-3">{nutrient.name}</td>
                           <td className="border border-gray-300 p-3">{nutrient.actual}</td>
                           <td className="border border-gray-300 p-3">{nutrient.recommended}</td>
-                          <td className="border border-gray-300 p-3">{nutrient.maximum}</td>
                         </tr>
                       ))}
                     </tbody>
