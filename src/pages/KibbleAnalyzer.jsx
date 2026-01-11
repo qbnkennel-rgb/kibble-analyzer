@@ -161,7 +161,7 @@ export default function KibbleAnalyzer() {
     const dailyVitaminE = Math.round((parseFloat(foodData.vitaminE) || 0) * cupsNeeded * 0.113); // IU/kg * cups * 0.113 kg/cup
     const dailySelenium = ((parseFloat(foodData.selenium) || 0) * cupsNeeded * 0.113).toFixed(2); // mg/kg * cups * 0.113 kg/cup
     const dailyZinc = Math.round((parseFloat(foodData.zinc) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
-    const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) * cupsNeeded * 10); // % * cups * 10 = mg/day
+    const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) * cupsNeeded * 1150); // % * cups * 115g/cup * 10 = mg/day
     const dailyGlucosamine = Math.round((parseFloat(foodData.glucosamine) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
     const dailyChondroitin = Math.round((parseFloat(foodData.chondroitin) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
 
