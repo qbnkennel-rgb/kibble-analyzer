@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator } from "lucide-react";
+import { Calculator, Camera, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
@@ -38,6 +39,7 @@ export default function KibbleAnalyzer() {
   });
 
   const [results, setResults] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
@@ -45,6 +47,76 @@ export default function KibbleAnalyzer() {
 
   const handleFoodChange = (field, value) => {
     setFoodData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAnalyzing(true);
+    try {
+      // Upload the file
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      // Extract nutritional data using AI vision
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this dog food nutritional label and extract all available information. Look for: product name, recommended feeding amounts, calorie content (kcal/kg and kcal/cup), omega-3 %, omega-6 %, vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg), crude protein %, crude fat %, crude fiber %, moisture %, taurine %, glucosamine (mg/kg), chondroitin (mg/kg), bag price, and bag weight. Extract any values you can find. If a value is not visible, return null for that field.`,
+        file_urls: [file_url],
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            dogFood: { type: "string" },
+            recommendedFeeding: { type: "number" },
+            kcalKg: { type: "number" },
+            kcalCup: { type: "number" },
+            omega3: { type: "number" },
+            omega6: { type: "number" },
+            vitaminE: { type: "number" },
+            selenium: { type: "number" },
+            zinc: { type: "number" },
+            crudeProtein: { type: "number" },
+            crudeFat: { type: "number" },
+            crudeFiber: { type: "number" },
+            moisture: { type: "number" },
+            taurine: { type: "number" },
+            glucosamine: { type: "number" },
+            chondroitin: { type: "number" },
+            priceBag: { type: "number" },
+            bagWeight: { type: "number" }
+          }
+        }
+      });
+
+      // Auto-fill the form with extracted data
+      setFoodData(prev => ({
+        ...prev,
+        ...(result.dogFood && { dogFood: result.dogFood }),
+        ...(result.recommendedFeeding && { recommendedFeeding: result.recommendedFeeding.toString() }),
+        ...(result.kcalKg && { kcalKg: result.kcalKg.toString() }),
+        ...(result.kcalCup && { kcalCup: result.kcalCup.toString() }),
+        ...(result.omega3 && { omega3: result.omega3.toString() }),
+        ...(result.omega6 && { omega6: result.omega6.toString() }),
+        ...(result.vitaminE && { vitaminE: result.vitaminE.toString() }),
+        ...(result.selenium && { selenium: result.selenium.toString() }),
+        ...(result.zinc && { zinc: result.zinc.toString() }),
+        ...(result.crudeProtein && { crudeProtein: result.crudeProtein.toString() }),
+        ...(result.crudeFat && { crudeFat: result.crudeFat.toString() }),
+        ...(result.crudeFiber && { crudeFiber: result.crudeFiber.toString() }),
+        ...(result.moisture && { moisture: result.moisture.toString() }),
+        ...(result.taurine && { taurine: result.taurine.toString() }),
+        ...(result.glucosamine && { glucosamine: result.glucosamine.toString() }),
+        ...(result.chondroitin && { chondroitin: result.chondroitin.toString() }),
+        ...(result.priceBag && { priceBag: result.priceBag.toString() }),
+        ...(result.bagWeight && { bagWeight: result.bagWeight.toString() })
+      }));
+
+      alert('Nutritional data extracted! Please review and adjust any values as needed.');
+    } catch (error) {
+      alert('Error analyzing photo: ' + error.message);
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const analyzeKibble = () => {
@@ -382,6 +454,29 @@ export default function KibbleAnalyzer() {
                 <CardTitle className="text-xl text-blue-600">Food Label Data</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <Label className="text-base font-semibold text-blue-700 mb-2 block">
+                    📸 Quick Fill: Upload Photo of Nutritional Label
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      disabled={analyzing}
+                      className="flex-1"
+                    />
+                    {analyzing && (
+                      <div className="flex items-center gap-2 text-blue-600">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span className="text-sm">Analyzing...</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    Upload a clear photo of the nutritional label to auto-fill the form
+                  </p>
+                </div>
                 <div className="md:col-span-2">
                   <Label>Dog Food Name</Label>
                   <Input
