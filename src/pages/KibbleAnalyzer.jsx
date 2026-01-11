@@ -155,25 +155,54 @@ export default function KibbleAnalyzer() {
     const cupsNeeded = dailyCalories / kcalCup;
     const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0;
     
-    // Calculate daily nutrient intake
-    const dailyOmega3 = (parseFloat(foodData.omega3) || 0) * cupsNeeded * 10; // mg/day estimate
-    const dailyOmega6 = (parseFloat(foodData.omega6) || 0) * cupsNeeded; // g/day
-    const dailyVitaminE = (parseFloat(foodData.vitaminE) || 0) * cupsNeeded * 0.113; // IU/day (0.113 kg/cup)
-    const dailySelenium = (parseFloat(foodData.selenium) || 0) * cupsNeeded * 0.113; // mg/day
-    const dailyZinc = (parseFloat(foodData.zinc) || 0) * cupsNeeded * 0.113; // mg/day
-    const dailyTaurine = (parseFloat(foodData.taurine) || 0) * cupsNeeded * 1130; // % to mg/day (0.113 kg/cup * 10000)
-    const dailyGlucosamine = (parseFloat(foodData.glucosamine) || 0) * cupsNeeded * 0.113; // mg/day
-    const dailyChondroitin = (parseFloat(foodData.chondroitin) || 0) * cupsNeeded * 0.113; // mg/day
+    // Calculate daily nutrient intake from per kg values
+    const kgPerCup = 0.113; // approximately 113g per cup
+    const dailyFoodKg = cupsNeeded * kgPerCup;
+    
+    const dailyOmega3 = (parseFloat(foodData.omega3) || 0) * dailyFoodKg * 10; // % to mg (% * kg * 10000 mg/kg / 1000)
+    const dailyOmega6 = (parseFloat(foodData.omega6) || 0) * dailyFoodKg * 10; // % to g (% * kg * 10)
+    const dailyVitaminE = (parseFloat(foodData.vitaminE) || 0) * dailyFoodKg; // IU/kg * kg
+    const dailySelenium = (parseFloat(foodData.selenium) || 0) * dailyFoodKg; // mg/kg * kg
+    const dailyZinc = (parseFloat(foodData.zinc) || 0) * dailyFoodKg; // mg/kg * kg
+    const dailyTaurine = (parseFloat(foodData.taurine) || 0) * dailyFoodKg * 10000; // % to mg (% * kg * 10000 mg/kg)
+    const dailyGlucosamine = (parseFloat(foodData.glucosamine) || 0) * dailyFoodKg; // mg/kg * kg
+    const dailyChondroitin = (parseFloat(foodData.chondroitin) || 0) * dailyFoodKg; // mg/kg * kg
 
-    // Recommended ranges based on weight
-    const omega3Rec = `${Math.round(weight * 6.5)}–${Math.round(weight * 13)} mg/day`;
-    const omega6Rec = `${(weight * 0.04).toFixed(1)}–${(weight * 0.1).toFixed(1)} g/day`;
-    const vitERec = `${Math.round(weight * 0.32)}–${Math.round(weight * 0.64)} IU/day`;
-    const seleniumRec = `${(weight * 0.0016).toFixed(2)}–${(weight * 0.0028).toFixed(2)} mg/day`;
-    const zincRec = `${Math.round(weight * 0.46)}–${Math.round(weight * 0.92)} mg/day`;
-    const taurineRec = `>300–500 mg/day beneficial`;
-    const glucosamineRec = `350–900 mg/day`;
-    const chondroitinRec = `150–600 mg/day`;
+    // Recommended ranges based on NRC/AAFCO standards per kg body weight
+    // NRC 2006: Omega-3 minimum 0.11g/1000kcal, optimal 0.3-0.5g/1000kcal for inflammation
+    const omega3Min = Math.round((dailyCalories / 1000) * 110); // mg minimum
+    const omega3Opt = Math.round((dailyCalories / 1000) * 400); // mg optimal for joint/heart health
+    const omega3Rec = `${omega3Min}–${omega3Opt} mg/day`;
+    
+    // AAFCO minimum omega-6 is 1.3% DM for adults; typical ratio 5:1 to 10:1 omega-6:omega-3
+    const omega6Min = (dailyCalories / 1000) * 1.3; // g minimum
+    const omega6Max = (dailyCalories / 1000) * 4.0; // g maximum for healthy ratio
+    const omega6Rec = `${omega6Min.toFixed(1)}–${omega6Max.toFixed(1)} g/day`;
+    
+    // NRC 2006: Vitamin E minimum 1 IU/g PUFA, AAFCO minimum 50 IU/kg DM
+    const vitEMin = Math.round((dailyCalories / 1000) * 10); // IU minimum
+    const vitEOpt = Math.round((dailyCalories / 1000) * 30); // IU optimal
+    const vitERec = `${vitEMin}–${vitEOpt} IU/day`;
+    
+    // NRC 2006: Selenium RA 90 μg/1000kcal for adults
+    const seleniumDaily = ((dailyCalories / 1000) * 0.09).toFixed(3); // mg
+    const seleniumRec = `${seleniumDaily} mg/day`;
+    
+    // NRC 2006: Zinc RA 7.5 mg/1000kcal for adults, AAFCO minimum 120 mg/kg DM
+    const zincMin = Math.round((dailyCalories / 1000) * 7.5); // mg minimum
+    const zincOpt = Math.round((dailyCalories / 1000) * 15); // mg optimal
+    const zincRec = `${zincMin}–${zincOpt} mg/day`;
+    
+    // Taurine: Not required by NRC/AAFCO for dogs, but 500-1000mg/day shown beneficial for DCM prevention
+    const taurineRec = `500–1000 mg/day (beneficial)`;
+    
+    // Glucosamine: 20 mg/kg body weight therapeutic dose (veterinary standard)
+    const glucosamineDaily = Math.round(weight * 20);
+    const glucosamineRec = `${glucosamineDaily} mg/day (${Math.round(glucosamineDaily * 0.5)}–${Math.round(glucosamineDaily * 1.5)} range)`;
+    
+    // Chondroitin: 15 mg/kg body weight therapeutic dose (veterinary standard)
+    const chondroitinDaily = Math.round(weight * 15);
+    const chondroitinRec = `${chondroitinDaily} mg/day (${Math.round(chondroitinDaily * 0.5)}–${Math.round(chondroitinDaily * 1.5)} range)`;
 
     // Health scoring
     const scores = {
