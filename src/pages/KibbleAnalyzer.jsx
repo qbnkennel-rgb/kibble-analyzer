@@ -1106,10 +1106,22 @@ export default function KibbleAnalyzer() {
                       <div>
                         <p className="font-semibold text-gray-800 mb-2">Beneficial Microorganisms Detected:</p>
                         <ul className="list-disc list-inside space-y-1">
-                          {results.ingredientAnalysis.microorganisms.types.map((type, idx) => (
+                          {results.ingredientAnalysis.microorganisms.types.slice(0, 3).map((type, idx) => (
                             <li key={idx} className="text-gray-700">{type}</li>
                           ))}
                         </ul>
+                        {results.ingredientAnalysis.microorganisms.types.length > 3 && (
+                          <details className="mt-2">
+                            <summary className="text-sm text-blue-600 cursor-pointer hover:underline">
+                              Show {results.ingredientAnalysis.microorganisms.types.length - 3} more...
+                            </summary>
+                            <ul className="list-disc list-inside space-y-1 mt-2 ml-4">
+                              {results.ingredientAnalysis.microorganisms.types.slice(3).map((type, idx) => (
+                                <li key={idx + 3} className="text-gray-700">{type}</li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
                       </div>
                     )}
                     {results.ingredientAnalysis.microorganisms.total_cfu && (
