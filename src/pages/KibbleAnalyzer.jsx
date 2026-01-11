@@ -155,66 +155,37 @@ export default function KibbleAnalyzer() {
     const cupsNeeded = dailyCalories / kcalCup;
     const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0;
     
-    // Calculate daily nutrient intake from per kg values
-    const kgPerCup = 0.113; // approximately 113g per cup
-    const dailyFoodKg = cupsNeeded * kgPerCup;
-    
-    const dailyOmega3 = (parseFloat(foodData.omega3) || 0) * dailyFoodKg * 10; // % to mg (% * kg * 10000 mg/kg / 1000)
-    const dailyOmega6 = (parseFloat(foodData.omega6) || 0) * dailyFoodKg * 10; // % to g (% * kg * 10)
-    const dailyVitaminE = (parseFloat(foodData.vitaminE) || 0) * dailyFoodKg; // IU/kg * kg
-    const dailySelenium = (parseFloat(foodData.selenium) || 0) * dailyFoodKg; // mg/kg * kg
-    const dailyZinc = (parseFloat(foodData.zinc) || 0) * dailyFoodKg; // mg/kg * kg
-    const dailyTaurine = (parseFloat(foodData.taurine) || 0) * dailyFoodKg * 10000; // % to mg (% * kg * 10000 mg/kg)
-    const dailyGlucosamine = (parseFloat(foodData.glucosamine) || 0) * dailyFoodKg; // mg/kg * kg
-    const dailyChondroitin = (parseFloat(foodData.chondroitin) || 0) * dailyFoodKg; // mg/kg * kg
+    // Calculate daily nutrient intake - simplified formulas matching original program
+    const dailyOmega3 = Math.round((parseFloat(foodData.omega3) || 0) * cupsNeeded * 10); // % * cups * 10 = mg/day
+    const dailyOmega6 = ((parseFloat(foodData.omega6) || 0) * cupsNeeded * 0.04).toFixed(1); // % * cups * 0.04 = g/day
+    const dailyVitaminE = Math.round((parseFloat(foodData.vitaminE) || 0) * cupsNeeded * 0.113); // IU/kg * cups * 0.113 kg/cup
+    const dailySelenium = ((parseFloat(foodData.selenium) || 0) * cupsNeeded * 0.113).toFixed(2); // mg/kg * cups * 0.113 kg/cup
+    const dailyZinc = Math.round((parseFloat(foodData.zinc) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
+    const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) * cupsNeeded * 10); // % * cups * 10 = mg/day
+    const dailyGlucosamine = Math.round((parseFloat(foodData.glucosamine) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
+    const dailyChondroitin = Math.round((parseFloat(foodData.chondroitin) || 0) * cupsNeeded * 0.113); // mg/kg * cups * 0.113 kg/cup
 
-    // Recommended ranges based on NRC/AAFCO standards per kg body weight
-    // NRC 2006: Omega-3 minimum 0.11g/1000kcal, optimal 0.3-0.5g/1000kcal for inflammation
-    const omega3Min = Math.round((dailyCalories / 1000) * 110); // mg minimum
-    const omega3Opt = Math.round((dailyCalories / 1000) * 400); // mg optimal for joint/heart health
-    const omega3Rec = `${omega3Min}–${omega3Opt} mg/day`;
-    
-    // AAFCO minimum omega-6 is 1.3% DM for adults; typical ratio 5:1 to 10:1 omega-6:omega-3
-    const omega6Min = (dailyCalories / 1000) * 1.3; // g minimum
-    const omega6Max = (dailyCalories / 1000) * 4.0; // g maximum for healthy ratio
-    const omega6Rec = `${omega6Min.toFixed(1)}–${omega6Max.toFixed(1)} g/day`;
-    
-    // NRC 2006: Vitamin E minimum 1 IU/g PUFA, AAFCO minimum 50 IU/kg DM
-    const vitEMin = Math.round((dailyCalories / 1000) * 10); // IU minimum
-    const vitEOpt = Math.round((dailyCalories / 1000) * 30); // IU optimal
-    const vitERec = `${vitEMin}–${vitEOpt} IU/day`;
-    
-    // NRC 2006: Selenium RA 90 μg/1000kcal for adults
-    const seleniumDaily = ((dailyCalories / 1000) * 0.09).toFixed(3); // mg
-    const seleniumRec = `${seleniumDaily} mg/day`;
-    
-    // NRC 2006: Zinc RA 7.5 mg/1000kcal for adults, AAFCO minimum 120 mg/kg DM
-    const zincMin = Math.round((dailyCalories / 1000) * 7.5); // mg minimum
-    const zincOpt = Math.round((dailyCalories / 1000) * 15); // mg optimal
-    const zincRec = `${zincMin}–${zincOpt} mg/day`;
-    
-    // Taurine: Not required by NRC/AAFCO for dogs, but 500-1000mg/day shown beneficial for DCM prevention
-    const taurineRec = `500–1000 mg/day (beneficial)`;
-    
-    // Glucosamine: 20 mg/kg body weight therapeutic dose (veterinary standard)
-    const glucosamineDaily = Math.round(weight * 20);
-    const glucosamineRec = `${glucosamineDaily} mg/day (${Math.round(glucosamineDaily * 0.5)}–${Math.round(glucosamineDaily * 1.5)} range)`;
-    
-    // Chondroitin: 15 mg/kg body weight therapeutic dose (veterinary standard)
-    const chondroitinDaily = Math.round(weight * 15);
-    const chondroitinRec = `${chondroitinDaily} mg/day (${Math.round(chondroitinDaily * 0.5)}–${Math.round(chondroitinDaily * 1.5)} range)`;
+    // Recommended ranges based on weight
+    const omega3Rec = `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day`;
+    const omega6Rec = `${Math.round(weight * 0.1)}–${Math.round(weight * 0.2)} g/day`;
+    const vitERec = `${Math.round(weight * 0.7)}–${Math.round(weight * 1.4)} IU/day`;
+    const seleniumRec = `${(weight * 0.0036).toFixed(2)}–${(weight * 0.006).toFixed(2)} mg/day`;
+    const zincRec = `${Math.round(weight * 1)}–${Math.round(weight * 2)} mg/day`;
+    const taurineRec = `>300–500 mg/day beneficial`;
+    const glucosamineRec = `350–900 mg/day`;
+    const chondroitinRec = `150–600 mg/day`;
 
     // Health scoring
     const scores = {
-      reproduction: calculateReproductionScore(dailySelenium, dailyZinc, weight),
+      reproduction: calculateReproductionScore(parseFloat(dailySelenium), dailyZinc, weight),
       joint: calculateJointScore(dailyGlucosamine, dailyChondroitin, dailyOmega3, weight),
-      skinCoat: calculateSkinCoatScore(dailyOmega3, dailyOmega6, dailyZinc, weight),
+      skinCoat: calculateSkinCoatScore(dailyOmega3, parseFloat(dailyOmega6), dailyZinc, weight),
       weight: calculateWeightScore(parseFloat(foodData.crudeFat), parseFloat(foodData.crudeFiber)),
       digestion: calculateDigestionScore(parseFloat(foodData.crudeFiber)),
-      immune: calculateImmuneScore(dailyVitaminE, dailyZinc, dailySelenium, weight),
+      immune: calculateImmuneScore(dailyVitaminE, dailyZinc, parseFloat(dailySelenium), weight),
       allergy: calculateAllergyScore(foodData.dogFood),
-      heart: calculateHeartScore(dailyTaurine, dailyOmega3),
-      eye: calculateEyeScore(dailyVitaminE, dailyOmega3),
+      heart: calculateHeartScore(dailyTaurine, dailyOmega3, weight),
+      eye: calculateEyeScore(dailyVitaminE, dailyOmega3, weight),
       caloric: calculateCaloricScore(dailyCalories, cupsNeeded, recommendedCups)
     };
 
@@ -229,17 +200,17 @@ export default function KibbleAnalyzer() {
       costPerServing: costPerDay.toFixed(2),
       lifeStage: 'Adult',
       nutrients: [
-        { name: 'Omega-3', actual: `${Math.round(dailyOmega3)} mg/day`, recommended: omega3Rec },
-        { name: 'Omega-6', actual: `${dailyOmega6.toFixed(1)} g/day`, recommended: omega6Rec },
-        { name: 'Vitamin E', actual: `${Math.round(dailyVitaminE)} IU/day`, recommended: vitERec },
-        { name: 'Selenium', actual: `${dailySelenium.toFixed(2)} mg/day`, recommended: seleniumRec },
-        { name: 'Zinc', actual: `${Math.round(dailyZinc)} mg/day`, recommended: zincRec },
+        { name: 'Omega-3', actual: `${dailyOmega3} mg/day`, recommended: omega3Rec },
+        { name: 'Omega-6', actual: `${dailyOmega6} g/day`, recommended: omega6Rec },
+        { name: 'Vitamin E', actual: `${dailyVitaminE} IU/day`, recommended: vitERec },
+        { name: 'Selenium', actual: `${dailySelenium} mg/day`, recommended: seleniumRec },
+        { name: 'Zinc', actual: `${dailyZinc} mg/day`, recommended: zincRec },
         { name: 'Crude Protein', actual: `${foodData.crudeProtein}%`, recommended: '22–32%' },
         { name: 'Crude Fat', actual: `${foodData.crudeFat}%`, recommended: '12–18%' },
         { name: 'Crude Fiber', actual: `${foodData.crudeFiber}%`, recommended: '<6% max' },
-        { name: 'Taurine', actual: `${Math.round(dailyTaurine)} mg/day`, recommended: taurineRec },
-        { name: 'Glucosamine', actual: `${Math.round(dailyGlucosamine)} mg/day`, recommended: glucosamineRec },
-        { name: 'Chondroitin', actual: `${Math.round(dailyChondroitin)} mg/day`, recommended: chondroitinRec }
+        { name: 'Taurine', actual: `${dailyTaurine} mg/day`, recommended: taurineRec },
+        { name: 'Glucosamine', actual: `${dailyGlucosamine} mg/day`, recommended: glucosamineRec },
+        { name: 'Chondroitin', actual: `${dailyChondroitin} mg/day`, recommended: chondroitinRec }
       ],
       healthScores: [
         { area: 'Reproduction', score: scores.reproduction, reasoning: 'Good omega ratio & zinc (Purdue); selenium low deducts.' },
@@ -275,119 +246,87 @@ export default function KibbleAnalyzer() {
   // Scoring functions
   const calculateReproductionScore = (selenium, zinc, weight) => {
     if (!selenium || !zinc || !weight) return 0;
-    // NRC 2006: Selenium RA 90 μg/1000kcal, Zinc RA 7.5 mg/1000kcal
-    const rer = 70 * Math.pow(weight, 0.75);
-    const activityMultiplier = 1.6;
-    const dailyCalories = rer * activityMultiplier;
-    const seleniumTarget = (dailyCalories / 1000) * 0.09; // mg
-    const zincTarget = (dailyCalories / 1000) * 10; // mg (slightly higher for reproduction)
+    const seleniumTarget = weight * 0.004; // mg
+    const zincTarget = weight * 1.5; // mg
     const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
     const zincScore = Math.min((zinc / zincTarget) * 100, 100);
-    return Math.round((seleniumScore * 0.4 + zincScore * 0.6));
+    return Math.round((seleniumScore * 0.4 + zincScore * 0.6) * 0.85);
   };
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    const rer = 70 * Math.pow(weight, 0.75);
-    const omega3Target = (rer * 1.6 / 1000) * 300;
-    
-    // Base score starts at 70 for basic nutrition
-    let baseScore = 70;
-    
-    // Omega-3 contribution (can boost to 85)
+    const glucoTarget = 600; // mg minimum
+    const chondroTarget = 300; // mg minimum
+    const omega3Target = weight * 14; // mg
+    const glucoScore = Math.min((glucosamine / glucoTarget) * 100, 100);
+    const chondroScore = Math.min((chondroitin / chondroTarget) * 100, 100);
     const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
-    baseScore = baseScore + (omega3Score * 0.15);
-    
-    // Glucosamine bonus (can add up to 10 points)
-    if (glucosamine > 0) {
-      const glucoTarget = weight * 20;
-      const glucoBonus = Math.min((glucosamine / glucoTarget) * 10, 10);
-      baseScore += glucoBonus;
-    }
-    
-    // Chondroitin bonus (can add up to 5 points)
-    if (chondroitin > 0) {
-      const chondroTarget = weight * 15;
-      const chondroBonus = Math.min((chondroitin / chondroTarget) * 5, 5);
-      baseScore += chondroBonus;
-    }
-    
-    return Math.round(Math.min(baseScore, 100));
+    return Math.round((glucoScore * 0.35 + chondroScore * 0.35 + omega3Score * 0.3));
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
     if (!weight) return 0;
-    const rer = 70 * Math.pow(weight, 0.75);
-    const dailyCalories = rer * 1.6;
-    // NRC 2006: Omega-3 0.11g/1000kcal min, Omega-6 1.3g/1000kcal, Zinc 7.5mg/1000kcal
-    const omega3Target = (dailyCalories / 1000) * 200; // mg (higher for skin health)
-    const omega6Target = (dailyCalories / 1000) * 2.0; // g
-    const zincTarget = (dailyCalories / 1000) * 10; // mg (higher for skin)
+    const omega3Target = weight * 14; // mg
+    const omega6Target = weight * 0.1; // g
+    const zincTarget = weight * 1.5; // mg
     const o3Score = Math.min((omega3 / omega3Target) * 100, 100);
     const o6Score = Math.min((omega6 / omega6Target) * 100, 100);
     const zincScore = Math.min((zinc / zincTarget) * 100, 100);
-    return Math.round((o3Score * 0.35 + o6Score * 0.35 + zincScore * 0.3));
+    return Math.round((o3Score * 0.3 + o6Score * 0.4 + zincScore * 0.3));
   };
 
   const calculateWeightScore = (fat, fiber) => {
     if (isNaN(fat) || isNaN(fiber)) return 0;
-    const fatScore = fat >= 12 && fat <= 18 ? 100 : 70;
-    const fiberScore = fiber <= 6 ? 100 : 70;
+    const fatScore = fat >= 12 && fat <= 18 ? 100 : 80;
+    const fiberScore = fiber >= 3 && fiber <= 5 ? 100 : 85;
     return Math.round((fatScore + fiberScore) / 2 * 0.88);
   };
 
   const calculateDigestionScore = (fiber) => {
     if (isNaN(fiber) || fiber === 0) return 0;
-    return fiber >= 3 && fiber <= 5 ? 95 : 80;
+    if (fiber >= 3 && fiber <= 5) return 97;
+    if (fiber > 2 && fiber < 6) return 90;
+    return 75;
   };
 
   const calculateImmuneScore = (vitE, zinc, selenium, weight) => {
     if (!weight) return 0;
-    const rer = 70 * Math.pow(weight, 0.75);
-    const dailyCalories = rer * 1.6;
-    // NRC 2006: Vitamin E 1 IU/g PUFA, Zinc 7.5mg/1000kcal, Selenium 90μg/1000kcal
-    const vitETarget = (dailyCalories / 1000) * 15; // IU
-    const zincTarget = (dailyCalories / 1000) * 7.5; // mg
-    const seleniumTarget = (dailyCalories / 1000) * 0.09; // mg
+    const vitETarget = weight * 1; // IU
+    const zincTarget = weight * 1.5; // mg
+    const seleniumTarget = weight * 0.004; // mg
     const vitEScore = Math.min((vitE / vitETarget) * 100, 100);
     const zincScore = Math.min((zinc / zincTarget) * 100, 100);
     const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
-    return Math.round((vitEScore * 0.4 + zincScore * 0.3 + seleniumScore * 0.3));
+    return Math.round((vitEScore * 0.4 + zincScore * 0.35 + seleniumScore * 0.25));
   };
 
   const calculateAllergyScore = (foodName) => {
     const grainFree = !/wheat|corn|soy/i.test(foodName || '');
-    return grainFree ? 85 : 65;
+    return grainFree ? 80 : 65;
   };
 
-  const calculateHeartScore = (taurine, omega3) => {
-    // Base score 80 - dogs synthesize taurine unlike cats, so it's not required
-    let baseScore = 80;
-    
-    // Omega-3 contribution (primary factor for heart health)
-    const omega3Score = omega3 >= 200 ? 100 : (omega3 / 200) * 100;
-    baseScore = 70 + (omega3Score * 0.25); // Can reach 95 with good omega-3
-    
-    // Taurine bonus if present (can add up to 5 points)
-    if (taurine > 0) {
-      const taurineBonus = Math.min((taurine / 500) * 5, 5);
-      baseScore += taurineBonus;
-    }
-    
-    return Math.round(Math.min(baseScore, 100));
+  const calculateHeartScore = (taurine, omega3, weight) => {
+    const taurineTarget = 350; // mg minimum
+    const omega3Target = weight * 14; // mg
+    const taurineScore = Math.min((taurine / taurineTarget) * 100, 100);
+    const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
+    return Math.round((taurineScore * 0.5 + omega3Score * 0.5) * 0.75);
   };
 
-  const calculateEyeScore = (vitE, omega3) => {
+  const calculateEyeScore = (vitE, omega3, weight) => {
     if (!vitE || vitE === 0) return 0;
-    // Vitamin E is primary, omega-3 is secondary for eye health
-    const vitEScore = vitE >= 12 ? 100 : Math.max((vitE / 12) * 100, 60);
-    const omega3Score = omega3 >= 150 ? 100 : Math.max((omega3 / 150) * 100, 60);
-    return Math.round((vitEScore * 0.6 + omega3Score * 0.4));
+    const vitETarget = weight * 1; // IU
+    const omega3Target = weight * 14; // mg
+    const vitEScore = Math.min((vitE / vitETarget) * 100, 100);
+    const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
+    return Math.round((vitEScore * 0.5 + omega3Score * 0.5) * 0.9);
   };
 
   const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
     const diff = brandCups > 0 ? Math.abs(cupsNeeded - brandCups) / cupsNeeded : 0;
-    return diff < 0.15 ? 95 : 85;
+    if (diff < 0.1) return 92;
+    if (diff < 0.2) return 85;
+    return 75;
   };
 
   return (
