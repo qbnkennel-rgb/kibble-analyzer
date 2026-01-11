@@ -10,7 +10,7 @@ export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
     dogSize: 'medium',
     dogWeight: '',
-    activityLevel: 'moderate',
+    activityLevel: 'neutered adult',
     zipCode: '',
     ageYears: '',
     ageMonths: ''
@@ -60,10 +60,13 @@ export default function KibbleAnalyzer() {
     }
 
     // Calculate daily caloric needs (RER formula)
-    const rer = 70 * Math.pow(weight, 0.75);
+    // RER = 70 × (weight in kg)^0.75
+    const weightKg = weight / 2.2; // Convert lbs to kg
+    const rer = 70 * Math.pow(weightKg, 0.75);
     const activityMultiplier = {
-      'sedentary': 1.2,
-      'moderate': 1.6,
+      'inactive/senior': 1.4,
+      'neutered adult': 1.6,
+      'active/intact adult': 1.8,
       'highly active/working': 2.0
     }[dogData.activityLevel] || 1.6;
     
@@ -333,8 +336,9 @@ export default function KibbleAnalyzer() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sedentary">Sedentary</SelectItem>
-                      <SelectItem value="moderate">Moderate</SelectItem>
+                      <SelectItem value="inactive/senior">Inactive/Senior</SelectItem>
+                      <SelectItem value="neutered adult">Neutered Adult (Average)</SelectItem>
+                      <SelectItem value="active/intact adult">Active/Intact Adult</SelectItem>
                       <SelectItem value="highly active/working">Highly Active/Working</SelectItem>
                     </SelectContent>
                   </Select>
