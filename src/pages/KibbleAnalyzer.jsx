@@ -171,6 +171,61 @@ export default function KibbleAnalyzer() {
     // For taurine (percentage): kg × (percentage/100) × 1000 × 1000 = mg
     const dailyTaurine = Math.round(dailyFoodKg * (parseFloat(foodData.taurine) || 0) * 10000); // mg/day
 
+    // Analyze ingredients with AI (using credible university sources)
+    let ingredientAnalysis = null;
+    if (foodData.ingredients) {
+      try {
+        ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
+          prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}". 
+          
+          Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
+          1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
+          2. Ingredient Quality Grade (A-F): Based on digestibility, bioavailability, and nutritional value for dogs. Consider whole proteins vs by-products, whole grains vs fillers, synthetic vs natural nutrients.
+          3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
+          
+          Return structured data with university citations.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              microorganisms: {
+                type: "object",
+                properties: {
+                  types: { type: "array", items: { type: "string" } },
+                  total_cfu: { type: "string" },
+                  gut_health_score: { type: "number" },
+                  summary: { type: "string" }
+                }
+              },
+              ingredient_grade: {
+                type: "object",
+                properties: {
+                  grade: { type: "string" },
+                  score: { type: "number" },
+                  reasoning: { type: "string" },
+                  university_source: { type: "string" }
+                }
+              },
+              red_flags: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    ingredient: { type: "string" },
+                    concern: { type: "string" },
+                    health_impact: { type: "string" },
+                    university_citation: { type: "string" }
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Ingredient analysis error:', error);
+      }
+    }
+
     // Recommended ranges based on weight
     const omega3Rec = `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day`;
     const omega6Rec = `${Math.round(weight * 0.1)}–${Math.round(weight * 0.2)} g/day`;
@@ -371,61 +426,6 @@ export default function KibbleAnalyzer() {
     const score = Math.max(100 - (diff * 100), 0);
     return Math.round(score);
   };
-
-  // Analyze ingredients with AI (using credible university sources)
-  let ingredientAnalysis = null;
-  if (foodData.ingredients) {
-    try {
-      ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}". 
-
-        Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
-        1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
-        2. Ingredient Quality Grade (A-F): Based on digestibility, bioavailability, and nutritional value for dogs. Consider whole proteins vs by-products, whole grains vs fillers, synthetic vs natural nutrients.
-        3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
-
-        Return structured data with university citations.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            microorganisms: {
-              type: "object",
-              properties: {
-                types: { type: "array", items: { type: "string" } },
-                total_cfu: { type: "string" },
-                gut_health_score: { type: "number" },
-                summary: { type: "string" }
-              }
-            },
-            ingredient_grade: {
-              type: "object",
-              properties: {
-                grade: { type: "string" },
-                score: { type: "number" },
-                reasoning: { type: "string" },
-                university_source: { type: "string" }
-              }
-            },
-            red_flags: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  ingredient: { type: "string" },
-                  concern: { type: "string" },
-                  health_impact: { type: "string" },
-                  university_citation: { type: "string" }
-                }
-              }
-            }
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Ingredient analysis error:', error);
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
