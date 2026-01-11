@@ -61,16 +61,21 @@ export default function KibbleAnalyzer() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this dog food nutritional label and extract all nutritional values. Look for: 
+        prompt: `Analyze this dog food nutritional label and extract all nutritional values. Pay special attention to:
+        
+        CRITICAL - CALORIE CONTENT (look carefully for these specific fields):
+        - "Calorie Content (kcal/kg)" or "kcal/kg" or "Metabolizable Energy per kg"
+        - "Calorie Content (kcal/cup)" or "kcal/cup" or "Calories per cup"
+        
+        ALSO EXTRACT:
         - Product name and brand
         - Recommended feeding amounts (cups/day)
-        - Calorie content (kcal/kg and kcal/cup)
         - Omega-3 %, omega-6 %
         - Vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg)
         - Crude protein %, crude fat %, crude fiber %, moisture %
         - Taurine %, glucosamine (mg/kg), chondroitin (mg/kg)
         
-        Extract any values you can find. If a value is not visible, return null for that field.`,
+        Look carefully at all text on the label, including small print and guaranteed analysis sections. Extract numerical values only. If a value is not visible, return null for that field.`,
         file_urls: [file_url],
         add_context_from_internet: false,
         response_json_schema: {
