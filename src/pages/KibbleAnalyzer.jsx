@@ -297,8 +297,8 @@ export default function KibbleAnalyzer() {
 
           1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
 
-          2. Ingredient Quality Score (1-100 scale, where 1 is very bad and 100 is excellent):
-             Parse each ingredient and score using this system:
+          2. Ingredient Quality Grade:
+             Parse each ingredient and calculate points using this system:
              - Whole proteins (e.g., chicken, beef, salmon, lamb): +15 points each
              - Meals (e.g., chicken meal, fish meal): +5 points each
              - By-products (e.g., chicken by-product, meat by-product): -1 point each
@@ -306,7 +306,12 @@ export default function KibbleAnalyzer() {
              - Health-contributing ingredients (ingredients that significantly contribute to dog's health based on university sources): +2 points each
              - Neutral ingredients (don't significantly contribute but not flagged): +1 point each
 
-             Calculate total score and cap between 1-100. Provide detailed breakdown showing each ingredient category and points awarded.
+             Then assign a grade using these STRICT criteria:
+             - EXCELLENT: Must have at least 40 points from whole proteins alone (minimum 3 whole proteins)
+             - AVERAGE: Must have at least 20 points from total protein sources (whole proteins + meals combined)
+             - POOR: Less than 20 points total protein OR first ingredient is NOT a whole protein
+
+             Calculate whole protein points, total protein points, check first ingredient, and assign the appropriate grade. Provide detailed breakdown.
 
           3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
 
@@ -327,7 +332,10 @@ export default function KibbleAnalyzer() {
               ingredient_grade: {
                 type: "object",
                 properties: {
-                  score: { type: "number" },
+                  grade: { type: "string", enum: ["EXCELLENT", "AVERAGE", "POOR"] },
+                  whole_protein_points: { type: "number" },
+                  total_protein_points: { type: "number" },
+                  first_ingredient_is_whole_protein: { type: "boolean" },
                   breakdown: {
                     type: "object",
                     properties: {
@@ -1020,10 +1028,34 @@ export default function KibbleAnalyzer() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    <div className="text-center p-6 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2">Quality Score (1-100)</p>
-                      <p className="text-6xl font-bold text-blue-800">{results.ingredientAnalysis.ingredient_grade.score}</p>
-                      <p className="text-sm text-gray-500 mt-2">1 = Very Bad | 100 = Excellent</p>
+                    <div className="p-6 bg-gradient-to-r from-green-50 via-yellow-50 to-red-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-4 text-center">Quality Grade</p>
+                      
+                      <div className="relative h-12 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full overflow-hidden">
+                        <div className={`absolute top-0 h-full w-1 bg-gray-900 shadow-lg transition-all ${
+                          results.ingredientAnalysis.ingredient_grade.grade === 'EXCELLENT' ? 'left-[10%]' :
+                          results.ingredientAnalysis.ingredient_grade.grade === 'AVERAGE' ? 'left-[50%]' :
+                          'left-[90%]'
+                        }`}>
+                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <div className="bg-gray-900 text-white px-3 py-1 rounded text-sm font-bold">
+                              {results.ingredientAnalysis.ingredient_grade.grade}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between mt-2 text-xs font-semibold">
+                        <span className="text-green-700">EXCELLENT</span>
+                        <span className="text-yellow-700">AVERAGE</span>
+                        <span className="text-red-700">POOR</span>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-white rounded-lg text-sm space-y-1">
+                        <p><strong>Whole Protein Points:</strong> {results.ingredientAnalysis.ingredient_grade.whole_protein_points}</p>
+                        <p><strong>Total Protein Points:</strong> {results.ingredientAnalysis.ingredient_grade.total_protein_points}</p>
+                        <p><strong>First Ingredient:</strong> {results.ingredientAnalysis.ingredient_grade.first_ingredient_is_whole_protein ? '✓ Whole Protein' : '✗ Not Whole Protein'}</p>
+                      </div>
                     </div>
 
                     {results.ingredientAnalysis.ingredient_grade.breakdown && (
