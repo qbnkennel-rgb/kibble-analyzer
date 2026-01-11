@@ -275,32 +275,42 @@ export default function KibbleAnalyzer() {
   // Scoring functions
   const calculateReproductionScore = (selenium, zinc, weight) => {
     if (!selenium || !zinc || !weight) return 0;
-    const seleniumTarget = weight * 0.0022;
-    const zincTarget = weight * 0.69;
+    // NRC 2006: Selenium RA 90 μg/1000kcal, Zinc RA 7.5 mg/1000kcal
+    const rer = 70 * Math.pow(weight, 0.75);
+    const activityMultiplier = 1.6;
+    const dailyCalories = rer * activityMultiplier;
+    const seleniumTarget = (dailyCalories / 1000) * 0.09; // mg
+    const zincTarget = (dailyCalories / 1000) * 10; // mg (slightly higher for reproduction)
     const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
     const zincScore = Math.min((zinc / zincTarget) * 100, 100);
-    return Math.round((seleniumScore + zincScore) / 2 * 0.85);
+    return Math.round((seleniumScore * 0.4 + zincScore * 0.6));
   };
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    // More lenient scoring - minimum recommended values
-    const glucoScore = Math.min((glucosamine / 300) * 100, 100);
-    const chondroScore = Math.min((chondroitin / 120) * 100, 100);
-    const omega3Score = Math.min((omega3 / (weight * 5)) * 100, 100);
-    // Weight glucosamine/chondroitin more heavily as they're primary joint nutrients
+    // Veterinary standard: Glucosamine 20 mg/kg, Chondroitin 15 mg/kg
+    const glucoTarget = weight * 20;
+    const chondroTarget = weight * 15;
+    const rer = 70 * Math.pow(weight, 0.75);
+    const omega3Target = (rer * 1.6 / 1000) * 300; // 300mg per 1000kcal for joint health
+    const glucoScore = Math.min((glucosamine / glucoTarget) * 100, 100);
+    const chondroScore = Math.min((chondroitin / chondroTarget) * 100, 100);
+    const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
     return Math.round((glucoScore * 0.4 + chondroScore * 0.4 + omega3Score * 0.2));
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
     if (!weight) return 0;
-    const omega3Target = weight * 9.5;
-    const omega6Target = weight * 0.07;
-    const zincTarget = weight * 0.69;
+    const rer = 70 * Math.pow(weight, 0.75);
+    const dailyCalories = rer * 1.6;
+    // NRC 2006: Omega-3 0.11g/1000kcal min, Omega-6 1.3g/1000kcal, Zinc 7.5mg/1000kcal
+    const omega3Target = (dailyCalories / 1000) * 200; // mg (higher for skin health)
+    const omega6Target = (dailyCalories / 1000) * 2.0; // g
+    const zincTarget = (dailyCalories / 1000) * 10; // mg (higher for skin)
     const o3Score = Math.min((omega3 / omega3Target) * 100, 100);
     const o6Score = Math.min((omega6 / omega6Target) * 100, 100);
     const zincScore = Math.min((zinc / zincTarget) * 100, 100);
-    return Math.round((o3Score + o6Score + zincScore) / 3 * 0.9);
+    return Math.round((o3Score * 0.35 + o6Score * 0.35 + zincScore * 0.3));
   };
 
   const calculateWeightScore = (fat, fiber) => {
@@ -317,13 +327,16 @@ export default function KibbleAnalyzer() {
 
   const calculateImmuneScore = (vitE, zinc, selenium, weight) => {
     if (!weight) return 0;
-    const vitETarget = weight * 0.48;
-    const zincTarget = weight * 0.69;
-    const seleniumTarget = weight * 0.0022;
+    const rer = 70 * Math.pow(weight, 0.75);
+    const dailyCalories = rer * 1.6;
+    // NRC 2006: Vitamin E 1 IU/g PUFA, Zinc 7.5mg/1000kcal, Selenium 90μg/1000kcal
+    const vitETarget = (dailyCalories / 1000) * 15; // IU
+    const zincTarget = (dailyCalories / 1000) * 7.5; // mg
+    const seleniumTarget = (dailyCalories / 1000) * 0.09; // mg
     const vitEScore = Math.min((vitE / vitETarget) * 100, 100);
     const zincScore = Math.min((zinc / zincTarget) * 100, 100);
     const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
-    return Math.round((vitEScore + zincScore + seleniumScore) / 3 * 0.85);
+    return Math.round((vitEScore * 0.4 + zincScore * 0.3 + seleniumScore * 0.3));
   };
 
   const calculateAllergyScore = (foodName) => {
@@ -332,15 +345,18 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateHeartScore = (taurine, omega3) => {
-    const taurineScore = taurine >= 350 ? 100 : (taurine / 350) * 100;
-    const omega3Score = omega3 >= 250 ? 100 : (omega3 / 250) * 100;
-    return Math.round((taurineScore + omega3Score) / 2);
+    // Veterinary research: 500-1000mg taurine/day beneficial for DCM prevention
+    // Omega-3: 300mg/1000kcal for cardiovascular health
+    const taurineScore = taurine >= 500 ? 100 : (taurine / 500) * 100;
+    const omega3Score = omega3 >= 200 ? 100 : (omega3 / 200) * 100;
+    return Math.round((taurineScore * 0.6 + omega3Score * 0.4));
   };
 
   const calculateEyeScore = (vitE, omega3) => {
-    const vitEScore = vitE >= 15 ? 100 : (vitE / 15) * 100;
-    const omega3Score = omega3 >= 250 ? 100 : (omega3 / 250) * 100;
-    return Math.round((vitEScore + omega3Score) / 2);
+    // Cornell ophthalmology: Vitamin E & DHA for retinal health
+    const vitEScore = vitE >= 12 ? 100 : (vitE / 12) * 100;
+    const omega3Score = omega3 >= 150 ? 100 : (omega3 / 150) * 100;
+    return Math.round((vitEScore * 0.5 + omega3Score * 0.5));
   };
 
   const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
