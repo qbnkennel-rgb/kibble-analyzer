@@ -245,58 +245,82 @@ export default function KibbleAnalyzer() {
 
   // Scoring functions
   const calculateReproductionScore = (selenium, zinc, weight) => {
-    if (!selenium || !zinc || !weight) return 0;
-    const seleniumTarget = weight * 0.004; // mg
-    const zincTarget = weight * 1.5; // mg
-    const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
-    const zincScore = Math.min((zinc / zincTarget) * 100, 100);
-    return Math.round((seleniumScore * 0.4 + zincScore * 0.6) * 0.85);
+    if (!weight) return 0;
+    const seleniumMax = weight * 0.006; // mg max recommended
+    const zincMax = weight * 2; // mg max recommended
+    const seleniumScore = Math.min((selenium / seleniumMax) * 100, 100);
+    const zincScore = Math.min((zinc / zincMax) * 100, 100);
+    return Math.round((seleniumScore * 0.5 + zincScore * 0.5));
   };
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    const glucoTarget = 600; // mg minimum
-    const chondroTarget = 300; // mg minimum
-    const omega3Target = weight * 14; // mg
-    const glucoScore = Math.min((glucosamine / glucoTarget) * 100, 100);
-    const chondroScore = Math.min((chondroitin / chondroTarget) * 100, 100);
-    const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
+    const glucoMax = 900; // mg max recommended
+    const chondroMax = 600; // mg max recommended
+    const omega3Max = weight * 28; // mg max recommended
+    const glucoScore = Math.min((glucosamine / glucoMax) * 100, 100);
+    const chondroScore = Math.min((chondroitin / chondroMax) * 100, 100);
+    const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
     return Math.round((glucoScore * 0.35 + chondroScore * 0.35 + omega3Score * 0.3));
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
     if (!weight) return 0;
-    const omega3Target = weight * 14; // mg
-    const omega6Target = weight * 0.1; // g
-    const zincTarget = weight * 1.5; // mg
-    const o3Score = Math.min((omega3 / omega3Target) * 100, 100);
-    const o6Score = Math.min((omega6 / omega6Target) * 100, 100);
-    const zincScore = Math.min((zinc / zincTarget) * 100, 100);
+    const omega3Max = weight * 28; // mg max recommended
+    const omega6Max = weight * 0.2; // g max recommended
+    const zincMax = weight * 2; // mg max recommended
+    const o3Score = Math.min((omega3 / omega3Max) * 100, 100);
+    const o6Score = Math.min((omega6 / omega6Max) * 100, 100);
+    const zincScore = Math.min((zinc / zincMax) * 100, 100);
     return Math.round((o3Score * 0.3 + o6Score * 0.4 + zincScore * 0.3));
   };
 
   const calculateWeightScore = (fat, fiber) => {
     if (isNaN(fat) || isNaN(fiber)) return 0;
-    const fatScore = fat >= 12 && fat <= 18 ? 100 : 80;
-    const fiberScore = fiber >= 3 && fiber <= 5 ? 100 : 85;
-    return Math.round((fatScore + fiberScore) / 2 * 0.88);
+    // Fat: ideal range 12-18%, score based on how close to range
+    let fatScore = 0;
+    if (fat >= 12 && fat <= 18) {
+      fatScore = 100;
+    } else if (fat < 12) {
+      fatScore = (fat / 12) * 100;
+    } else {
+      fatScore = Math.max(100 - ((fat - 18) * 10), 0);
+    }
+    
+    // Fiber: ideal <6%, optimal 3-5%
+    let fiberScore = 0;
+    if (fiber >= 3 && fiber <= 5) {
+      fiberScore = 100;
+    } else if (fiber < 3) {
+      fiberScore = (fiber / 3) * 90 + 10;
+    } else if (fiber <= 6) {
+      fiberScore = 90;
+    } else {
+      fiberScore = Math.max(90 - ((fiber - 6) * 15), 0);
+    }
+    
+    return Math.round((fatScore + fiberScore) / 2);
   };
 
   const calculateDigestionScore = (fiber) => {
     if (isNaN(fiber) || fiber === 0) return 0;
-    if (fiber >= 3 && fiber <= 5) return 97;
-    if (fiber > 2 && fiber < 6) return 90;
-    return 75;
+    // Optimal fiber: 3-5% scores highest
+    if (fiber >= 3 && fiber <= 5) return 100;
+    if (fiber > 2 && fiber < 3) return 90;
+    if (fiber > 5 && fiber <= 6) return 85;
+    if (fiber > 1 && fiber <= 2) return 75;
+    if (fiber > 6) return Math.max(70 - ((fiber - 6) * 10), 20);
+    return 50;
   };
 
   const calculateImmuneScore = (vitE, zinc, selenium, weight) => {
     if (!weight) return 0;
-    const vitETarget = weight * 1; // IU
-    const zincTarget = weight * 1.5; // mg
-    const seleniumTarget = weight * 0.004; // mg
-    const vitEScore = Math.min((vitE / vitETarget) * 100, 100);
-    const zincScore = Math.min((zinc / zincTarget) * 100, 100);
-    const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
+    const vitEMax = weight * 1.4; // IU max recommended
+    const zincMax = weight * 2; // mg max recommended
+    const seleniumMax = weight * 0.006; // mg max recommended
+    const vitEScore = Math.min((vitE / vitEMax) * 100, 100);
+    const zincScore = Math.min((zinc / zincMax) * 100, 100);
+    const seleniumScore = Math.min((selenium / seleniumMax) * 100, 100);
     return Math.round((vitEScore * 0.4 + zincScore * 0.35 + seleniumScore * 0.25));
   };
 
@@ -306,27 +330,29 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateHeartScore = (taurine, omega3, weight) => {
-    const taurineTarget = 350; // mg minimum
-    const omega3Target = weight * 14; // mg
-    const taurineScore = Math.min((taurine / taurineTarget) * 100, 100);
-    const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
-    return Math.round((taurineScore * 0.5 + omega3Score * 0.5) * 0.75);
+    if (!weight) return 0;
+    const taurineMax = 500; // mg max beneficial
+    const omega3Max = weight * 28; // mg max recommended
+    const taurineScore = Math.min((taurine / taurineMax) * 100, 100);
+    const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
+    return Math.round((taurineScore * 0.5 + omega3Score * 0.5));
   };
 
   const calculateEyeScore = (vitE, omega3, weight) => {
-    if (!vitE || vitE === 0) return 0;
-    const vitETarget = weight * 1; // IU
-    const omega3Target = weight * 14; // mg
-    const vitEScore = Math.min((vitE / vitETarget) * 100, 100);
-    const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
-    return Math.round((vitEScore * 0.5 + omega3Score * 0.5) * 0.9);
+    if (!weight) return 0;
+    const vitEMax = weight * 1.4; // IU max recommended
+    const omega3Max = weight * 28; // mg max recommended
+    const vitEScore = Math.min((vitE / vitEMax) * 100, 100);
+    const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
+    return Math.round((vitEScore * 0.5 + omega3Score * 0.5));
   };
 
   const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
-    const diff = brandCups > 0 ? Math.abs(cupsNeeded - brandCups) / cupsNeeded : 0;
-    if (diff < 0.1) return 92;
-    if (diff < 0.2) return 85;
-    return 75;
+    if (brandCups <= 0) return 90; // No brand recommendation to compare
+    const diff = Math.abs(cupsNeeded - brandCups) / cupsNeeded;
+    // Perfect match = 100, scale down based on % difference
+    const score = Math.max(100 - (diff * 100), 0);
+    return Math.round(score);
   };
 
   return (
