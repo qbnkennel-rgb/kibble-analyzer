@@ -882,25 +882,55 @@ export default function KibbleAnalyzer() {
         {results && (
           <div className="mt-8 space-y-6">
             {results.ingredientAnalysis?.red_flags?.length > 0 && (
-              <Card className="bg-red-50 border-2 border-red-300">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
-                    🚩 Ingredient Red Flags
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {results.ingredientAnalysis.red_flags.map((flag, idx) => (
-                      <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
-                        <p className="font-bold text-red-600">{flag.ingredient}</p>
-                        <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
-                        <p className="text-gray-800"><strong>Health Impact:</strong> {flag.health_impact}</p>
-                        <p className="text-sm text-gray-600 mt-1 italic">📚 {flag.university_citation}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              <>
+                <Card className="bg-red-50 border-2 border-red-300">
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
+                      🚩 Ingredient Red Flags
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {results.ingredientAnalysis.red_flags.map((flag, idx) => (
+                        <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
+                          <p className="font-bold text-red-600">{flag.ingredient}</p>
+                          <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
+                          <p className="text-gray-800"><strong>Health Impact:</strong> {flag.health_impact}</p>
+                          <p className="text-sm text-gray-600 mt-1 italic">📚 {flag.university_citation}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                {foodData.ingredients && (
+                  <Card className="bg-white border-2 border-gray-300">
+                    <CardHeader>
+                      <CardTitle className="text-2xl text-gray-700">Full Ingredients List</CardTitle>
+                      <p className="text-sm text-gray-600 mt-2">Red-flagged ingredients highlighted in light red</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-gray-800 leading-relaxed">
+                        {foodData.ingredients.split(',').map((ingredient, idx) => {
+                          const trimmedIngredient = ingredient.trim();
+                          const isRedFlagged = results.ingredientAnalysis.red_flags.some(flag => 
+                            trimmedIngredient.toLowerCase().includes(flag.ingredient.toLowerCase()) ||
+                            flag.ingredient.toLowerCase().includes(trimmedIngredient.toLowerCase())
+                          );
+                          return (
+                            <span key={idx}>
+                              <span className={isRedFlagged ? 'bg-red-200 text-red-900 px-1 rounded' : ''}>
+                                {trimmedIngredient}
+                              </span>
+                              {idx < foodData.ingredients.split(',').length - 1 && ', '}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
 
             {results.ingredientAnalysis?.ingredient_grade && (
