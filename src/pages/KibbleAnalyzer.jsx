@@ -41,6 +41,7 @@ export default function KibbleAnalyzer() {
   });
 
   const [results, setResults] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
   const [analyzingNutrition, setAnalyzingNutrition] = useState(false);
   const [analyzingIngredients, setAnalyzingIngredients] = useState(false);
   const [analyzingPrice, setAnalyzingPrice] = useState(false);
