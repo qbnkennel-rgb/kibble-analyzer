@@ -112,9 +112,14 @@ export default function KibbleAnalyzer() {
   const analyzeKibble = () => {
     const weight = parseFloat(dogData.dogWeight);
     const kcalCup = parseFloat(foodData.kcalCup);
-    const recommendedCups = parseFloat(foodData.recommendedFeeding);
-    const priceBag = parseFloat(foodData.priceBag);
-    const bagWeight = parseFloat(foodData.bagWeight);
+    const recommendedCups = parseFloat(foodData.recommendedFeeding) || 0;
+    const priceBag = parseFloat(foodData.priceBag) || 0;
+    const bagWeight = parseFloat(foodData.bagWeight) || 1;
+
+    if (!weight || !kcalCup) {
+      alert('Please enter at least Dog Weight and Calorie Content (kcal/cup)');
+      return;
+    }
 
     // Calculate daily caloric needs (RER formula)
     const rer = 70 * Math.pow(weight, 0.75);
@@ -126,13 +131,13 @@ export default function KibbleAnalyzer() {
     
     const dailyCalories = rer * activityMultiplier;
     const cupsNeeded = dailyCalories / kcalCup;
-    const costPerDay = (priceBag / bagWeight) * (cupsNeeded / 4); // 4 cups per lb
+    const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0; // 4 cups per lb
     const costPerMonth = costPerDay * 30;
 
     // Nutrient analysis
-    const omega3 = parseFloat(foodData.omega3);
-    const omega6 = parseFloat(foodData.omega6);
-    const omega6to3Ratio = omega6 / omega3;
+    const omega3 = parseFloat(foodData.omega3) || 0;
+    const omega6 = parseFloat(foodData.omega6) || 0;
+    const omega6to3Ratio = omega3 > 0 ? omega6 / omega3 : 0;
 
     const analysis = {
       dailyCalories: dailyCalories.toFixed(0),
