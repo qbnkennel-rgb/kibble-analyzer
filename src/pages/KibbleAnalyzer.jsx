@@ -513,7 +513,6 @@ export default function KibbleAnalyzer() {
         <Button
           onClick={analyzeKibble}
           className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6 mt-6"
-          disabled={!dogData.dogWeight || !foodData.kcalCup}
         >
           <Calculator className="w-5 h-5 mr-2" />
           Analyze Kibble
