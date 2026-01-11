@@ -35,7 +35,8 @@ export default function KibbleAnalyzer() {
     glucosamine: '',
     chondroitin: '',
     priceBag: '',
-    bagWeight: ''
+    bagWeight: '',
+    ingredients: ''
   });
 
   const [results, setResults] = useState(null);
@@ -60,13 +61,14 @@ export default function KibbleAnalyzer() {
 
       // Extract nutritional data using AI vision
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this dog food nutritional label and extract all available information. Look for: product name, recommended feeding amounts, calorie content (kcal/kg and kcal/cup), omega-3 %, omega-6 %, vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg), crude protein %, crude fat %, crude fiber %, moisture %, taurine %, glucosamine (mg/kg), chondroitin (mg/kg), bag price, and bag weight. Extract any values you can find. If a value is not visible, return null for that field.`,
+        prompt: `Analyze this dog food nutritional label and extract all available information. Look for: product name, ingredients list (as comma-separated text), recommended feeding amounts, calorie content (kcal/kg and kcal/cup), omega-3 %, omega-6 %, vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg), crude protein %, crude fat %, crude fiber %, moisture %, taurine %, glucosamine (mg/kg), chondroitin (mg/kg), bag price, and bag weight. Extract any values you can find. If a value is not visible, return null for that field.`,
         file_urls: [file_url],
         add_context_from_internet: false,
         response_json_schema: {
           type: "object",
           properties: {
             dogFood: { type: "string" },
+            ingredients: { type: "string" },
             recommendedFeeding: { type: "number" },
             kcalKg: { type: "number" },
             kcalCup: { type: "number" },
@@ -92,6 +94,7 @@ export default function KibbleAnalyzer() {
       setFoodData(prev => ({
         ...prev,
         ...(result.dogFood && { dogFood: result.dogFood }),
+        ...(result.ingredients && { ingredients: result.ingredients }),
         ...(result.recommendedFeeding && { recommendedFeeding: result.recommendedFeeding.toString() }),
         ...(result.kcalKg && { kcalKg: result.kcalKg.toString() }),
         ...(result.kcalCup && { kcalCup: result.kcalCup.toString() }),
@@ -119,7 +122,7 @@ export default function KibbleAnalyzer() {
     }
   };
 
-  const analyzeKibble = () => {
+  const analyzeKibble = async () => {
     const weight = parseFloat(dogData.dogWeight);
     const kcalCup = parseFloat(foodData.kcalCup);
     const recommendedCups = parseFloat(foodData.recommendedFeeding) || 0;
@@ -130,6 +133,8 @@ export default function KibbleAnalyzer() {
       alert('Please enter at least Dog Weight and Calorie Content (kcal/cup)');
       return;
     }
+
+    setAnalyzing(true);
 
     // Calculate daily caloric needs (RER formula)
     // RER = 70 × (weight in kg)^0.75
@@ -177,12 +182,13 @@ export default function KibbleAnalyzer() {
     const chondroitinRec = `150–600 mg/day`;
 
     // Health scoring
+    const microbeScore = ingredientAnalysis?.microorganisms?.gut_health_score || null;
     const scores = {
       reproduction: calculateReproductionScore(parseFloat(dailySelenium), dailyZinc, weight),
       joint: calculateJointScore(dailyGlucosamine, dailyChondroitin, dailyOmega3, weight),
       skinCoat: calculateSkinCoatScore(dailyOmega3, parseFloat(dailyOmega6), dailyZinc, weight),
       weight: calculateWeightScore(parseFloat(foodData.crudeFat), parseFloat(foodData.crudeFiber)),
-      digestion: calculateDigestionScore(parseFloat(foodData.crudeFiber)),
+      digestion: calculateDigestionScoreWithMicrobes(parseFloat(foodData.crudeFiber), microbeScore),
       immune: calculateImmuneScore(dailyVitaminE, dailyZinc, parseFloat(dailySelenium), weight),
       allergy: calculateAllergyScore(foodData.dogFood),
       heart: calculateHeartScore(dailyTaurine, dailyOmega3, weight),
@@ -200,6 +206,7 @@ export default function KibbleAnalyzer() {
       dogName: foodData.dogFood || 'Your Dog',
       costPerServing: costPerDay.toFixed(2),
       lifeStage: 'Adult',
+      ingredientAnalysis: ingredientAnalysis,
       nutrients: [
         { name: 'Omega-3', actual: `${dailyOmega3} mg/day`, recommended: omega3Rec },
         { name: 'Omega-6', actual: `${dailyOmega6} g/day`, recommended: omega6Rec },
@@ -218,7 +225,7 @@ export default function KibbleAnalyzer() {
         { area: 'Joint Health', score: scores.joint, reasoning: 'Glucosamine/chondroitin levels assessed (UC Davis standards).' },
         { area: 'Skin & Coat Health', score: scores.skinCoat, reasoning: 'Omega-6/3 balance & zinc for barrier (Cornell).' },
         { area: 'Weight Management', score: scores.weight, reasoning: 'Balanced fat/fiber; calories match moderate MER (NRC).' },
-        { area: 'Digestion (Gut Health)', score: scores.digestion, reasoning: 'Fiber content supports healthy gut function.' },
+        { area: 'Digestion (Gut Health)', score: scores.digestion, reasoning: microbeScore ? 'Fiber + microorganism content for gut microbiome health.' : 'Fiber content supports healthy gut function.' },
         { area: 'Immune Health', score: scores.immune, reasoning: 'Vitamin E/zinc levels evaluated (Texas A&M).' },
         { area: 'Allergy Control', score: scores.allergy, reasoning: 'Ingredient analysis for common allergens.' },
         { area: 'Heart Health', score: scores.heart, reasoning: 'Taurine & omegas support cardiac function.' },
@@ -242,6 +249,15 @@ export default function KibbleAnalyzer() {
     };
 
     setResults(analysis);
+    setAnalyzing(false);
+  };
+
+  // Updated digestion score with microorganism consideration
+  const calculateDigestionScoreWithMicrobes = (fiber, microbeScore) => {
+    const baseFiberScore = calculateDigestionScore(fiber);
+    if (!microbeScore) return baseFiberScore;
+    // Weight: 60% fiber, 40% microorganisms
+    return Math.round(baseFiberScore * 0.6 + microbeScore * 0.4);
   };
 
   // Scoring functions
@@ -355,6 +371,61 @@ export default function KibbleAnalyzer() {
     const score = Math.max(100 - (diff * 100), 0);
     return Math.round(score);
   };
+
+  // Analyze ingredients with AI (using credible university sources)
+  let ingredientAnalysis = null;
+  if (foodData.ingredients) {
+    try {
+      ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}". 
+
+        Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
+        1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
+        2. Ingredient Quality Grade (A-F): Based on digestibility, bioavailability, and nutritional value for dogs. Consider whole proteins vs by-products, whole grains vs fillers, synthetic vs natural nutrients.
+        3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
+
+        Return structured data with university citations.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            microorganisms: {
+              type: "object",
+              properties: {
+                types: { type: "array", items: { type: "string" } },
+                total_cfu: { type: "string" },
+                gut_health_score: { type: "number" },
+                summary: { type: "string" }
+              }
+            },
+            ingredient_grade: {
+              type: "object",
+              properties: {
+                grade: { type: "string" },
+                score: { type: "number" },
+                reasoning: { type: "string" },
+                university_source: { type: "string" }
+              }
+            },
+            red_flags: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  ingredient: { type: "string" },
+                  concern: { type: "string" },
+                  health_impact: { type: "string" },
+                  university_citation: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Ingredient analysis error:', error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
@@ -483,6 +554,16 @@ export default function KibbleAnalyzer() {
                     placeholder="e.g., 4health Salmon & Potato"
                     value={foodData.dogFood}
                     onChange={(e) => handleFoodChange('dogFood', e.target.value)}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Ingredients List</Label>
+                  <textarea
+                    className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="e.g., Salmon, brown rice, oatmeal, chicken fat..."
+                    value={foodData.ingredients}
+                    onChange={(e) => handleFoodChange('ingredients', e.target.value)}
                   />
                 </div>
 
@@ -667,14 +748,100 @@ export default function KibbleAnalyzer() {
 
         <Button
           onClick={analyzeKibble}
+          disabled={analyzing}
           className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6 mt-6"
         >
-          <Calculator className="w-5 h-5 mr-2" />
-          Analyze Kibble
+          {analyzing ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              <Calculator className="w-5 h-5 mr-2" />
+              Analyze Kibble
+            </>
+          )}
         </Button>
 
         {results && (
           <div className="mt-8 space-y-6">
+            {results.ingredientAnalysis?.red_flags?.length > 0 && (
+              <Card className="bg-red-50 border-2 border-red-300">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
+                    🚩 Ingredient Red Flags
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {results.ingredientAnalysis.red_flags.map((flag, idx) => (
+                      <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
+                        <p className="font-bold text-red-900">{flag.ingredient}</p>
+                        <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
+                        <p className="text-gray-800"><strong>Health Impact:</strong> {flag.health_impact}</p>
+                        <p className="text-sm text-gray-600 mt-1 italic">📚 {flag.university_citation}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {results.ingredientAnalysis?.ingredient_grade && (
+              <Card className="bg-white border-2 border-blue-300">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-blue-700">Ingredient Quality Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="text-center p-6 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Overall Grade</p>
+                      <p className="text-6xl font-bold text-blue-800">{results.ingredientAnalysis.ingredient_grade.grade}</p>
+                      <p className="text-2xl text-gray-700 mt-2">{results.ingredientAnalysis.ingredient_grade.score}/100</p>
+                    </div>
+                    <div className="space-y-3">
+                      <p className="text-gray-800"><strong>Quality Assessment:</strong></p>
+                      <p className="text-gray-700">{results.ingredientAnalysis.ingredient_grade.reasoning}</p>
+                      <p className="text-sm text-gray-600 italic mt-3">📚 Source: {results.ingredientAnalysis.ingredient_grade.university_source}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {results.ingredientAnalysis?.microorganisms && (
+              <Card className="bg-white border-2 border-green-300">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-green-700">Microorganism & Gut Health Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Gut Health Support Score</p>
+                      <p className="text-4xl font-bold text-green-700">{results.ingredientAnalysis.microorganisms.gut_health_score}/100</p>
+                    </div>
+                    {results.ingredientAnalysis.microorganisms.types?.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-gray-800 mb-2">Beneficial Microorganisms Detected:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          {results.ingredientAnalysis.microorganisms.types.map((type, idx) => (
+                            <li key={idx} className="text-gray-700">{type}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {results.ingredientAnalysis.microorganisms.total_cfu && (
+                      <p className="text-gray-700">
+                        <strong>Total CFU Count:</strong> {results.ingredientAnalysis.microorganisms.total_cfu}
+                      </p>
+                    )}
+                    <p className="text-gray-700">{results.ingredientAnalysis.microorganisms.summary}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="text-2xl text-blue-700">Analysis for {results.dogName}</CardTitle>
