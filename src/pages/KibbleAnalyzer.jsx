@@ -288,15 +288,31 @@ export default function KibbleAnalyzer() {
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    // Veterinary standard: Glucosamine 20 mg/kg, Chondroitin 15 mg/kg
-    const glucoTarget = weight * 20;
-    const chondroTarget = weight * 15;
     const rer = 70 * Math.pow(weight, 0.75);
-    const omega3Target = (rer * 1.6 / 1000) * 300; // 300mg per 1000kcal for joint health
-    const glucoScore = Math.min((glucosamine / glucoTarget) * 100, 100);
-    const chondroScore = Math.min((chondroitin / chondroTarget) * 100, 100);
+    const omega3Target = (rer * 1.6 / 1000) * 300;
+    
+    // Base score starts at 70 for basic nutrition
+    let baseScore = 70;
+    
+    // Omega-3 contribution (can boost to 85)
     const omega3Score = Math.min((omega3 / omega3Target) * 100, 100);
-    return Math.round((glucoScore * 0.4 + chondroScore * 0.4 + omega3Score * 0.2));
+    baseScore = baseScore + (omega3Score * 0.15);
+    
+    // Glucosamine bonus (can add up to 10 points)
+    if (glucosamine > 0) {
+      const glucoTarget = weight * 20;
+      const glucoBonus = Math.min((glucosamine / glucoTarget) * 10, 10);
+      baseScore += glucoBonus;
+    }
+    
+    // Chondroitin bonus (can add up to 5 points)
+    if (chondroitin > 0) {
+      const chondroTarget = weight * 15;
+      const chondroBonus = Math.min((chondroitin / chondroTarget) * 5, 5);
+      baseScore += chondroBonus;
+    }
+    
+    return Math.round(Math.min(baseScore, 100));
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
@@ -345,18 +361,28 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateHeartScore = (taurine, omega3) => {
-    // Veterinary research: 500-1000mg taurine/day beneficial for DCM prevention
-    // Omega-3: 300mg/1000kcal for cardiovascular health
-    const taurineScore = taurine >= 500 ? 100 : (taurine / 500) * 100;
+    // Base score 80 - dogs synthesize taurine unlike cats, so it's not required
+    let baseScore = 80;
+    
+    // Omega-3 contribution (primary factor for heart health)
     const omega3Score = omega3 >= 200 ? 100 : (omega3 / 200) * 100;
-    return Math.round((taurineScore * 0.6 + omega3Score * 0.4));
+    baseScore = 70 + (omega3Score * 0.25); // Can reach 95 with good omega-3
+    
+    // Taurine bonus if present (can add up to 5 points)
+    if (taurine > 0) {
+      const taurineBonus = Math.min((taurine / 500) * 5, 5);
+      baseScore += taurineBonus;
+    }
+    
+    return Math.round(Math.min(baseScore, 100));
   };
 
   const calculateEyeScore = (vitE, omega3) => {
-    // Cornell ophthalmology: Vitamin E & DHA for retinal health
-    const vitEScore = vitE >= 12 ? 100 : (vitE / 12) * 100;
-    const omega3Score = omega3 >= 150 ? 100 : (omega3 / 150) * 100;
-    return Math.round((vitEScore * 0.5 + omega3Score * 0.5));
+    if (!vitE || vitE === 0) return 0;
+    // Vitamin E is primary, omega-3 is secondary for eye health
+    const vitEScore = vitE >= 12 ? 100 : Math.max((vitE / 12) * 100, 60);
+    const omega3Score = omega3 >= 150 ? 100 : Math.max((omega3 / 150) * 100, 60);
+    return Math.round((vitEScore * 0.6 + omega3Score * 0.4));
   };
 
   const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
