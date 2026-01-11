@@ -248,12 +248,14 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateWeightScore = (fat, fiber) => {
+    if (isNaN(fat) || isNaN(fiber)) return 0;
     const fatScore = fat >= 12 && fat <= 18 ? 100 : 70;
     const fiberScore = fiber <= 6 ? 100 : 70;
     return Math.round((fatScore + fiberScore) / 2 * 0.88);
   };
 
   const calculateDigestionScore = (fiber) => {
+    if (isNaN(fiber) || fiber === 0) return 0;
     return fiber >= 3 && fiber <= 5 ? 95 : 80;
   };
 
