@@ -233,9 +233,9 @@ export default function KibbleAnalyzer() {
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
     if (!weight) return 0;
-    const glucoScore = Math.min((glucosamine / 400) * 100, 100);
-    const chondroScore = Math.min((chondroitin / 250) * 100, 100);
-    const omega3Score = Math.min((omega3 / (weight * 8)) * 100, 100);
+    const glucoScore = Math.min((glucosamine / 350) * 100, 100);
+    const chondroScore = Math.min((chondroitin / 150) * 100, 100);
+    const omega3Score = Math.min((omega3 / (weight * 6.5)) * 100, 100);
     return Math.round((glucoScore + chondroScore + omega3Score) / 3);
   };
 
