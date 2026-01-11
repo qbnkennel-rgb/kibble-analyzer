@@ -63,21 +63,33 @@ export default function KibbleAnalyzer() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this dog food nutritional label and extract all nutritional values. Pay special attention to:
+        prompt: `You are analyzing a dog food nutritional label image. Extract ALL visible nutritional information.
+
+        CRITICAL INSTRUCTIONS:
+        - Extract EVERY numerical value you can see, even if partially visible
+        - Look at ALL sections: Guaranteed Analysis, Calorie Content, Feeding Guide, ingredient panel, and any small print
+        - For feeding recommendations: look for feeding charts/tables (often shows weight ranges and cup amounts)
+        - Return the actual numbers you see - DO NOT return null unless the value is truly not visible anywhere
         
-        CRITICAL FIELDS (look very carefully for these):
-        - "Recommended Feeding" or "Feeding Guide" (cups/day) - often in a table format
-        - "Calorie Content (kcal/kg)" or "kcal/kg" or "Metabolizable Energy per kg"
-        - "Calorie Content (kcal/cup)" or "kcal/cup" or "Calories per cup"
+        FIELDS TO EXTRACT:
+        1. Product name and brand (dogFood)
+        2. Recommended Feeding (cups/day) - check feeding guide/chart for the cup amount
+        3. Calorie Content (kcal/kg) - often listed as "3500 kcal/kg" or "ME kcal/kg"
+        4. Calorie Content (kcal/cup) - often listed as "350 kcal/cup" or near feeding guide
+        5. Omega-3 (%) - minimum guarantee
+        6. Omega-6 (%) - minimum guarantee  
+        7. Vitamin E (IU/kg)
+        8. Selenium (mg/kg)
+        9. Zinc (mg/kg)
+        10. Crude Protein (%) - guaranteed analysis
+        11. Crude Fat (%) - guaranteed analysis
+        12. Crude Fiber (%) - maximum guarantee
+        13. Moisture (%) - maximum guarantee
+        14. Taurine (%) - if listed
+        15. Glucosamine (mg/kg) - if listed
+        16. Chondroitin (mg/kg) - if listed
         
-        ALSO EXTRACT:
-        - Product name and brand
-        - Omega-3 %, omega-6 %
-        - Vitamin E (IU/kg), selenium (mg/kg), zinc (mg/kg)
-        - Crude protein %, crude fat %, crude fiber %, moisture %
-        - Taurine %, glucosamine (mg/kg), chondroitin (mg/kg)
-        
-        Look carefully at all text on the label, including small print, feeding guides, and guaranteed analysis sections. Extract numerical values only. If a value is not visible, return null for that field.`,
+        Extract only numbers. If truly not visible, use null.`,
         file_urls: [file_url],
         add_context_from_internet: false,
         response_json_schema: {
@@ -103,27 +115,30 @@ export default function KibbleAnalyzer() {
         }
       });
 
-      setFoodData(prev => ({
-        ...prev,
-        ...(result.dogFood && { dogFood: result.dogFood }),
-        ...(result.recommendedFeeding && { recommendedFeeding: result.recommendedFeeding.toString() }),
-        ...(result.kcalKg && { kcalKg: result.kcalKg.toString() }),
-        ...(result.kcalCup && { kcalCup: result.kcalCup.toString() }),
-        ...(result.omega3 && { omega3: result.omega3.toString() }),
-        ...(result.omega6 && { omega6: result.omega6.toString() }),
-        ...(result.vitaminE && { vitaminE: result.vitaminE.toString() }),
-        ...(result.selenium && { selenium: result.selenium.toString() }),
-        ...(result.zinc && { zinc: result.zinc.toString() }),
-        ...(result.crudeProtein && { crudeProtein: result.crudeProtein.toString() }),
-        ...(result.crudeFat && { crudeFat: result.crudeFat.toString() }),
-        ...(result.crudeFiber && { crudeFiber: result.crudeFiber.toString() }),
-        ...(result.moisture && { moisture: result.moisture.toString() }),
-        ...(result.taurine && { taurine: result.taurine.toString() }),
-        ...(result.glucosamine && { glucosamine: result.glucosamine.toString() }),
-        ...(result.chondroitin && { chondroitin: result.chondroitin.toString() })
-      }));
+      console.log('Extracted nutrition data:', result);
+      
+      const updates = {};
+      if (result.dogFood) updates.dogFood = result.dogFood;
+      if (result.recommendedFeeding != null) updates.recommendedFeeding = result.recommendedFeeding.toString();
+      if (result.kcalKg != null) updates.kcalKg = result.kcalKg.toString();
+      if (result.kcalCup != null) updates.kcalCup = result.kcalCup.toString();
+      if (result.omega3 != null) updates.omega3 = result.omega3.toString();
+      if (result.omega6 != null) updates.omega6 = result.omega6.toString();
+      if (result.vitaminE != null) updates.vitaminE = result.vitaminE.toString();
+      if (result.selenium != null) updates.selenium = result.selenium.toString();
+      if (result.zinc != null) updates.zinc = result.zinc.toString();
+      if (result.crudeProtein != null) updates.crudeProtein = result.crudeProtein.toString();
+      if (result.crudeFat != null) updates.crudeFat = result.crudeFat.toString();
+      if (result.crudeFiber != null) updates.crudeFiber = result.crudeFiber.toString();
+      if (result.moisture != null) updates.moisture = result.moisture.toString();
+      if (result.taurine != null) updates.taurine = result.taurine.toString();
+      if (result.glucosamine != null) updates.glucosamine = result.glucosamine.toString();
+      if (result.chondroitin != null) updates.chondroitin = result.chondroitin.toString();
 
-      alert('Nutritional data extracted! Please review and adjust any values as needed.');
+      setFoodData(prev => ({ ...prev, ...updates }));
+
+      const extractedCount = Object.keys(updates).length;
+      alert(`Nutritional data extracted! Found ${extractedCount} fields. Please review and adjust any values as needed.`);
     } catch (error) {
       alert('Error analyzing photo: ' + error.message);
     } finally {
@@ -140,7 +155,15 @@ export default function KibbleAnalyzer() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this dog food ingredients label and extract the complete ingredients list. Return all ingredients as a comma-separated text string in the exact order they appear on the label.`,
+        prompt: `Extract the complete ingredients list from this dog food label image. 
+
+        INSTRUCTIONS:
+        - Read ALL ingredients in the exact order they appear
+        - Return as comma-separated text
+        - Include everything from first ingredient to last
+        - Preserve exact spelling and order
+        
+        Return the full ingredients list as one string.`,
         file_urls: [file_url],
         add_context_from_internet: false,
         response_json_schema: {
@@ -151,12 +174,14 @@ export default function KibbleAnalyzer() {
         }
       });
 
-      setFoodData(prev => ({
-        ...prev,
-        ...(result.ingredients && { ingredients: result.ingredients })
-      }));
-
-      alert('Ingredients extracted! Please review and adjust if needed.');
+      console.log('Extracted ingredients:', result);
+      
+      if (result.ingredients) {
+        setFoodData(prev => ({ ...prev, ingredients: result.ingredients }));
+        alert(`Ingredients extracted! Found ${result.ingredients.split(',').length} ingredients. Please review and adjust if needed.`);
+      } else {
+        alert('No ingredients found in image. Please try a clearer photo or enter manually.');
+      }
     } catch (error) {
       alert('Error analyzing ingredients: ' + error.message);
     } finally {
@@ -173,7 +198,13 @@ export default function KibbleAnalyzer() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this image and extract pricing information for dog food. Look for: retail price, MSRP, price tag, or any price sticker (in USD). Also look for bag weight/size in lbs or kg. Extract numerical values only.`,
+        prompt: `Extract pricing and bag size from this image.
+
+        LOOK FOR:
+        - Price: any $ amount, price tag, MSRP, retail price
+        - Bag size/weight: look for "lb", "lbs", "kg", or weight indication
+        
+        Return the numerical values you find. If not visible, return null.`,
         file_urls: [file_url],
         add_context_from_internet: false,
         response_json_schema: {
@@ -185,13 +216,20 @@ export default function KibbleAnalyzer() {
         }
       });
 
-      setFoodData(prev => ({
-        ...prev,
-        ...(result.priceBag && { priceBag: result.priceBag.toString() }),
-        ...(result.bagWeight && { bagWeight: result.bagWeight.toString() })
-      }));
-
-      alert('Price and bag weight extracted! Please review and adjust if needed.');
+      console.log('Extracted price data:', result);
+      
+      const updates = {};
+      if (result.priceBag != null) updates.priceBag = result.priceBag.toString();
+      if (result.bagWeight != null) updates.bagWeight = result.bagWeight.toString();
+      
+      setFoodData(prev => ({ ...prev, ...updates }));
+      
+      const extractedCount = Object.keys(updates).length;
+      if (extractedCount > 0) {
+        alert(`Extracted ${extractedCount} field(s)! Please review and adjust if needed.`);
+      } else {
+        alert('No price or weight data found. Please try a clearer photo or enter manually.');
+      }
     } catch (error) {
       alert('Error analyzing price: ' + error.message);
     } finally {
