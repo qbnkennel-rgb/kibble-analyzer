@@ -136,12 +136,12 @@ export default function KibbleAnalyzer() {
     // Calculate daily nutrient intake
     const dailyOmega3 = (parseFloat(foodData.omega3) || 0) * cupsNeeded * 10; // mg/day estimate
     const dailyOmega6 = (parseFloat(foodData.omega6) || 0) * cupsNeeded; // g/day
-    const dailyVitaminE = (parseFloat(foodData.vitaminE) || 0) * (cupsNeeded / 4.4); // IU/day (kg conversion)
-    const dailySelenium = (parseFloat(foodData.selenium) || 0) * (cupsNeeded / 4.4); // mg/day
-    const dailyZinc = (parseFloat(foodData.zinc) || 0) * (cupsNeeded / 4.4); // mg/day
-    const dailyTaurine = (parseFloat(foodData.taurine) || 0) * 1130 * cupsNeeded; // % to mg/day (0.113 kg/cup)
-    const dailyGlucosamine = (parseFloat(foodData.glucosamine) || 0) * (cupsNeeded / 4.4); // mg/day
-    const dailyChondroitin = (parseFloat(foodData.chondroitin) || 0) * (cupsNeeded / 4.4); // mg/day
+    const dailyVitaminE = (parseFloat(foodData.vitaminE) || 0) * cupsNeeded * 0.113; // IU/day (0.113 kg/cup)
+    const dailySelenium = (parseFloat(foodData.selenium) || 0) * cupsNeeded * 0.113; // mg/day
+    const dailyZinc = (parseFloat(foodData.zinc) || 0) * cupsNeeded * 0.113; // mg/day
+    const dailyTaurine = (parseFloat(foodData.taurine) || 0) * cupsNeeded * 1130; // % to mg/day (0.113 kg/cup * 10000)
+    const dailyGlucosamine = (parseFloat(foodData.glucosamine) || 0) * cupsNeeded * 0.113; // mg/day
+    const dailyChondroitin = (parseFloat(foodData.chondroitin) || 0) * cupsNeeded * 0.113; // mg/day
 
     // Recommended ranges based on weight
     const omega3Rec = `${Math.round(weight * 6.5)}–${Math.round(weight * 13)} mg/day`;
