@@ -223,6 +223,7 @@ export default function KibbleAnalyzer() {
 
   // Scoring functions
   const calculateReproductionScore = (selenium, zinc, weight) => {
+    if (!selenium || !zinc || !weight) return 0;
     const seleniumTarget = weight * 0.0022;
     const zincTarget = weight * 0.69;
     const seleniumScore = Math.min((selenium / seleniumTarget) * 100, 100);
@@ -231,6 +232,7 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
+    if (!weight) return 0;
     const glucoScore = Math.min((glucosamine / 625) * 100, 100);
     const chondroScore = Math.min((chondroitin / 375) * 100, 100);
     const omega3Score = Math.min((omega3 / (weight * 10)) * 100, 100);
@@ -238,6 +240,7 @@ export default function KibbleAnalyzer() {
   };
 
   const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
+    if (!weight) return 0;
     const omega3Target = weight * 9.5;
     const omega6Target = weight * 0.07;
     const zincTarget = weight * 0.69;
