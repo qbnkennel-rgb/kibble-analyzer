@@ -668,21 +668,21 @@ export default function KibbleAnalyzer() {
                 </div>
 
                 <div className="md:col-span-2">
+                  <Label>Dog Food Name</Label>
+                  <Input
+                    placeholder="e.g., 4health Salmon & Potato"
+                    value={foodData.dogFood}
+                    onChange={(e) => handleFoodChange('dogFood', e.target.value)}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
                   <Label>Ingredients List</Label>
                   <textarea
                     className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md"
                     placeholder="e.g., Salmon, brown rice, oatmeal, chicken fat..."
                     value={foodData.ingredients}
                     onChange={(e) => handleFoodChange('ingredients', e.target.value)}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <Label>Dog Food Name</Label>
-                  <Input
-                    placeholder="e.g., 4health Salmon & Potato"
-                    value={foodData.dogFood}
-                    onChange={(e) => handleFoodChange('dogFood', e.target.value)}
                   />
                 </div>
 
