@@ -48,6 +48,8 @@ export default function KibbleAnalyzer() {
   const [analyzingPrice, setAnalyzingPrice] = useState(false);
   const [selectedKibble, setSelectedKibble] = useState('new');
   const [showCustomInput, setShowCustomInput] = useState(true);
+  const [suggestion, setSuggestion] = useState('');
+  const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -713,6 +715,28 @@ export default function KibbleAnalyzer() {
     // Perfect match = 100, scale down based on % difference
     const score = Math.max(100 - (diff * 100), 0);
     return Math.round(score);
+  };
+
+  const handleSuggestionSubmit = async () => {
+    if (!suggestion.trim()) {
+      alert('Please enter a suggestion');
+      return;
+    }
+
+    setSubmittingSuggestion(true);
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: 'raulfagundez@ymail.com',
+        subject: 'APP SUGGESTION',
+        body: suggestion
+      });
+      alert('Thank you! Your suggestion has been sent.');
+      setSuggestion('');
+    } catch (error) {
+      alert('Error sending suggestion: ' + error.message);
+    } finally {
+      setSubmittingSuggestion(false);
+    }
   };
 
   return (
@@ -1593,13 +1617,22 @@ export default function KibbleAnalyzer() {
           <CardHeader>
             <CardTitle className="text-lg text-gray-700">App Improvement Suggestions</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Input
               type="text"
               maxLength={100}
               placeholder="Share your suggestions for improving this app..."
               className="w-full"
+              value={suggestion}
+              onChange={(e) => setSuggestion(e.target.value)}
             />
+            <Button
+              onClick={handleSuggestionSubmit}
+              disabled={submittingSuggestion || !suggestion.trim()}
+              className="w-full"
+            >
+              {submittingSuggestion ? 'Sending...' : 'Submit Suggestion'}
+            </Button>
           </CardContent>
         </Card>
         </div>
