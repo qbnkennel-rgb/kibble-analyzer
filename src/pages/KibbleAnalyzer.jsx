@@ -356,6 +356,8 @@ export default function KibbleAnalyzer() {
           2. Ingredient Quality Analysis:
           Research EACH individual ingredient through credible university veterinary sources (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State).
 
+          CRITICAL RULE: Any protein source with the word "meal" after it (e.g., chicken meal, fish meal, beef meal) should score NO HIGHER than +2, regardless of quality.
+
           For EVERY ingredient in the list, provide:
           - Ingredient name
           - Score from -5 to 5 where:
@@ -363,7 +365,7 @@ export default function KibbleAnalyzer() {
            * -4 to -3: Very poor quality (known allergens, fillers with no nutritional value, controversial additives)
            * -2 to -1: Low quality (by-products, low-grade proteins, questionable ingredients)
            * 0: Neutral (neither beneficial nor harmful)
-           * 1 to 2: Decent quality (provides some nutrition, generally safe)
+           * 1 to 2: Decent quality (provides some nutrition, generally safe) - MEALS MAX OUT AT +2
            * 3 to 4: Good quality (beneficial nutrients, good protein sources, healthy additions)
            * 5: Excellent for dogs (premium proteins, superfoods, proven health benefits)
           - Brief reasoning with university citation
