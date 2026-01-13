@@ -64,7 +64,7 @@ export default function KibbleAnalyzer() {
   });
 
   const saveKibbleMutation = useMutation({
-    mutationFn: (name) => base44.entities.Kibble.create({ name }),
+    mutationFn: (kibbleData) => base44.entities.Kibble.create(kibbleData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kibbles'] });
     },
@@ -77,7 +77,27 @@ export default function KibbleAnalyzer() {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
       if (selected) {
-        handleFoodChange('dogFood', selected.name);
+        setFoodData({
+          dogFood: selected.name || '',
+          recommendedFeeding: selected.recommendedFeeding || '',
+          kcalKg: selected.kcalKg || '',
+          kcalCup: selected.kcalCup || '',
+          omega3: selected.omega3 || '',
+          omega6: selected.omega6 || '',
+          vitaminE: selected.vitaminE || '',
+          selenium: selected.selenium || '',
+          zinc: selected.zinc || '',
+          crudeProtein: selected.crudeProtein || '',
+          crudeFat: selected.crudeFat || '',
+          crudeFiber: selected.crudeFiber || '',
+          moisture: selected.moisture || '',
+          taurine: selected.taurine || '',
+          glucosamine: selected.glucosamine || '',
+          chondroitin: selected.chondroitin || '',
+          priceBag: selected.priceBag || '',
+          bagWeight: selected.bagWeight || '',
+          ingredients: selected.ingredients || ''
+        });
       }
     }
   }, [selectedKibble, kibbles]);
@@ -566,9 +586,9 @@ export default function KibbleAnalyzer() {
       improvedOverallScore: Math.min(overallScore + 11, 98)
     };
 
-    // Save kibble name to database if it's new
+    // Save kibble data to database if it's new
     if (foodData.dogFood && !kibbles.find(k => k.name === foodData.dogFood)) {
-      saveKibbleMutation.mutate(foodData.dogFood);
+      saveKibbleMutation.mutate(foodData);
     }
 
     setResults(analysis);
