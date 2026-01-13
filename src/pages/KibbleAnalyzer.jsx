@@ -1128,7 +1128,7 @@ export default function KibbleAnalyzer() {
                   <Card className="bg-white border-2 border-gray-300">
                     <CardHeader>
                       <CardTitle className="text-2xl text-gray-700">Full Ingredients List</CardTitle>
-                      <p className="text-sm text-gray-600 mt-2">Red-flagged ingredients highlighted in light red</p>
+                      <p className="text-sm text-gray-600 mt-2">Red-flagged ingredients shown in red</p>
                     </CardHeader>
                     <CardContent>
                       <div className="text-gray-800 leading-relaxed">
@@ -1140,7 +1140,7 @@ export default function KibbleAnalyzer() {
                           );
                           return (
                             <span key={idx}>
-                              <span className={isRedFlagged ? 'bg-red-200 text-red-900 px-1 rounded' : ''}>
+                              <span className={isRedFlagged ? 'text-red-600 font-semibold' : ''}>
                                 {trimmedIngredient}
                               </span>
                               {idx < foodData.ingredients.split(',').length - 1 && ', '}
