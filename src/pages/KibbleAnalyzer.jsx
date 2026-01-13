@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Camera, Loader2 } from "lucide-react";
+import { Calculator, Camera, Loader2, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
@@ -45,6 +46,41 @@ export default function KibbleAnalyzer() {
   const [analyzingNutrition, setAnalyzingNutrition] = useState(false);
   const [analyzingIngredients, setAnalyzingIngredients] = useState(false);
   const [analyzingPrice, setAnalyzingPrice] = useState(false);
+  const [selectedKibble, setSelectedKibble] = useState('new');
+  const [showCustomInput, setShowCustomInput] = useState(true);
+
+  const queryClient = useQueryClient();
+
+  const { data: kibbles = [] } = useQuery({
+    queryKey: ['kibbles'],
+    queryFn: () => base44.entities.Kibble.list(),
+  });
+
+  const deleteKibbleMutation = useMutation({
+    mutationFn: (id) => base44.entities.Kibble.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kibbles'] });
+    },
+  });
+
+  const saveKibbleMutation = useMutation({
+    mutationFn: (name) => base44.entities.Kibble.create({ name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kibbles'] });
+    },
+  });
+
+  useEffect(() => {
+    if (selectedKibble === 'new') {
+      setShowCustomInput(true);
+    } else {
+      setShowCustomInput(false);
+      const selected = kibbles.find(k => k.id === selectedKibble);
+      if (selected) {
+        handleFoodChange('dogFood', selected.name);
+      }
+    }
+  }, [selectedKibble, kibbles]);
 
   const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
@@ -530,9 +566,14 @@ export default function KibbleAnalyzer() {
       improvedOverallScore: Math.min(overallScore + 11, 98)
     };
 
+    // Save kibble name to database if it's new
+    if (foodData.dogFood && !kibbles.find(k => k.name === foodData.dogFood)) {
+      saveKibbleMutation.mutate(foodData.dogFood);
+    }
+
     setResults(analysis);
     setAnalyzing(false);
-  };
+    };
 
   // Updated digestion score with microorganism consideration
   const calculateDigestionScoreWithMicrobes = (fiber, microbeScore) => {
@@ -843,11 +884,54 @@ export default function KibbleAnalyzer() {
 
                 <div className="md:col-span-2">
                   <Label>Dog Food Name</Label>
-                  <Input
-                    placeholder="e.g., 4health Salmon & Potato"
-                    value={foodData.dogFood}
-                    onChange={(e) => handleFoodChange('dogFood', e.target.value)}
-                  />
+                  <div className="space-y-2">
+                    <Select value={selectedKibble} onValueChange={setSelectedKibble}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select previous kibble or enter new" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">➕ Enter New Kibble</SelectItem>
+                        {kibbles.map((kibble) => (
+                          <SelectItem key={kibble.id} value={kibble.id}>
+                            {kibble.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {showCustomInput && (
+                      <Input
+                        placeholder="e.g., 4health Salmon & Potato"
+                        value={foodData.dogFood}
+                        onChange={(e) => handleFoodChange('dogFood', e.target.value)}
+                      />
+                    )}
+                    {kibbles.length > 0 && (
+                      <details className="text-sm">
+                        <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+                          Manage saved kibbles ({kibbles.length})
+                        </summary>
+                        <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                          {kibbles.map((kibble) => (
+                            <div key={kibble.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="text-gray-700 text-sm">{kibble.name}</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm(`Delete "${kibble.name}"?`)) {
+                                    deleteKibbleMutation.mutate(kibble.id);
+                                  }
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">
