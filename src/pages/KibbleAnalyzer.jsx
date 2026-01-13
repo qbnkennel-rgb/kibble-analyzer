@@ -1195,12 +1195,29 @@ export default function KibbleAnalyzer() {
                     )}
 
                     {results.seasonalAllergies.ingredients_to_avoid?.length > 0 && (
-                      <div>
+                      <div className="mb-3">
                         <p className="font-semibold text-red-700 text-sm mb-1">Ingredients to Avoid:</p>
                         <p className="text-gray-700 text-sm">{results.seasonalAllergies.ingredients_to_avoid.join(', ')}</p>
                       </div>
                     )}
-                  </div>
+
+                    <div className="pt-3 border-t border-green-300">
+                      <p className="font-semibold text-green-800 text-sm mb-2">
+                        Raw and Cooked Diets are Best Against Allergies
+                      </p>
+                      <p className="text-gray-700 text-sm">
+                        Make Sure To Watch This Playlist With Recipes:{' '}
+                        <a 
+                          href="https://youtube.com/playlist?list=PLbQ5YaICgTRII52jk3XKqC0nlmAk6i6ra&si=EYhkYIP-mEG-gPLg" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          Watch Here
+                        </a>
+                      </p>
+                    </div>
+                    </div>
 
                   {results.seasonalAllergies.university_citations?.length > 0 && (
                     <div className="pt-3 border-t border-blue-200">
