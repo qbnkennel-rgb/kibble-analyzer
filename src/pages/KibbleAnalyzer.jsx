@@ -1205,7 +1205,7 @@ export default function KibbleAnalyzer() {
                       <p className="font-semibold text-green-800 text-sm mb-2">
                         Raw and Cooked Diets are Best Against Allergies
                       </p>
-                      <p className="text-gray-700 text-sm">
+                      <p className="text-gray-700 text-sm mb-4">
                         Make Sure To Watch This Playlist With Recipes:{' '}
                         <a 
                           href="https://youtube.com/playlist?list=PLbQ5YaICgTRII52jk3XKqC0nlmAk6i6ra&si=EYhkYIP-mEG-gPLg" 
@@ -1216,6 +1216,18 @@ export default function KibbleAnalyzer() {
                           Watch Here
                         </a>
                       </p>
+
+                      <div className="mt-4 pt-3 border-t border-green-300">
+                        <p className="font-semibold text-gray-800 text-sm mb-2">
+                          Best Kibble Option For Your Dog's Allergies And Dog Food Goal You Selected Earlier. Based On The Kibbles You Have Entered Is:
+                        </p>
+                        <p className="text-gray-700 text-sm mb-2">
+                          {foodData.dogFood || 'Current kibble'}
+                        </p>
+                        <p className="text-red-600 text-sm font-semibold">
+                          The more kibble brands you enter the better recommendations we can give you.
+                        </p>
+                      </div>
                     </div>
                     </div>
 
