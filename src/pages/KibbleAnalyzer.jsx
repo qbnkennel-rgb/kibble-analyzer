@@ -1124,24 +1124,32 @@ export default function KibbleAnalyzer() {
                   </CardContent>
                 </Card>
 
-                {foodData.ingredients && (
+                {foodData.ingredients && results.ingredientAnalysis?.ingredient_grade?.ingredients && (
                   <Card className="bg-white border-2 border-gray-300">
                     <CardHeader>
-                      <CardTitle className="text-2xl text-gray-700">Full Ingredients List</CardTitle>
-                      <p className="text-sm text-gray-600 mt-2">Red-flagged ingredients highlighted in light red</p>
+                      <CardTitle className="text-2xl text-gray-700">Full Ingredients List with Scores</CardTitle>
+                      <p className="text-sm text-gray-600 mt-2">Color-coded by ingredient quality score</p>
                     </CardHeader>
                     <CardContent>
                       <div className="text-gray-800 leading-relaxed">
                         {foodData.ingredients.split(',').map((ingredient, idx) => {
                           const trimmedIngredient = ingredient.trim();
-                          const isRedFlagged = results.ingredientAnalysis.red_flags.some(flag => 
-                            trimmedIngredient.toLowerCase().includes(flag.ingredient.toLowerCase()) ||
-                            flag.ingredient.toLowerCase().includes(trimmedIngredient.toLowerCase())
+                          const ingredientData = results.ingredientAnalysis.ingredient_grade.ingredients.find(
+                            ing => ing.name.toLowerCase() === trimmedIngredient.toLowerCase()
                           );
+                          const score = ingredientData?.score || 0;
+                          const colorClass = 
+                            score >= 4 ? 'bg-green-200 text-green-900' :
+                            score >= 2 ? 'bg-blue-200 text-blue-900' :
+                            score >= 0 ? 'bg-yellow-200 text-yellow-900' :
+                            score >= -2 ? 'bg-orange-200 text-orange-900' :
+                            'bg-red-200 text-red-900';
+
                           return (
                             <span key={idx}>
-                              <span className={isRedFlagged ? 'bg-red-200 text-red-900 px-1 rounded' : ''}>
+                              <span className={`${colorClass} px-2 py-0.5 rounded inline-flex items-center gap-1`}>
                                 {trimmedIngredient}
+                                <span className="text-xs font-bold">({score > 0 ? '+' : ''}{score})</span>
                               </span>
                               {idx < foodData.ingredients.split(',').length - 1 && ', '}
                             </span>
