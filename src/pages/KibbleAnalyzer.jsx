@@ -286,12 +286,68 @@ export default function KibbleAnalyzer() {
     // For taurine (percentage): kg × (percentage/100) × 1000 × 1000 = mg
     const dailyTaurine = Math.round(dailyFoodKg * (parseFloat(foodData.taurine) || 0) * 10000); // mg/day
 
+    // Get weather and seasonal data for zipcode
+    let weatherData = null;
+    let seasonalAllergies = null;
+    if (dogData.zipCode) {
+      try {
+        weatherData = await base44.integrations.Core.InvokeLLM({
+          prompt: `Look up current weather and climate information for zipcode ${dogData.zipCode}. 
+
+          Provide:
+          1. Current temperature and conditions
+          2. Current season and typical weather patterns
+          3. Climate characteristics of this region
+
+          Return structured data.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              current_temp: { type: "string" },
+              conditions: { type: "string" },
+              season: { type: "string" },
+              climate_type: { type: "string" }
+            }
+          }
+        });
+
+        seasonalAllergies = await base44.integrations.Core.InvokeLLM({
+          prompt: `Based on current date (January 2026) and location zipcode ${dogData.zipCode}, research:
+
+          1. Common dog allergies during this season in this region
+          2. Environmental allergens affecting dogs right now
+          3. Credible veterinary sources (Cornell, UC Davis, Tufts, etc.) recommendations for dog nutrition during this season
+          4. How weather and season affect dog dietary needs
+
+          Return detailed information with university citations.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              seasonal_allergens: { type: "array", items: { type: "string" } },
+              common_symptoms: { type: "array", items: { type: "string" } },
+              dietary_recommendations: { type: "string" },
+              ingredient_recommendations: { type: "array", items: { type: "string" } },
+              ingredients_to_avoid: { type: "array", items: { type: "string" } },
+              university_citations: { type: "array", items: { type: "string" } }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Weather/seasonal analysis error:', error);
+      }
+    }
+
     // Analyze ingredients with AI (using credible university sources)
     let ingredientAnalysis = null;
     if (foodData.ingredients) {
       try {
+        const seasonalContext = weatherData && seasonalAllergies ? 
+          `\n\nSEASONAL CONTEXT: Current season is ${weatherData.season}, climate: ${weatherData.climate_type}. Seasonal allergens in this region: ${seasonalAllergies.seasonal_allergens?.join(', ')}. Consider these factors when analyzing ingredients.` : '';
+
         ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
-          prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}". 
+          prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}".${seasonalContext}
 
           Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
 
@@ -407,6 +463,8 @@ export default function KibbleAnalyzer() {
       dogName: foodData.dogFood || 'Your Dog',
       costPerServing: costPerDay.toFixed(2),
       lifeStage: 'Adult',
+      weatherData: weatherData,
+      seasonalAllergies: seasonalAllergies,
       ingredientAnalysis: ingredientAnalysis,
       nutrients: [
         { name: 'Omega-3', actual: `${dailyOmega3} mg/day`, recommended: omega3Rec },
@@ -969,6 +1027,77 @@ export default function KibbleAnalyzer() {
 
         {results && (
           <div className="mt-8 space-y-6">
+            {results.weatherData && results.seasonalAllergies && (
+              <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-blue-700">🌤️ Location & Seasonal Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-white rounded-lg">
+                      <p className="font-semibold text-gray-800 mb-2">Current Weather</p>
+                      <p className="text-gray-700"><strong>Temperature:</strong> {results.weatherData.current_temp}</p>
+                      <p className="text-gray-700"><strong>Conditions:</strong> {results.weatherData.conditions}</p>
+                      <p className="text-gray-700"><strong>Season:</strong> {results.weatherData.season}</p>
+                      <p className="text-gray-700"><strong>Climate:</strong> {results.weatherData.climate_type}</p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-lg">
+                      <p className="font-semibold text-gray-800 mb-2">Seasonal Allergens</p>
+                      {results.seasonalAllergies.seasonal_allergens?.length > 0 && (
+                        <ul className="list-disc list-inside space-y-1">
+                          {results.seasonalAllergies.seasonal_allergens.map((allergen, idx) => (
+                            <li key={idx} className="text-gray-700 text-sm">{allergen}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+
+                  {results.seasonalAllergies.common_symptoms?.length > 0 && (
+                    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <p className="font-semibold text-gray-800 mb-2">Common Allergy Symptoms This Season</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {results.seasonalAllergies.common_symptoms.map((symptom, idx) => (
+                          <li key={idx} className="text-gray-700 text-sm">{symptom}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <p className="font-semibold text-gray-800 mb-3">Dietary Recommendations for This Season</p>
+                    <p className="text-gray-700 text-sm leading-relaxed mb-3">{results.seasonalAllergies.dietary_recommendations}</p>
+
+                    {results.seasonalAllergies.ingredient_recommendations?.length > 0 && (
+                      <div className="mb-3">
+                        <p className="font-semibold text-green-700 text-sm mb-1">Recommended Ingredients:</p>
+                        <p className="text-gray-700 text-sm">{results.seasonalAllergies.ingredient_recommendations.join(', ')}</p>
+                      </div>
+                    )}
+
+                    {results.seasonalAllergies.ingredients_to_avoid?.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-red-700 text-sm mb-1">Ingredients to Avoid:</p>
+                        <p className="text-gray-700 text-sm">{results.seasonalAllergies.ingredients_to_avoid.join(', ')}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {results.seasonalAllergies.university_citations?.length > 0 && (
+                    <div className="pt-3 border-t border-blue-200">
+                      <p className="font-semibold text-gray-800 text-sm mb-2">📚 Credible Sources:</p>
+                      <ul className="space-y-1">
+                        {results.seasonalAllergies.university_citations.map((citation, idx) => (
+                          <li key={idx} className="text-xs text-gray-600 italic">{citation}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {results.ingredientAnalysis?.red_flags?.length > 0 && (
               <>
                 <Card className="bg-red-50 border-2 border-red-300">
