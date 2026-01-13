@@ -1077,27 +1077,27 @@ export default function KibbleAnalyzer() {
                     </div>
                   </div>
 
-                  {results.seasonalAllergies.common_symptoms?.length > 0 && (
-                    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <p className="font-semibold text-gray-800 mb-2">Common Allergy Symptoms This Season</p>
+                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <p className="font-semibold text-gray-800 mb-2">Common Allergy Symptoms This Season</p>
+                    {results.seasonalAllergies.common_symptoms?.length > 0 && (
                       <ul className="list-disc list-inside space-y-1 mb-3">
                         {results.seasonalAllergies.common_symptoms.map((symptom, idx) => (
                           <li key={idx} className="text-gray-700 text-sm">{symptom}</li>
                         ))}
                       </ul>
-                      <p className="text-sm text-gray-700">
-                        If your dog has these symptoms make sure to watch this playlist:{' '}
-                        <a 
-                          href="https://youtube.com/playlist?list=PLbQ5YaICgTRIHo9bIcXEKU98np4epAVF8&si=Zl_aEB7BG-bQQOsn" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline hover:text-blue-800"
-                        >
-                          Watch Here
-                        </a>
-                      </p>
-                    </div>
-                  )}
+                    )}
+                    <p className="text-sm text-gray-700">
+                      If your dog has these symptoms make sure to watch this playlist:{' '}
+                      <a 
+                        href="https://youtube.com/playlist?list=PLbQ5YaICgTRIHo9bIcXEKU98np4epAVF8&si=Zl_aEB7BG-bQQOsn" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        Watch Here
+                      </a>
+                    </p>
+                  </div>
 
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                     <p className="font-semibold text-gray-800 mb-3">Dietary Recommendations for This Season</p>
