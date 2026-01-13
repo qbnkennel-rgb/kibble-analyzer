@@ -61,6 +61,7 @@ export default function KibbleAnalyzer() {
   const deleteKibbleMutation = useMutation({
     mutationFn: (id) => base44.entities.Kibble.delete(id),
     onSuccess: () => {
+      base44.analytics.track({ eventName: "kibble_deleted" });
       queryClient.invalidateQueries({ queryKey: ['kibbles'] });
     },
   });
@@ -79,6 +80,10 @@ export default function KibbleAnalyzer() {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
       if (selected) {
+        base44.analytics.track({ 
+          eventName: "kibble_selected_from_saved",
+          properties: { kibble_name: selected.name }
+        });
         setFoodData({
           dogFood: selected.name || '',
           recommendedFeeding: selected.recommendedFeeding || '',
@@ -116,6 +121,7 @@ export default function KibbleAnalyzer() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    base44.analytics.track({ eventName: "nutrition_photo_uploaded" });
     setAnalyzingNutrition(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -196,6 +202,10 @@ export default function KibbleAnalyzer() {
       setFoodData(prev => ({ ...prev, ...updates }));
 
       const extractedCount = Object.keys(updates).length;
+      base44.analytics.track({ 
+        eventName: "nutrition_data_extracted",
+        properties: { fields_extracted: extractedCount }
+      });
       alert(`Nutritional data extracted! Found ${extractedCount} fields. Please review and adjust any values as needed.`);
     } catch (error) {
       alert('Error analyzing photo: ' + error.message);
@@ -208,6 +218,7 @@ export default function KibbleAnalyzer() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    base44.analytics.track({ eventName: "ingredients_photo_uploaded" });
     setAnalyzingIngredients(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -236,6 +247,10 @@ export default function KibbleAnalyzer() {
       
       if (result.ingredients) {
         setFoodData(prev => ({ ...prev, ingredients: result.ingredients }));
+        base44.analytics.track({ 
+          eventName: "ingredients_extracted",
+          properties: { ingredient_count: result.ingredients.split(',').length }
+        });
         alert(`Ingredients extracted! Found ${result.ingredients.split(',').length} ingredients. Please review and adjust if needed.`);
       } else {
         alert('No ingredients found in image. Please try a clearer photo or enter manually.');
@@ -251,6 +266,7 @@ export default function KibbleAnalyzer() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    base44.analytics.track({ eventName: "price_photo_uploaded" });
     setAnalyzingPrice(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -284,6 +300,10 @@ export default function KibbleAnalyzer() {
       
       const extractedCount = Object.keys(updates).length;
       if (extractedCount > 0) {
+        base44.analytics.track({ 
+          eventName: "price_data_extracted",
+          properties: { fields_extracted: extractedCount }
+        });
         alert(`Extracted ${extractedCount} field(s)! Please review and adjust if needed.`);
       } else {
         alert('No price or weight data found. Please try a clearer photo or enter manually.');
@@ -589,9 +609,24 @@ export default function KibbleAnalyzer() {
     };
 
     // Save kibble data to database if it's new
-    if (foodData.dogFood && !kibbles.find(k => k.name === foodData.dogFood)) {
+    const isNewKibble = foodData.dogFood && !kibbles.find(k => k.name === foodData.dogFood);
+    if (isNewKibble) {
       saveKibbleMutation.mutate(foodData);
+      base44.analytics.track({ 
+        eventName: "new_kibble_saved",
+        properties: { kibble_name: foodData.dogFood }
+      });
     }
+
+    base44.analytics.track({ 
+      eventName: "kibble_analyzed",
+      properties: { 
+        dog_weight: weight,
+        overall_score: overallScore,
+        kibble_name: foodData.dogFood,
+        has_ingredients: !!foodData.ingredients
+      }
+    });
 
     setResults(analysis);
     setAnalyzing(false);
@@ -729,6 +764,10 @@ export default function KibbleAnalyzer() {
         to: 'raulfagundez@ymail.com',
         subject: 'APP SUGGESTION',
         body: suggestion
+      });
+      base44.analytics.track({ 
+        eventName: "suggestion_submitted",
+        properties: { suggestion_length: suggestion.length }
       });
       alert('Thank you! Your suggestion has been sent.');
       setSuggestion('');
