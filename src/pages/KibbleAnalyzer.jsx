@@ -1374,9 +1374,13 @@ export default function KibbleAnalyzer() {
                     href="https://nuvet.com/513237" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold text-lg px-8 py-4 rounded-lg shadow-lg"
+                    className="inline-block hover:opacity-90 transition-opacity"
                   >
-                    Order NuVet (Green Bottle) & NuJoint DS (Blue Bottle) w/ AutoShip Today! →
+                    <img 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6962f30dcbc8ea78316c894a/1da1f7118_FF97F53B-72C0-4E5E-9DB9-3F5DEFBF447F.png"
+                      alt="Order NuVet"
+                      className="max-w-full h-auto rounded-lg shadow-lg"
+                    />
                   </a>
                 </div>
 
