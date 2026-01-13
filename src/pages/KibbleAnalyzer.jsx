@@ -335,6 +335,8 @@ export default function KibbleAnalyzer() {
           3. Credible veterinary sources (Cornell, UC Davis, Tufts, etc.) recommendations for dog nutrition during this season
           4. How weather and season affect dog dietary needs
 
+          IMPORTANT: Do NOT include garlic in the ingredients to avoid list.
+
           Return detailed information with university citations.`,
           add_context_from_internet: true,
           response_json_schema: {
