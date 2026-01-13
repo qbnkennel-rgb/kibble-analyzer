@@ -353,21 +353,26 @@ export default function KibbleAnalyzer() {
 
           1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
 
-          2. Ingredient Quality Grade:
-             Parse each ingredient and calculate points using this system:
-             - Whole proteins (e.g., chicken, beef, salmon, lamb): +15 points each
-             - Meals (e.g., chicken meal, fish meal): +5 points each
-             - By-products (e.g., chicken by-product, meat by-product): -1 point each
-             - Red flag ingredients (artificial colors/preservatives like BHA, BHT, ethoxyquin, controversial grains, low-quality proteins): -5 points each
-             - Health-contributing ingredients (ingredients that significantly contribute to dog's health based on university sources): +2 points each
-             - Neutral ingredients (don't significantly contribute but not flagged): +1 point each
+          2. Ingredient Quality Analysis:
+          Research EACH individual ingredient through credible university veterinary sources (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State).
 
-             Then assign a grade using these STRICT criteria:
-             - EXCELLENT: Must have at least 40 points from whole proteins alone (minimum 3 whole proteins)
-             - AVERAGE: Must have at least 20 points from total protein sources (whole proteins + meals combined)
-             - POOR: Less than 20 points total protein OR first ingredient is NOT a whole protein
+          For EVERY ingredient in the list, provide:
+          - Ingredient name
+          - Score from -5 to 5 where:
+           * -5: Horribly bad for dogs (toxic, dangerous, linked to serious health issues)
+           * -4 to -3: Very poor quality (known allergens, fillers with no nutritional value, controversial additives)
+           * -2 to -1: Low quality (by-products, low-grade proteins, questionable ingredients)
+           * 0: Neutral (neither beneficial nor harmful)
+           * 1 to 2: Decent quality (provides some nutrition, generally safe)
+           * 3 to 4: Good quality (beneficial nutrients, good protein sources, healthy additions)
+           * 5: Excellent for dogs (premium proteins, superfoods, proven health benefits)
+          - Brief reasoning with university citation
 
-             Calculate whole protein points, total protein points, check first ingredient, and assign the appropriate grade. Provide detailed breakdown.
+          Then calculate:
+          - Total score (sum of all ingredient scores)
+          - Average score per ingredient
+          - Count of positive vs negative ingredients
+          - Overall grade: EXCELLENT (avg ≥3), GOOD (avg ≥2), AVERAGE (avg ≥0), POOR (avg <0)
 
           3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
 
@@ -388,24 +393,23 @@ export default function KibbleAnalyzer() {
               ingredient_grade: {
                 type: "object",
                 properties: {
-                  grade: { type: "string", enum: ["EXCELLENT", "AVERAGE", "POOR"] },
-                  whole_protein_points: { type: "number" },
-                  total_protein_points: { type: "number" },
-                  first_ingredient_is_whole_protein: { type: "boolean" },
-                  breakdown: {
-                    type: "object",
-                    properties: {
-                      whole_proteins: { type: "array", items: { type: "string" } },
-                      meals: { type: "array", items: { type: "string" } },
-                      byproducts: { type: "array", items: { type: "string" } },
-                      red_flags_scored: { type: "array", items: { type: "string" } },
-                      health_contributing: { type: "array", items: { type: "string" } },
-                      neutral: { type: "array", items: { type: "string" } }
+                  ingredients: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        score: { type: "number" },
+                        reasoning: { type: "string" },
+                        citation: { type: "string" }
+                      }
                     }
                   },
-                  points_breakdown: { type: "string" },
-                  reasoning: { type: "string" },
-                  university_source: { type: "string" }
+                  total_score: { type: "number" },
+                  average_score: { type: "number" },
+                  positive_count: { type: "number" },
+                  negative_count: { type: "number" },
+                  grade: { type: "string", enum: ["EXCELLENT", "GOOD", "AVERAGE", "POOR"] }
                 }
               },
               red_flags: {
@@ -1157,14 +1161,15 @@ export default function KibbleAnalyzer() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    <div className="p-6 bg-gradient-to-r from-green-50 via-yellow-50 to-red-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-4 text-center">Quality Grade</p>
+                    <div className="p-6 bg-gradient-to-r from-red-50 via-yellow-50 to-green-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-4 text-center">Overall Grade</p>
                       
-                      <div className="relative h-12 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-full overflow-hidden">
+                      <div className="relative h-12 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full overflow-hidden">
                         <div className={`absolute top-0 h-full w-1 bg-gray-900 shadow-lg transition-all ${
-                          results.ingredientAnalysis.ingredient_grade.grade === 'EXCELLENT' ? 'left-[10%]' :
+                          results.ingredientAnalysis.ingredient_grade.grade === 'EXCELLENT' ? 'left-[90%]' :
+                          results.ingredientAnalysis.ingredient_grade.grade === 'GOOD' ? 'left-[70%]' :
                           results.ingredientAnalysis.ingredient_grade.grade === 'AVERAGE' ? 'left-[50%]' :
-                          'left-[90%]'
+                          'left-[20%]'
                         }`}>
                           <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
                             <div className="bg-gray-900 text-white px-3 py-1 rounded text-sm font-bold">
@@ -1175,77 +1180,44 @@ export default function KibbleAnalyzer() {
                       </div>
                       
                       <div className="flex justify-between mt-2 text-xs font-semibold">
-                        <span className="text-green-700">EXCELLENT</span>
-                        <span className="text-yellow-700">AVERAGE</span>
                         <span className="text-red-700">POOR</span>
+                        <span className="text-yellow-700">AVERAGE</span>
+                        <span className="text-green-700">EXCELLENT</span>
                       </div>
                       
                       <div className="mt-4 p-3 bg-white rounded-lg text-sm space-y-1">
-                        <p><strong>Whole Protein Points:</strong> {results.ingredientAnalysis.ingredient_grade.whole_protein_points}</p>
-                        <p><strong>Total Protein Points:</strong> {results.ingredientAnalysis.ingredient_grade.total_protein_points}</p>
-                        <p><strong>First Ingredient:</strong> {results.ingredientAnalysis.ingredient_grade.first_ingredient_is_whole_protein ? '✓ Whole Protein' : '✗ Not Whole Protein'}</p>
+                        <p><strong>Total Score:</strong> {results.ingredientAnalysis.ingredient_grade.total_score}</p>
+                        <p><strong>Average Score per Ingredient:</strong> {results.ingredientAnalysis.ingredient_grade.average_score?.toFixed(2)}</p>
+                        <p><strong>Positive Ingredients:</strong> {results.ingredientAnalysis.ingredient_grade.positive_count} | <strong>Negative:</strong> {results.ingredientAnalysis.ingredient_grade.negative_count}</p>
                       </div>
                     </div>
 
-                    {results.ingredientAnalysis.ingredient_grade.breakdown && (
-                      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                        <p className="font-semibold text-gray-800 text-lg">Scoring Breakdown:</p>
-
-                        {results.ingredientAnalysis.ingredient_grade.breakdown.whole_proteins?.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-green-700">Whole Proteins (+15 each):</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.whole_proteins.join(', ')}</p>
+                    <div className="space-y-3 p-4 bg-gray-50 rounded-lg max-h-96 overflow-y-auto">
+                      <p className="font-semibold text-gray-800 text-lg sticky top-0 bg-gray-50 pb-2">Individual Ingredient Scores (-5 to 5):</p>
+                      {results.ingredientAnalysis.ingredient_grade.ingredients?.map((ingredient, idx) => (
+                        <div key={idx} className={`p-3 rounded-lg border-l-4 ${
+                          ingredient.score >= 4 ? 'bg-green-50 border-green-500' :
+                          ingredient.score >= 2 ? 'bg-blue-50 border-blue-500' :
+                          ingredient.score >= 0 ? 'bg-yellow-50 border-yellow-500' :
+                          ingredient.score >= -2 ? 'bg-orange-50 border-orange-500' :
+                          'bg-red-50 border-red-500'
+                        }`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="font-semibold text-gray-800">{ingredient.name}</p>
+                            <span className={`text-lg font-bold px-2 py-0.5 rounded ${
+                              ingredient.score >= 4 ? 'text-green-700 bg-green-100' :
+                              ingredient.score >= 2 ? 'text-blue-700 bg-blue-100' :
+                              ingredient.score >= 0 ? 'text-yellow-700 bg-yellow-100' :
+                              ingredient.score >= -2 ? 'text-orange-700 bg-orange-100' :
+                              'text-red-700 bg-red-100'
+                            }`}>
+                              {ingredient.score > 0 ? '+' : ''}{ingredient.score}
+                            </span>
                           </div>
-                        )}
-
-                        {results.ingredientAnalysis.ingredient_grade.breakdown.meals?.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-blue-700">Meals (+5 each):</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.meals.join(', ')}</p>
-                          </div>
-                        )}
-
-                        {results.ingredientAnalysis.ingredient_grade.breakdown.byproducts?.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-orange-700">By-products (-1 each):</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.byproducts.join(', ')}</p>
-                          </div>
-                        )}
-
-                        {results.ingredientAnalysis.ingredient_grade.breakdown.red_flags_scored?.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-red-700">Red Flags (-5 each):</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.red_flags_scored.join(', ')}</p>
-                          </div>
-                        )}
-
-                        {results.ingredientAnalysis.ingredient_grade.breakdown.health_contributing?.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-green-600">Health-Contributing (+2 each):</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.health_contributing.join(', ')}</p>
-                          </div>
-                        )}
-
-                        {results.ingredientAnalysis.ingredient_grade.breakdown.neutral?.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-gray-600">Neutral (+1 each):</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.breakdown.neutral.join(', ')}</p>
-                          </div>
-                        )}
-
-                        {results.ingredientAnalysis.ingredient_grade.points_breakdown && (
-                          <div className="pt-3 border-t border-gray-300">
-                            <p className="text-sm font-semibold text-gray-800">Total Points Calculation:</p>
-                            <p className="text-sm text-gray-700">{results.ingredientAnalysis.ingredient_grade.points_breakdown}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="space-y-3">
-                      <p className="text-gray-800"><strong>Quality Assessment:</strong></p>
-                      <p className="text-gray-700">{results.ingredientAnalysis.ingredient_grade.reasoning}</p>
-                      <p className="text-sm text-gray-600 italic mt-3">📚 Source: {results.ingredientAnalysis.ingredient_grade.university_source}</p>
+                          <p className="text-sm text-gray-700 mb-1">{ingredient.reasoning}</p>
+                          <p className="text-xs text-gray-600 italic">📚 {ingredient.citation}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
