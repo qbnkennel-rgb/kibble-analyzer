@@ -608,14 +608,45 @@ export default function KibbleAnalyzer() {
       improvedOverallScore: Math.min(overallScore + 11, 98)
     };
 
-    // Save kibble data to database if it's new
-    const isNewKibble = foodData.dogFood && !kibbles.find(k => k.name === foodData.dogFood);
-    if (isNewKibble) {
-      saveKibbleMutation.mutate(foodData);
-      base44.analytics.track({ 
-        eventName: "new_kibble_saved",
-        properties: { kibble_name: foodData.dogFood }
-      });
+    // Save or update kibble data to database
+    if (foodData.dogFood) {
+      const existingKibble = kibbles.find(k => k.name === foodData.dogFood);
+      if (existingKibble) {
+        // Update existing kibble with new data
+        await base44.entities.Kibble.update(existingKibble.id, {
+          name: foodData.dogFood,
+          recommendedFeeding: foodData.recommendedFeeding,
+          kcalKg: foodData.kcalKg,
+          kcalCup: foodData.kcalCup,
+          omega3: foodData.omega3,
+          omega6: foodData.omega6,
+          vitaminE: foodData.vitaminE,
+          selenium: foodData.selenium,
+          zinc: foodData.zinc,
+          crudeProtein: foodData.crudeProtein,
+          crudeFat: foodData.crudeFat,
+          crudeFiber: foodData.crudeFiber,
+          moisture: foodData.moisture,
+          taurine: foodData.taurine,
+          glucosamine: foodData.glucosamine,
+          chondroitin: foodData.chondroitin,
+          priceBag: foodData.priceBag,
+          bagWeight: foodData.bagWeight,
+          ingredients: foodData.ingredients
+        });
+        queryClient.invalidateQueries({ queryKey: ['kibbles'] });
+        base44.analytics.track({ 
+          eventName: "kibble_updated",
+          properties: { kibble_name: foodData.dogFood }
+        });
+      } else {
+        // Save new kibble
+        saveKibbleMutation.mutate(foodData);
+        base44.analytics.track({ 
+          eventName: "new_kibble_saved",
+          properties: { kibble_name: foodData.dogFood }
+        });
+      }
     }
 
     base44.analytics.track({ 
