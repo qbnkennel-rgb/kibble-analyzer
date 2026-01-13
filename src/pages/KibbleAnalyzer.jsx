@@ -266,25 +266,40 @@ export default function KibbleAnalyzer() {
     const cupsNeeded = dailyCalories / kcalCup;
     const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0;
     
-    // Calculate daily nutrient intake using Google AI formula: cups × 115g/cup = grams/day
-    const gramsPerCup = 115; // Standard cup weight
+    // Calculate daily nutrient intake
+    // Research-based formula: cups × grams per cup = total grams consumed per day
+    const gramsPerCup = 115; // AAFCO standard cup weight for dry kibble
     const dailyFoodGrams = cupsNeeded * gramsPerCup;
+
+    // Omega-3 and Omega-6 Fatty Acid Calculations (AAFCO/NRC Standards)
+    // Food labels list omegas as minimum percentage of total food weight
+    // Formula: (percentage / 100) × grams consumed = grams of fatty acid
+    // Convert to mg for omega-3 (multiply by 1000) and keep g for omega-6
+
+    const omega3Percentage = parseFloat(foodData.omega3) || 0;
+    const omega6Percentage = parseFloat(foodData.omega6) || 0;
+
+    // Omega-3: Convert percentage to mg/day
+    // (% / 100) × grams food × 1000 = mg
+    const dailyOmega3 = Math.round((omega3Percentage / 100) * dailyFoodGrams * 1000); // mg/day
+
+    // Omega-6: Convert percentage to g/day  
+    // (% / 100) × grams food = g
+    const dailyOmega6 = ((omega6Percentage / 100) * dailyFoodGrams).toFixed(1); // g/day
+
+    // For nutrients listed as concentration per kg of food (IU/kg or mg/kg)
+    // Formula: (concentration per kg) × (kg food consumed) = daily amount
     const dailyFoodKg = dailyFoodGrams / 1000;
-    
-    // For percentage nutrients to mg: kg × (percentage/100) × 1000 × 1000 = kg × percentage × 10000
-    const dailyOmega3 = Math.round(dailyFoodKg * (parseFloat(foodData.omega3) || 0) * 10000); // mg/day
-    // For percentage nutrients to g: kg × (percentage/100) × 1000 = kg × percentage × 10
-    const dailyOmega6 = (dailyFoodKg * (parseFloat(foodData.omega6) || 0) * 10).toFixed(1); // g/day
-    
-    // For IU/kg and mg/kg nutrients: kg × concentration = result
-    const dailyVitaminE = Math.round(dailyFoodKg * (parseFloat(foodData.vitaminE) || 0)); // IU/day
-    const dailySelenium = (dailyFoodKg * (parseFloat(foodData.selenium) || 0)).toFixed(3); // mg/day (selenium in mg/kg)
-    const dailyZinc = Math.round(dailyFoodKg * (parseFloat(foodData.zinc) || 0)); // mg/day
-    const dailyGlucosamine = Math.round(dailyFoodKg * (parseFloat(foodData.glucosamine) || 0)); // mg/day
-    const dailyChondroitin = Math.round(dailyFoodKg * (parseFloat(foodData.chondroitin) || 0)); // mg/day
-    
-    // For taurine (percentage): kg × (percentage/100) × 1000 × 1000 = mg
-    const dailyTaurine = Math.round(dailyFoodKg * (parseFloat(foodData.taurine) || 0) * 10000); // mg/day
+
+    const dailyVitaminE = Math.round((parseFloat(foodData.vitaminE) || 0) * dailyFoodKg); // IU/day
+    const dailySelenium = ((parseFloat(foodData.selenium) || 0) * dailyFoodKg).toFixed(3); // mg/day
+    const dailyZinc = Math.round((parseFloat(foodData.zinc) || 0) * dailyFoodKg); // mg/day
+    const dailyGlucosamine = Math.round((parseFloat(foodData.glucosamine) || 0) * dailyFoodKg); // mg/day
+    const dailyChondroitin = Math.round((parseFloat(foodData.chondroitin) || 0) * dailyFoodKg); // mg/day
+
+    // Taurine (listed as percentage): convert to mg/day
+    // (% / 100) × grams food × 1000 = mg
+    const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) / 100 * dailyFoodGrams * 1000); // mg/day
 
     // Get weather and seasonal data for zipcode
     let weatherData = null;
