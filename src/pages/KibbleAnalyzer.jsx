@@ -1568,7 +1568,21 @@ export default function KibbleAnalyzer() {
             </Card>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
+
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="text-lg text-gray-700">App Improvement Suggestions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="text"
+              maxLength={100}
+              placeholder="Share your suggestions for improving this app..."
+              className="w-full"
+            />
+          </CardContent>
+        </Card>
+        </div>
+        </div>
+        );
+        }
