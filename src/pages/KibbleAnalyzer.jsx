@@ -272,32 +272,57 @@ export default function KibbleAnalyzer() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract pricing and bag size from this image.
+        prompt: `Analyze this image to extract dog food product information. This may be a barcode, price tag, product bag, or label.
 
-        LOOK FOR:
-        - Price: any $ amount, price tag, MSRP, retail price
-        - Bag size/weight: look for "lb", "lbs", "kg", or weight indication
-        
-        Return the numerical values you find. If not visible, return null.`,
+  EXTRACTION INSTRUCTIONS:
+  1. BARCODE RECOGNITION: If you see a UPC/barcode (series of vertical lines with numbers below):
+   - Read the numerical barcode digits carefully
+   - Use internet search to look up the product by barcode number
+   - Extract brand, formula/product name, bag weight, and price from search results
+
+  2. PRODUCT BAG/LABEL: If this is a photo of the actual dog food bag:
+   - Read the brand name prominently displayed (e.g., "Blue Buffalo", "Purina", "Hill's Science Diet")
+   - Read the specific formula/product line (e.g., "Chicken & Brown Rice Recipe", "Adult Large Breed")
+   - Look for bag size: any weight like "30 lb", "15 kg", "40 lbs"
+   - Look for price if visible on tag/sticker
+
+  3. PRICE TAG/SHELF LABEL: If this is a store price label:
+   - Read product name and brand from the label text
+   - Extract price (any $ amount, MSRP, retail price, sale price)
+   - Extract weight/size from label text
+
+  4. GENERAL TEXT: Scan ALL visible text for:
+   - Brand names (Blue Buffalo, Purina, Royal Canin, Hill's, IAMS, etc.)
+   - Formula names (Life Protection Formula, Salmon & Potato, etc.)
+   - Any numerical price ($XX.XX)
+   - Any weight indication with "lb", "lbs", "kg", "pound", "ounces", "oz"
+
+  IMPORTANT: 
+  - Be thorough - extract EVERY piece of information you can find
+  - If you find a barcode, USE INTERNET SEARCH to get complete product details
+  - Return null only if truly not visible anywhere
+  - Product name should include both brand AND specific formula`,
         file_urls: [file_url],
-        add_context_from_internet: false,
+        add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
+            dogFood: { type: "string" },
             priceBag: { type: "number" },
             bagWeight: { type: "number" }
           }
         }
       });
 
-      console.log('Extracted price data:', result);
-      
+      console.log('Extracted product data:', result);
+
       const updates = {};
+      if (result.dogFood) updates.dogFood = result.dogFood;
       if (result.priceBag != null) updates.priceBag = result.priceBag.toString();
       if (result.bagWeight != null) updates.bagWeight = result.bagWeight.toString();
-      
+
       setFoodData(prev => ({ ...prev, ...updates }));
-      
+
       const extractedCount = Object.keys(updates).length;
       if (extractedCount > 0) {
         base44.analytics.track({ 
@@ -306,10 +331,10 @@ export default function KibbleAnalyzer() {
         });
         alert(`Extracted ${extractedCount} field(s)! Please review and adjust if needed.`);
       } else {
-        alert('No price or weight data found. Please try a clearer photo or enter manually.');
+        alert('No product data found. Please try a clearer photo or enter manually.');
       }
     } catch (error) {
-      alert('Error analyzing price: ' + error.message);
+      alert('Error analyzing product: ' + error.message);
     } finally {
       setAnalyzingPrice(false);
     }
@@ -977,7 +1002,7 @@ export default function KibbleAnalyzer() {
 
                 <div className="md:col-span-2 p-4 bg-orange-50 rounded-lg border border-orange-200">
                   <Label className="text-base font-semibold text-orange-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Bar Code
+                    📸 Quick Fill: Upload Photo of Barcode/Product Bag
                   </Label>
                   <div className="flex items-center gap-3">
                     <Input
@@ -995,7 +1020,7 @@ export default function KibbleAnalyzer() {
                     )}
                   </div>
                   <p className="text-xs text-gray-600 mt-2">
-                    Upload a clear photo of the bar code or price tag to auto-fill price and weight
+                    Upload barcode, product bag, or price tag to auto-fill brand, product name, price, and weight
                   </p>
                 </div>
 
