@@ -1414,7 +1414,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
                 <div className="md:col-span-2 p-4 bg-orange-50 rounded-lg border border-orange-200">
                   <Label className="text-base font-semibold text-orange-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Barcode/Product Bag
+                    📸 Quick Fill: Upload Photo of Front Of Bag
                   </Label>
                   <div className="flex items-center gap-3">
                     <Input
