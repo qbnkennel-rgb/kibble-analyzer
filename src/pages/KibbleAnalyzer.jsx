@@ -349,21 +349,24 @@ export default function KibbleAnalyzer() {
     const gramsPerCup = 115; // AAFCO standard cup weight for dry kibble
     const dailyFoodGrams = cupsNeeded * gramsPerCup;
 
-    // Omega-3 and Omega-6 Fatty Acid Calculations (AAFCO/NRC Standards)
-    // Food labels list omegas as minimum percentage of total food weight
-    // Formula: (percentage / 100) × grams consumed = grams of fatty acid
-    // Convert to mg for omega-3 (multiply by 1000) and keep g for omega-6
+    // Omega-3 and Omega-6 Fatty Acid Calculations
+    // Based on National Research Council (NRC) and University of Guelph standards:
+    // Dog food labels list omega fatty acids as MINIMUM percentage "as fed" basis
+    // These percentages represent grams of omega FA per 100g of food
+    // 
+    // Calculation method (NRC 2006, University of Guelph 2024):
+    // 1. Determine daily food intake in grams: cups/day × 115g per cup = total grams
+    // 2. Calculate omega intake: (percentage ÷ 100) × daily grams = grams of omega FA per day
+    // 3. Convert to appropriate units: omega-3 in mg, omega-6 in g
 
     const omega3Percentage = parseFloat(foodData.omega3) || 0;
     const omega6Percentage = parseFloat(foodData.omega6) || 0;
 
-    // Omega-3: Convert percentage to mg/day
-    // (% / 100) × grams food × 1000 = mg
-    const dailyOmega3 = Math.round((omega3Percentage / 100) * dailyFoodGrams * 1000); // mg/day
+    // Omega-3: reported in mg/day (multiply by 1000 to convert g to mg)
+    const dailyOmega3 = Math.round((omega3Percentage / 100) * dailyFoodGrams * 1000);
 
-    // Omega-6: Convert percentage to g/day  
-    // (% / 100) × grams food = g
-    const dailyOmega6 = ((omega6Percentage / 100) * dailyFoodGrams).toFixed(1); // g/day
+    // Omega-6: reported in g/day (no conversion needed)
+    const dailyOmega6 = ((omega6Percentage / 100) * dailyFoodGrams).toFixed(1);
 
     // For nutrients listed as concentration per kg of food (IU/kg or mg/kg)
     // Formula: (concentration per kg) × (kg food consumed) = daily amount
