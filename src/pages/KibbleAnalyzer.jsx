@@ -78,32 +78,11 @@ export default function KibbleAnalyzer() {
   useEffect(() => {
     if (selectedKibble === 'new') {
       setShowCustomInput(true);
-      // Clear form when selecting "new"
-      setFoodData({
-        dogFood: '',
-        recommendedFeeding: '',
-        kcalKg: '',
-        kcalCup: '',
-        omega3: '',
-        omega6: '',
-        vitaminE: '',
-        selenium: '',
-        zinc: '',
-        crudeProtein: '',
-        crudeFat: '',
-        crudeFiber: '',
-        moisture: '',
-        taurine: '',
-        glucosamine: '',
-        chondroitin: '',
-        priceBag: '',
-        bagWeight: '',
-        ingredients: ''
-      });
-    } else if (selectedKibble && selectedKibble !== 'new') {
+    } else {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
       if (selected) {
+        console.log('Loading kibble:', selected);
         base44.analytics.track({ 
           eventName: "kibble_selected_from_saved",
           properties: { kibble_name: selected.name }
