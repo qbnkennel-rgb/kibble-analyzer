@@ -477,21 +477,25 @@ Return as a number. If not visible, return null.`,
     // Omega-3 and Omega-6 Fatty Acid Calculations
     // Based on National Research Council (NRC) and University of Guelph standards:
     // Dog food labels list omega fatty acids as MINIMUM percentage "as fed" basis
-    // These percentages represent grams of omega FA per 100g of food
     // 
-    // Calculation method (NRC 2006, University of Guelph 2024):
-    // 1. Determine daily food intake in grams: cups/day × 115g per cup = total grams
-    // 2. Calculate omega intake: (percentage ÷ 100) × daily grams = grams of omega FA per day
-    // 3. Convert to appropriate units: omega-3 in mg, omega-6 in g
+    // CRITICAL: Label percentages mean grams per 100g of food
+    // Example: 0.5% omega-3 = 0.5g per 100g = 5g per 1000g (1kg)
+    // 
+    // Calculation: (percentage / 100) × daily food grams = grams per day
+    // Then convert: omega-3 to mg (×1000), omega-6 stays in g
 
     const omega3Percentage = parseFloat(foodData.omega3) || 0;
     const omega6Percentage = parseFloat(foodData.omega6) || 0;
 
-    // Omega-3: reported in mg/day (multiply by 1000 to convert g to mg)
-    const dailyOmega3 = Math.round((omega3Percentage / 100) * dailyFoodGrams * 1000);
+    // Calculate grams per day first
+    const omega3GramsPerDay = (omega3Percentage / 100) * dailyFoodGrams;
+    const omega6GramsPerDay = (omega6Percentage / 100) * dailyFoodGrams;
 
-    // Omega-6: reported in g/day (no conversion needed)
-    const dailyOmega6 = ((omega6Percentage / 100) * dailyFoodGrams).toFixed(1);
+    // Omega-3: convert g to mg for display
+    const dailyOmega3 = Math.round(omega3GramsPerDay * 1000);
+
+    // Omega-6: keep in grams for display
+    const dailyOmega6 = omega6GramsPerDay.toFixed(1);
 
     // For nutrients listed as concentration per kg of food (IU/kg or mg/kg)
     // Formula: (concentration per kg) × (kg food consumed) = daily amount
