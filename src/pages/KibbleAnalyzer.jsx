@@ -48,7 +48,7 @@ export default function KibbleAnalyzer() {
   const [analyzingPrice, setAnalyzingPrice] = useState(false);
   const [analyzingPriceOnly, setAnalyzingPriceOnly] = useState(false);
   const [analyzingFeeding, setAnalyzingFeeding] = useState(false);
-  const [selectedKibble, setSelectedKibble] = useState('new');
+
   const [suggestion, setSuggestion] = useState('');
   const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
 
@@ -73,59 +73,7 @@ export default function KibbleAnalyzer() {
 
 
 
-  const handleKibbleSelection = (value) => {
-    setSelectedKibble(value);
-    
-    if (value === 'new') {
-      setFoodData({
-        dogFood: '',
-        recommendedFeeding: '',
-        kcalKg: '',
-        kcalCup: '',
-        omega3: '',
-        omega6: '',
-        vitaminE: '',
-        selenium: '',
-        zinc: '',
-        crudeProtein: '',
-        crudeFat: '',
-        crudeFiber: '',
-        moisture: '',
-        taurine: '',
-        glucosamine: '',
-        chondroitin: '',
-        priceBag: '',
-        bagWeight: '',
-        ingredients: ''
-      });
-    } else {
-      const selected = kibbles.find(k => k.id === value);
-      if (selected) {
-        const d = selected.data || {};
-        setFoodData({
-          dogFood: d.name || '',
-          recommendedFeeding: d.recommendedFeeding || '',
-          kcalKg: d.kcalKg || '',
-          kcalCup: d.kcalCup || '',
-          omega3: d.omega3 || '',
-          omega6: d.omega6 || '',
-          vitaminE: d.vitaminE || '',
-          selenium: d.selenium || '',
-          zinc: d.zinc || '',
-          crudeProtein: d.crudeProtein || '',
-          crudeFat: d.crudeFat || '',
-          crudeFiber: d.crudeFiber || '',
-          moisture: d.moisture || '',
-          taurine: d.taurine || '',
-          glucosamine: d.glucosamine || '',
-          chondroitin: d.chondroitin || '',
-          priceBag: d.priceBag || '',
-          bagWeight: d.bagWeight || '',
-          ingredients: d.ingredients || ''
-        });
-      }
-    }
-  };
+
 
   const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
