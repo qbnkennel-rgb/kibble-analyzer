@@ -78,7 +78,29 @@ export default function KibbleAnalyzer() {
   useEffect(() => {
     if (selectedKibble === 'new') {
       setShowCustomInput(true);
-    } else {
+      // Clear form when selecting "new"
+      setFoodData({
+        dogFood: '',
+        recommendedFeeding: '',
+        kcalKg: '',
+        kcalCup: '',
+        omega3: '',
+        omega6: '',
+        vitaminE: '',
+        selenium: '',
+        zinc: '',
+        crudeProtein: '',
+        crudeFat: '',
+        crudeFiber: '',
+        moisture: '',
+        taurine: '',
+        glucosamine: '',
+        chondroitin: '',
+        priceBag: '',
+        bagWeight: '',
+        ingredients: ''
+      });
+    } else if (selectedKibble && selectedKibble !== 'new') {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
       if (selected) {
