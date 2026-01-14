@@ -1102,7 +1102,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                         <div>
                           <p className="font-semibold text-gray-800">{analysis.kibbleName}</p>
                           <p className="text-sm text-gray-600">
-                            {analysis.dogWeight} lbs • Score: {analysis.overallScore}/100
+                            {analysis.dogData?.dogName && `${analysis.dogData.dogName} • `}{analysis.dogWeight} lbs • Score: {analysis.overallScore}/100
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             {new Date(analysis.created_date).toLocaleDateString()} at {new Date(analysis.created_date).toLocaleTimeString()}
