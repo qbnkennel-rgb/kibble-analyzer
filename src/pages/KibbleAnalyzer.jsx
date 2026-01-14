@@ -1186,52 +1186,11 @@ Return as a number. If not visible, return null.`,
 
                 <div className="md:col-span-2">
                   <Label>Dog Food Name</Label>
-                  <div className="space-y-2">
-                    <Select value={selectedKibble} onValueChange={handleKibbleSelection}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select previous kibble or enter new" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">➕ Enter New Kibble</SelectItem>
-                        {kibbles.map((kibble) => (
-                          <SelectItem key={kibble.id} value={kibble.id}>
-                            {kibble.data?.name || kibble.name || 'Unnamed Kibble'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      placeholder="e.g., 4health Salmon & Potato"
-                      value={foodData.dogFood}
-                      onChange={(e) => handleFoodChange('dogFood', e.target.value)}
-                    />
-                    {kibbles.length > 0 && (
-                      <details className="text-sm">
-                        <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
-                          Manage saved kibbles ({kibbles.length})
-                        </summary>
-                        <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                          {kibbles.map((kibble) => (
-                            <div key={kibble.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span className="text-gray-700 text-sm">{kibble.data?.name || kibble.name || 'Unnamed Kibble'}</span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm(`Delete "${kibble.data?.name || kibble.name}"?`)) {
-                                    deleteKibbleMutation.mutate(kibble.id);
-                                  }
-                                }}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </details>
-                    )}
-                  </div>
+                  <Input
+                    placeholder="e.g., 4health Salmon & Potato"
+                    value={foodData.dogFood}
+                    onChange={(e) => handleFoodChange('dogFood', e.target.value)}
+                  />
                 </div>
 
                 <div className="md:col-span-2">
