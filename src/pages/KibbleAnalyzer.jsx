@@ -68,12 +68,7 @@ export default function KibbleAnalyzer() {
     },
   });
 
-  const saveKibbleMutation = useMutation({
-    mutationFn: (kibbleData) => base44.entities.Kibble.create(kibbleData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kibbles'] });
-    },
-  });
+
 
   useEffect(() => {
     if (selectedKibble === 'new') {
