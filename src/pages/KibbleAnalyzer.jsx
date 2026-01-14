@@ -57,7 +57,11 @@ export default function KibbleAnalyzer() {
 
   const { data: kibbles = [] } = useQuery({
     queryKey: ['kibbles'],
-    queryFn: () => base44.entities.Kibble.list(),
+    queryFn: async () => {
+      const result = await base44.entities.Kibble.list();
+      console.log('Raw kibbles from DB:', result);
+      return result;
+    },
   });
 
   const deleteKibbleMutation = useMutation({
@@ -71,10 +75,7 @@ export default function KibbleAnalyzer() {
 
 
   useEffect(() => {
-    console.log('useEffect triggered - selectedKibble:', selectedKibble);
-    console.log('Available kibbles:', kibbles);
-    
-    if (selectedKibble === 'new') {
+    if (!selectedKibble || selectedKibble === 'new') {
       setShowCustomInput(true);
       setFoodData({
         dogFood: '',
@@ -97,49 +98,47 @@ export default function KibbleAnalyzer() {
         bagWeight: '',
         ingredients: ''
       });
-    } else if (selectedKibble && selectedKibble !== 'new') {
-      setShowCustomInput(false);
-      const selected = kibbles.find(k => k.id === selectedKibble);
-      console.log('Found kibble:', selected);
-      
-      if (selected) {
-        // Handle both direct properties and nested .data structure
-        const kibbleData = selected.data || selected;
-        console.log('Kibble data to load:', kibbleData);
-        
-        const newFoodData = {
-          dogFood: kibbleData.name || '',
-          recommendedFeeding: kibbleData.recommendedFeeding || '',
-          kcalKg: kibbleData.kcalKg || '',
-          kcalCup: kibbleData.kcalCup || '',
-          omega3: kibbleData.omega3 || '',
-          omega6: kibbleData.omega6 || '',
-          vitaminE: kibbleData.vitaminE || '',
-          selenium: kibbleData.selenium || '',
-          zinc: kibbleData.zinc || '',
-          crudeProtein: kibbleData.crudeProtein || '',
-          crudeFat: kibbleData.crudeFat || '',
-          crudeFiber: kibbleData.crudeFiber || '',
-          moisture: kibbleData.moisture || '',
-          taurine: kibbleData.taurine || '',
-          glucosamine: kibbleData.glucosamine || '',
-          chondroitin: kibbleData.chondroitin || '',
-          priceBag: kibbleData.priceBag || '',
-          bagWeight: kibbleData.bagWeight || '',
-          ingredients: kibbleData.ingredients || ''
-        };
-        
-        console.log('Setting food data to:', newFoodData);
-        setFoodData(newFoodData);
-        
-        base44.analytics.track({ 
-          eventName: "kibble_selected_from_saved",
-          properties: { kibble_name: kibbleData.name }
-        });
-      } else {
-        console.error('Could not find kibble with id:', selectedKibble);
-      }
+      return;
     }
+
+    // Find the selected kibble
+    const selected = kibbles.find(k => k.id === selectedKibble);
+    if (!selected) return;
+
+    setShowCustomInput(false);
+
+    // Extract data - kibbles from DB have nested .data property
+    const d = selected.data || {};
+    
+    // Force update all fields immediately
+    setTimeout(() => {
+      setFoodData({
+        dogFood: d.name || '',
+        recommendedFeeding: d.recommendedFeeding || '',
+        kcalKg: d.kcalKg || '',
+        kcalCup: d.kcalCup || '',
+        omega3: d.omega3 || '',
+        omega6: d.omega6 || '',
+        vitaminE: d.vitaminE || '',
+        selenium: d.selenium || '',
+        zinc: d.zinc || '',
+        crudeProtein: d.crudeProtein || '',
+        crudeFat: d.crudeFat || '',
+        crudeFiber: d.crudeFiber || '',
+        moisture: d.moisture || '',
+        taurine: d.taurine || '',
+        glucosamine: d.glucosamine || '',
+        chondroitin: d.chondroitin || '',
+        priceBag: d.priceBag || '',
+        bagWeight: d.bagWeight || '',
+        ingredients: d.ingredients || ''
+      });
+    }, 0);
+    
+    base44.analytics.track({ 
+      eventName: "kibble_selected_from_saved",
+      properties: { kibble_name: d.name }
+    });
   }, [selectedKibble, kibbles]);
 
   const handleDogChange = (field, value) => {
