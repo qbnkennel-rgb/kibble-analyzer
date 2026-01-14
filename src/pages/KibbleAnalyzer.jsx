@@ -98,31 +98,36 @@ export default function KibbleAnalyzer() {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
       if (selected) {
-        console.log('Loading kibble:', selected);
+        console.log('Loading kibble - full object:', selected);
+        console.log('Selected data:', selected.data);
         base44.analytics.track({ 
           eventName: "kibble_selected_from_saved",
-          properties: { kibble_name: selected.name }
+          properties: { kibble_name: selected.data?.name || selected.name }
         });
+        
+        // Handle both direct properties and nested .data structure
+        const kibbleData = selected.data || selected;
+        
         setFoodData({
-          dogFood: selected.name || '',
-          recommendedFeeding: selected.recommendedFeeding || '',
-          kcalKg: selected.kcalKg || '',
-          kcalCup: selected.kcalCup || '',
-          omega3: selected.omega3 || '',
-          omega6: selected.omega6 || '',
-          vitaminE: selected.vitaminE || '',
-          selenium: selected.selenium || '',
-          zinc: selected.zinc || '',
-          crudeProtein: selected.crudeProtein || '',
-          crudeFat: selected.crudeFat || '',
-          crudeFiber: selected.crudeFiber || '',
-          moisture: selected.moisture || '',
-          taurine: selected.taurine || '',
-          glucosamine: selected.glucosamine || '',
-          chondroitin: selected.chondroitin || '',
-          priceBag: selected.priceBag || '',
-          bagWeight: selected.bagWeight || '',
-          ingredients: selected.ingredients || ''
+          dogFood: kibbleData.name || '',
+          recommendedFeeding: kibbleData.recommendedFeeding || '',
+          kcalKg: kibbleData.kcalKg || '',
+          kcalCup: kibbleData.kcalCup || '',
+          omega3: kibbleData.omega3 || '',
+          omega6: kibbleData.omega6 || '',
+          vitaminE: kibbleData.vitaminE || '',
+          selenium: kibbleData.selenium || '',
+          zinc: kibbleData.zinc || '',
+          crudeProtein: kibbleData.crudeProtein || '',
+          crudeFat: kibbleData.crudeFat || '',
+          crudeFiber: kibbleData.crudeFiber || '',
+          moisture: kibbleData.moisture || '',
+          taurine: kibbleData.taurine || '',
+          glucosamine: kibbleData.glucosamine || '',
+          chondroitin: kibbleData.chondroitin || '',
+          priceBag: kibbleData.priceBag || '',
+          bagWeight: kibbleData.bagWeight || '',
+          ingredients: kibbleData.ingredients || ''
         });
       }
     }
@@ -751,7 +756,7 @@ Return as a number. If not visible, return null.`,
 
     // Save or update kibble data to database
     if (foodData.dogFood) {
-      const existingKibble = kibbles.find(k => k.name === foodData.dogFood);
+      const existingKibble = kibbles.find(k => (k.data?.name || k.name) === foodData.dogFood);
       if (existingKibble) {
         // Update existing kibble with new data
         await base44.entities.Kibble.update(existingKibble.id, {
@@ -1248,7 +1253,7 @@ Return as a number. If not visible, return null.`,
                         <SelectItem value="new">➕ Enter New Kibble</SelectItem>
                         {kibbles.map((kibble) => (
                           <SelectItem key={kibble.id} value={kibble.id}>
-                            {kibble.name}
+                            {kibble.data?.name || kibble.name || 'Unnamed Kibble'}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1268,13 +1273,13 @@ Return as a number. If not visible, return null.`,
                         <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
                           {kibbles.map((kibble) => (
                             <div key={kibble.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span className="text-gray-700 text-sm">{kibble.name}</span>
+                              <span className="text-gray-700 text-sm">{kibble.data?.name || kibble.name || 'Unnamed Kibble'}</span>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => {
-                                  if (confirm(`Delete "${kibble.name}"?`)) {
+                                  if (confirm(`Delete "${kibble.data?.name || kibble.name}"?`)) {
                                     deleteKibbleMutation.mutate(kibble.id);
                                   }
                                 }}
