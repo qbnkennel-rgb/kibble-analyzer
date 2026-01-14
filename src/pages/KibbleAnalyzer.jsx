@@ -12,6 +12,7 @@ import 'leaflet/dist/leaflet.css';
 
 export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
+    dogName: '',
     dogSize: 'medium',
     dogWeight: '',
     activityLevel: 'neutered adult',
@@ -1292,6 +1293,16 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 <CardTitle className="text-xl text-blue-600">Dog Information</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label>Dog Name</Label>
+                  <Input
+                    type="text"
+                    placeholder="e.g., Max, Bella"
+                    value={dogData.dogName}
+                    onChange={(e) => handleDogChange('dogName', e.target.value)}
+                  />
+                </div>
+
                 <div>
                   <Label>Dog Size</Label>
                   <Select value={dogData.dogSize} onValueChange={(val) => handleDogChange('dogSize', val)}>
