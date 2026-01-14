@@ -71,6 +71,9 @@ export default function KibbleAnalyzer() {
 
 
   useEffect(() => {
+    console.log('useEffect triggered - selectedKibble:', selectedKibble);
+    console.log('Available kibbles:', kibbles);
+    
     if (selectedKibble === 'new') {
       setShowCustomInput(true);
       setFoodData({
@@ -94,21 +97,17 @@ export default function KibbleAnalyzer() {
         bagWeight: '',
         ingredients: ''
       });
-    } else {
+    } else if (selectedKibble && selectedKibble !== 'new') {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
+      console.log('Found kibble:', selected);
+      
       if (selected) {
-        console.log('Loading kibble - full object:', selected);
-        console.log('Selected data:', selected.data);
-        base44.analytics.track({ 
-          eventName: "kibble_selected_from_saved",
-          properties: { kibble_name: selected.data?.name || selected.name }
-        });
-        
         // Handle both direct properties and nested .data structure
         const kibbleData = selected.data || selected;
+        console.log('Kibble data to load:', kibbleData);
         
-        setFoodData({
+        const newFoodData = {
           dogFood: kibbleData.name || '',
           recommendedFeeding: kibbleData.recommendedFeeding || '',
           kcalKg: kibbleData.kcalKg || '',
@@ -128,7 +127,17 @@ export default function KibbleAnalyzer() {
           priceBag: kibbleData.priceBag || '',
           bagWeight: kibbleData.bagWeight || '',
           ingredients: kibbleData.ingredients || ''
+        };
+        
+        console.log('Setting food data to:', newFoodData);
+        setFoodData(newFoodData);
+        
+        base44.analytics.track({ 
+          eventName: "kibble_selected_from_saved",
+          properties: { kibble_name: kibbleData.name }
         });
+      } else {
+        console.error('Could not find kibble with id:', selectedKibble);
       }
     }
   }, [selectedKibble, kibbles]);
