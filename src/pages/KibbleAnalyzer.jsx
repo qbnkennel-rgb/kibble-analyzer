@@ -760,6 +760,33 @@ Return as a number. If not visible, return null.`,
       if (existingKibble) {
         // Update existing kibble with new data
         await base44.entities.Kibble.update(existingKibble.id, {
+          recommendedFeeding: foodData.recommendedFeeding,
+          kcalKg: foodData.kcalKg,
+          kcalCup: foodData.kcalCup,
+          omega3: foodData.omega3,
+          omega6: foodData.omega6,
+          vitaminE: foodData.vitaminE,
+          selenium: foodData.selenium,
+          zinc: foodData.zinc,
+          crudeProtein: foodData.crudeProtein,
+          crudeFat: foodData.crudeFat,
+          crudeFiber: foodData.crudeFiber,
+          moisture: foodData.moisture,
+          taurine: foodData.taurine,
+          glucosamine: foodData.glucosamine,
+          chondroitin: foodData.chondroitin,
+          priceBag: foodData.priceBag,
+          bagWeight: foodData.bagWeight,
+          ingredients: foodData.ingredients
+        });
+        await queryClient.invalidateQueries({ queryKey: ['kibbles'] });
+        base44.analytics.track({ 
+          eventName: "kibble_updated",
+          properties: { kibble_name: foodData.dogFood }
+        });
+      } else {
+        // Save new kibble
+        await base44.entities.Kibble.create({
           name: foodData.dogFood,
           recommendedFeeding: foodData.recommendedFeeding,
           kcalKg: foodData.kcalKg,
@@ -780,14 +807,7 @@ Return as a number. If not visible, return null.`,
           bagWeight: foodData.bagWeight,
           ingredients: foodData.ingredients
         });
-        queryClient.invalidateQueries({ queryKey: ['kibbles'] });
-        base44.analytics.track({ 
-          eventName: "kibble_updated",
-          properties: { kibble_name: foodData.dogFood }
-        });
-      } else {
-        // Save new kibble
-        saveKibbleMutation.mutate(foodData);
+        await queryClient.invalidateQueries({ queryKey: ['kibbles'] });
         base44.analytics.track({ 
           eventName: "new_kibble_saved",
           properties: { kibble_name: foodData.dogFood }
