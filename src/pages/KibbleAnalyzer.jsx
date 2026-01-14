@@ -46,6 +46,8 @@ export default function KibbleAnalyzer() {
   const [analyzingNutrition, setAnalyzingNutrition] = useState(false);
   const [analyzingIngredients, setAnalyzingIngredients] = useState(false);
   const [analyzingPrice, setAnalyzingPrice] = useState(false);
+  const [analyzingPriceOnly, setAnalyzingPriceOnly] = useState(false);
+  const [analyzingFeeding, setAnalyzingFeeding] = useState(false);
   const [selectedKibble, setSelectedKibble] = useState('new');
   const [showCustomInput, setShowCustomInput] = useState(true);
   const [suggestion, setSuggestion] = useState('');
@@ -259,6 +261,100 @@ export default function KibbleAnalyzer() {
       alert('Error analyzing ingredients: ' + error.message);
     } finally {
       setAnalyzingIngredients(false);
+    }
+  };
+
+  const handlePriceOnlyPhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    base44.analytics.track({ eventName: "price_only_photo_uploaded" });
+    setAnalyzingPriceOnly(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Extract price information from this image (price tag, receipt, or product label).
+
+LOOK FOR:
+- Price: any $ amount, price tag, MSRP, retail price, sale price
+- Extract the numerical value only
+
+Return the price as a number. If not visible, return null.`,
+        file_urls: [file_url],
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            priceBag: { type: "number" }
+          }
+        }
+      });
+
+      console.log('Extracted price:', result);
+      
+      if (result.priceBag != null) {
+        setFoodData(prev => ({ ...prev, priceBag: result.priceBag.toString() }));
+        base44.analytics.track({ 
+          eventName: "price_only_extracted",
+          properties: { price: result.priceBag }
+        });
+        alert(`Price extracted: $${result.priceBag}. Please review and adjust if needed.`);
+      } else {
+        alert('No price found. Please try a clearer photo or enter manually.');
+      }
+    } catch (error) {
+      alert('Error analyzing price: ' + error.message);
+    } finally {
+      setAnalyzingPriceOnly(false);
+    }
+  };
+
+  const handleFeedingPhotoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    base44.analytics.track({ eventName: "feeding_photo_uploaded" });
+    setAnalyzingFeeding(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Extract recommended feeding information from this dog food feeding guide/chart.
+
+LOOK FOR:
+- Feeding guide chart or table
+- Recommended cups per day based on dog weight
+- Daily feeding amount in cups
+
+Extract the numerical value for cups per day. If there's a range, use the middle value.
+Return as a number. If not visible, return null.`,
+        file_urls: [file_url],
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            recommendedFeeding: { type: "number" }
+          }
+        }
+      });
+
+      console.log('Extracted feeding:', result);
+      
+      if (result.recommendedFeeding != null) {
+        setFoodData(prev => ({ ...prev, recommendedFeeding: result.recommendedFeeding.toString() }));
+        base44.analytics.track({ 
+          eventName: "feeding_extracted",
+          properties: { cups: result.recommendedFeeding }
+        });
+        alert(`Feeding amount extracted: ${result.recommendedFeeding} cups/day. Please review and adjust if needed.`);
+      } else {
+        alert('No feeding information found. Please try a clearer photo or enter manually.');
+      }
+    } catch (error) {
+      alert('Error analyzing feeding guide: ' + error.message);
+    } finally {
+      setAnalyzingFeeding(false);
     }
   };
 
@@ -1021,6 +1117,54 @@ export default function KibbleAnalyzer() {
                   </div>
                   <p className="text-xs text-gray-600 mt-2">
                     Upload barcode, product bag, or price tag to auto-fill brand, product name, price, and weight
+                  </p>
+                </div>
+
+                <div className="md:col-span-2 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <Label className="text-base font-semibold text-purple-700 mb-2 block">
+                    📸 Quick Fill: Upload Photo of Price Tag
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePriceOnlyPhotoUpload}
+                      disabled={analyzingPriceOnly}
+                      className="flex-1"
+                    />
+                    {analyzingPriceOnly && (
+                      <div className="flex items-center gap-2 text-purple-600">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span className="text-sm">Analyzing...</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    Upload a clear photo of the price tag to auto-fill bag price
+                  </p>
+                </div>
+
+                <div className="md:col-span-2 p-4 bg-teal-50 rounded-lg border border-teal-200">
+                  <Label className="text-base font-semibold text-teal-700 mb-2 block">
+                    📸 Quick Fill: Upload Photo of Feeding Guide
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFeedingPhotoUpload}
+                      disabled={analyzingFeeding}
+                      className="flex-1"
+                    />
+                    {analyzingFeeding && (
+                      <div className="flex items-center gap-2 text-teal-600">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span className="text-sm">Analyzing...</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    Upload a clear photo of the feeding guide/chart to auto-fill recommended feeding
                   </p>
                 </div>
 
