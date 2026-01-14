@@ -167,33 +167,52 @@ export default function KibbleAnalyzer() {
       });
 
       console.log('Extracted nutrition data:', result);
-      
+
       const updates = {};
-      if (result.dogFood) updates.dogFood = result.dogFood;
-      if (result.recommendedFeeding != null) updates.recommendedFeeding = result.recommendedFeeding.toString();
-      if (result.kcalKg != null) updates.kcalKg = result.kcalKg.toString();
-      if (result.kcalCup != null) updates.kcalCup = result.kcalCup.toString();
-      if (result.omega3 != null) updates.omega3 = result.omega3.toString();
-      if (result.omega6 != null) updates.omega6 = result.omega6.toString();
-      if (result.vitaminE != null) updates.vitaminE = result.vitaminE.toString();
-      if (result.selenium != null) updates.selenium = result.selenium.toString();
-      if (result.zinc != null) updates.zinc = result.zinc.toString();
-      if (result.crudeProtein != null) updates.crudeProtein = result.crudeProtein.toString();
-      if (result.crudeFat != null) updates.crudeFat = result.crudeFat.toString();
-      if (result.crudeFiber != null) updates.crudeFiber = result.crudeFiber.toString();
-      if (result.moisture != null) updates.moisture = result.moisture.toString();
-      if (result.taurine != null) updates.taurine = result.taurine.toString();
-      if (result.glucosamine != null) updates.glucosamine = result.glucosamine.toString();
-      if (result.chondroitin != null) updates.chondroitin = result.chondroitin.toString();
+      const fieldsFound = [];
+      const fieldsNotFound = [];
+
+      const fieldMapping = {
+        dogFood: 'Product Name',
+        recommendedFeeding: 'Feeding (cups/day)',
+        kcalKg: 'Calories (kcal/kg)',
+        kcalCup: 'Calories (kcal/cup)',
+        omega3: 'Omega-3 (%)',
+        omega6: 'Omega-6 (%)',
+        vitaminE: 'Vitamin E (IU/kg)',
+        selenium: 'Selenium (mg/kg)',
+        zinc: 'Zinc (mg/kg)',
+        crudeProtein: 'Crude Protein (%)',
+        crudeFat: 'Crude Fat (%)',
+        crudeFiber: 'Crude Fiber (%)',
+        moisture: 'Moisture (%)',
+        taurine: 'Taurine (%)',
+        glucosamine: 'Glucosamine (mg/kg)',
+        chondroitin: 'Chondroitin (mg/kg)'
+      };
+
+      Object.keys(fieldMapping).forEach(key => {
+        if (result[key] != null) {
+          updates[key] = key === 'dogFood' ? result[key] : result[key].toString();
+          fieldsFound.push(fieldMapping[key]);
+        } else {
+          fieldsNotFound.push(fieldMapping[key]);
+        }
+      });
 
       setFoodData(prev => ({ ...prev, ...updates }));
 
-      const extractedCount = Object.keys(updates).length;
       base44.analytics.track({ 
         eventName: "nutrition_data_extracted",
-        properties: { fields_extracted: extractedCount }
+        properties: { fields_extracted: fieldsFound.length }
       });
-      alert(`Nutritional data extracted! Found ${extractedCount} fields. Please review and adjust any values as needed.`);
+
+      let message = `✅ Found ${fieldsFound.length} fields:\n${fieldsFound.join(', ')}\n\n`;
+      if (fieldsNotFound.length > 0) {
+        message += `❌ Not found (${fieldsNotFound.length}):\n${fieldsNotFound.join(', ')}\n\n`;
+        message += 'Tip: Try a clearer photo with better lighting, or enter missing values manually.';
+      }
+      alert(message);
     } catch (error) {
       alert('Error analyzing photo: ' + error.message);
     } finally {
