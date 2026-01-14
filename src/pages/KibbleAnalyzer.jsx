@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Camera, Loader2, X } from "lucide-react";
+import { Calculator, Camera, Loader2, X, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -51,6 +51,7 @@ export default function KibbleAnalyzer() {
 
   const [suggestion, setSuggestion] = useState('');
   const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
+  const [showPreviousAnalyses, setShowPreviousAnalyses] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -61,6 +62,11 @@ export default function KibbleAnalyzer() {
       console.log('Raw kibbles from DB:', result);
       return result;
     },
+  });
+
+  const { data: previousAnalyses = [] } = useQuery({
+    queryKey: ['analyses'],
+    queryFn: () => base44.entities.Analysis.list('-created_date', 50),
   });
 
   const deleteKibbleMutation = useMutation({
@@ -757,6 +763,17 @@ Return as a number. If not visible, return null.`,
       }
     }
 
+    // Save analysis to database
+    await base44.entities.Analysis.create({
+      kibbleName: foodData.dogFood || 'Unnamed',
+      dogWeight: weight.toString(),
+      overallScore: overallScore,
+      analysisData: analysis,
+      dogData: dogData,
+      foodData: foodData
+    });
+    await queryClient.invalidateQueries({ queryKey: ['analyses'] });
+
     base44.analytics.track({ 
       eventName: "kibble_analyzed",
       properties: { 
@@ -922,14 +939,84 @@ Return as a number. If not visible, return null.`,
       <div className="max-w-4xl mx-auto">
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-3xl text-center text-blue-600 flex items-center justify-center gap-2">
-              <span>🐶</span> Kibble Analyzer App
-            </CardTitle>
-            <p className="text-center text-gray-600 mt-2">
-              Enter your dog's details and food label data
-            </p>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <CardTitle className="text-3xl text-center text-blue-600 flex items-center justify-center gap-2">
+                  <span>🐶</span> Kibble Analyzer App
+                </CardTitle>
+                <p className="text-center text-gray-600 mt-2">
+                  Enter your dog's details and food label data
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowPreviousAnalyses(true)}
+                className="flex items-center gap-2"
+              >
+                <History className="w-4 h-4" />
+                Previous Analyses ({previousAnalyses.length})
+              </Button>
+            </div>
           </CardHeader>
         </Card>
+
+        {showPreviousAnalyses && (
+          <Card className="mb-8 border-2 border-blue-300">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl text-blue-600">Previous Analyses</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowPreviousAnalyses(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {previousAnalyses.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No previous analyses yet</p>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {previousAnalyses.map((analysis) => (
+                    <div
+                      key={analysis.id}
+                      className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        setResults(analysis.analysisData);
+                        setDogData(analysis.dogData);
+                        setFoodData(analysis.foodData);
+                        setShowPreviousAnalyses(false);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold text-gray-800">{analysis.kibbleName}</p>
+                          <p className="text-sm text-gray-600">
+                            {analysis.dogWeight} lbs • Score: {analysis.overallScore}/100
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(analysis.created_date).toLocaleDateString()} at {new Date(analysis.created_date).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setResults(analysis.analysisData);
+                            setDogData(analysis.dogData);
+                            setFoodData(analysis.foodData);
+                            setShowPreviousAnalyses(false);
+                            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                          }}
+                        >
+                          View Results
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="space-y-6">
             <Card>
