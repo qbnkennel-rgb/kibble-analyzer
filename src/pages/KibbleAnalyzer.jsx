@@ -77,6 +77,14 @@ export default function KibbleAnalyzer() {
     },
   });
 
+  const deleteAnalysisMutation = useMutation({
+    mutationFn: (id) => base44.entities.Analysis.delete(id),
+    onSuccess: () => {
+      base44.analytics.track({ eventName: "analysis_deleted" });
+      queryClient.invalidateQueries({ queryKey: ['analyses'] });
+    },
+  });
+
 
 
 
@@ -995,20 +1003,35 @@ Return as a number. If not visible, return null.`,
                             {new Date(analysis.created_date).toLocaleDateString()} at {new Date(analysis.created_date).toLocaleTimeString()}
                           </p>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setResults(analysis.analysisData);
-                            setDogData(analysis.dogData);
-                            setFoodData(analysis.foodData);
-                            setShowPreviousAnalyses(false);
-                            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                          }}
-                        >
-                          View Results
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setResults(analysis.analysisData);
+                              setDogData(analysis.dogData);
+                              setFoodData(analysis.foodData);
+                              setShowPreviousAnalyses(false);
+                              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                            }}
+                          >
+                            View Results
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Delete analysis for "${analysis.kibbleName}"?`)) {
+                                deleteAnalysisMutation.mutate(analysis.id);
+                              }
+                            }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
