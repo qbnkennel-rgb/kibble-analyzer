@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Camera, Loader2, X, History } from "lucide-react";
+import { Calculator, Camera, Loader2, X, History, MapPin, DollarSign } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
@@ -52,6 +54,11 @@ export default function KibbleAnalyzer() {
   const [suggestion, setSuggestion] = useState('');
   const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
   const [showPreviousAnalyses, setShowPreviousAnalyses] = useState(false);
+
+  const [searchRadius, setSearchRadius] = useState('10');
+  const [priceSearchResults, setPriceSearchResults] = useState(null);
+  const [searchingPrices, setSearchingPrices] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -942,6 +949,80 @@ Return as a number. If not visible, return null.`,
     }
   };
 
+  const searchNearbyPrices = async () => {
+    if (!dogData.zipCode || !foodData.dogFood) {
+      alert('Please enter zip code and dog food name first');
+      return;
+    }
+
+    setSearchingPrices(true);
+    setPriceSearchResults(null);
+
+    try {
+      // Get location coordinates
+      const locationData = await base44.integrations.Core.InvokeLLM({
+        prompt: `Get the latitude and longitude coordinates for zip code ${dogData.zipCode}. Return only the coordinates.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            latitude: { type: "number" },
+            longitude: { type: "number" },
+            city: { type: "string" },
+            state: { type: "string" }
+          }
+        }
+      });
+
+      setUserLocation(locationData);
+
+      // Search for prices
+      const priceData = await base44.integrations.Core.InvokeLLM({
+        prompt: `Search for "${foodData.dogFood}" dog food prices and availability within ${searchRadius} miles of ${locationData.city}, ${locationData.state} (zip: ${dogData.zipCode}).
+
+Find:
+1. Local pet stores (Petco, PetSmart, local shops) with in-store or online prices
+2. Online retailers (Chewy, Amazon, Walmart) that ship to this area
+3. Current prices, any sales/promotions
+4. Store addresses and phone numbers
+
+Return up to 10 results with the most competitive prices. Include store name, price, bag size, location/website, and contact info.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            results: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  store_name: { type: "string" },
+                  price: { type: "number" },
+                  bag_size: { type: "string" },
+                  location: { type: "string" },
+                  distance: { type: "string" },
+                  phone: { type: "string" },
+                  website: { type: "string" },
+                  notes: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      setPriceSearchResults(priceData.results);
+      base44.analytics.track({ 
+        eventName: "price_search_completed",
+        properties: { results_count: priceData.results?.length || 0, radius: searchRadius }
+      });
+    } catch (error) {
+      alert('Error searching prices: ' + error.message);
+    } finally {
+      setSearchingPrices(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -1036,6 +1117,147 @@ Return as a number. If not visible, return null.`,
                     </div>
                   ))}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {dogData.zipCode && foodData.dogFood && (
+          <Card className="mb-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
+            <CardHeader>
+              <CardTitle className="text-2xl text-green-700 flex items-center gap-2">
+                <MapPin className="w-6 h-6" />
+                Find Best Prices Near You
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                Search for {foodData.dogFood} prices within your area
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <Label>Search Radius</Label>
+                  <Select value={searchRadius} onValueChange={setSearchRadius}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5 miles</SelectItem>
+                      <SelectItem value="10">10 miles</SelectItem>
+                      <SelectItem value="15">15 miles</SelectItem>
+                      <SelectItem value="20">20 miles</SelectItem>
+                      <SelectItem value="30">30 miles</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={searchNearbyPrices}
+                  disabled={searchingPrices}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {searchingPrices ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Search Prices
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {userLocation && (
+                <div className="h-64 rounded-lg overflow-hidden border-2 border-green-300">
+                  <MapContainer
+                    center={[userLocation.latitude, userLocation.longitude]}
+                    zoom={11}
+                    style={{ height: '100%', width: '100%' }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    />
+                    <Marker position={[userLocation.latitude, userLocation.longitude]}>
+                      <Popup>
+                        Your Location<br />
+                        {userLocation.city}, {userLocation.state}
+                      </Popup>
+                    </Marker>
+                    <Circle
+                      center={[userLocation.latitude, userLocation.longitude]}
+                      radius={parseInt(searchRadius) * 1609.34}
+                      pathOptions={{ color: 'green', fillColor: 'green', fillOpacity: 0.1 }}
+                    />
+                  </MapContainer>
+                </div>
+              )}
+
+              {priceSearchResults && priceSearchResults.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-800">
+                    Found {priceSearchResults.length} Results
+                  </h3>
+                  <div className="grid gap-3">
+                    {priceSearchResults.map((result, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 bg-white rounded-lg border border-gray-200 hover:border-green-400 transition-all"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-bold text-lg text-gray-800">{result.store_name}</p>
+                            <p className="text-sm text-gray-600">{result.location}</p>
+                            {result.distance && (
+                              <p className="text-xs text-green-600 font-semibold mt-1">
+                                📍 {result.distance}
+                              </p>
+                            )}
+                            {result.notes && (
+                              <p className="text-sm text-gray-700 mt-2">{result.notes}</p>
+                            )}
+                            <div className="flex gap-3 mt-2">
+                              {result.phone && (
+                                <a
+                                  href={`tel:${result.phone}`}
+                                  className="text-sm text-blue-600 hover:underline"
+                                >
+                                  📞 {result.phone}
+                                </a>
+                              )}
+                              {result.website && (
+                                <a
+                                  href={result.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 hover:underline"
+                                >
+                                  🌐 Visit Website
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-green-700">
+                              ${result.price?.toFixed(2) || 'N/A'}
+                            </p>
+                            {result.bag_size && (
+                              <p className="text-sm text-gray-600">{result.bag_size}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {priceSearchResults && priceSearchResults.length === 0 && (
+                <p className="text-gray-500 text-center py-4">
+                  No results found. Try increasing your search radius or checking online retailers.
+                </p>
               )}
             </CardContent>
           </Card>
