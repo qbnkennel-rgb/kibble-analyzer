@@ -1024,6 +1024,38 @@ export default function KibbleAnalyzer() {
                   </p>
                 </div>
 
+                <div>
+                  <Label>Price per Bag (USD)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 54.99"
+                    value={foodData.priceBag}
+                    onChange={(e) => handleFoodChange('priceBag', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label>Bag Weight (lbs)</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 35"
+                    value={foodData.bagWeight}
+                    onChange={(e) => handleFoodChange('bagWeight', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label>Recommended Feeding (cups/day)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 3.5"
+                    value={foodData.recommendedFeeding}
+                    onChange={(e) => handleFoodChange('recommendedFeeding', e.target.value)}
+                  />
+                </div>
+
                 <div className="md:col-span-2">
                   <Label>Dog Food Name</Label>
                   <div className="space-y-2">
@@ -1083,17 +1115,6 @@ export default function KibbleAnalyzer() {
                     placeholder="e.g., Salmon, brown rice, oatmeal, chicken fat..."
                     value={foodData.ingredients}
                     onChange={(e) => handleFoodChange('ingredients', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label>Recommended Feeding (cups/day)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="e.g., 3.5"
-                    value={foodData.recommendedFeeding}
-                    onChange={(e) => handleFoodChange('recommendedFeeding', e.target.value)}
                   />
                 </div>
 
@@ -1238,27 +1259,6 @@ export default function KibbleAnalyzer() {
                     placeholder="e.g., 100"
                     value={foodData.chondroitin}
                     onChange={(e) => handleFoodChange('chondroitin', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label>Price per Bag (USD)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="e.g., 54.99"
-                    value={foodData.priceBag}
-                    onChange={(e) => handleFoodChange('priceBag', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label>Bag Weight (lbs)</Label>
-                  <Input
-                    type="number"
-                    placeholder="e.g., 35"
-                    value={foodData.bagWeight}
-                    onChange={(e) => handleFoodChange('bagWeight', e.target.value)}
                   />
                 </div>
               </CardContent>
