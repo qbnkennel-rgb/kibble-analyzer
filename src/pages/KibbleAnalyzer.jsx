@@ -49,7 +49,6 @@ export default function KibbleAnalyzer() {
   const [analyzingPriceOnly, setAnalyzingPriceOnly] = useState(false);
   const [analyzingFeeding, setAnalyzingFeeding] = useState(false);
   const [selectedKibble, setSelectedKibble] = useState('new');
-  const [showCustomInput, setShowCustomInput] = useState(true);
   const [suggestion, setSuggestion] = useState('');
   const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
 
@@ -74,9 +73,10 @@ export default function KibbleAnalyzer() {
 
 
 
-  useEffect(() => {
-    if (!selectedKibble || selectedKibble === 'new') {
-      setShowCustomInput(true);
+  const handleKibbleSelection = (value) => {
+    setSelectedKibble(value);
+    
+    if (value === 'new') {
       setFoodData({
         dogFood: '',
         recommendedFeeding: '',
@@ -98,48 +98,34 @@ export default function KibbleAnalyzer() {
         bagWeight: '',
         ingredients: ''
       });
-      return;
+    } else {
+      const selected = kibbles.find(k => k.id === value);
+      if (selected) {
+        const d = selected.data || {};
+        setFoodData({
+          dogFood: d.name || '',
+          recommendedFeeding: d.recommendedFeeding || '',
+          kcalKg: d.kcalKg || '',
+          kcalCup: d.kcalCup || '',
+          omega3: d.omega3 || '',
+          omega6: d.omega6 || '',
+          vitaminE: d.vitaminE || '',
+          selenium: d.selenium || '',
+          zinc: d.zinc || '',
+          crudeProtein: d.crudeProtein || '',
+          crudeFat: d.crudeFat || '',
+          crudeFiber: d.crudeFiber || '',
+          moisture: d.moisture || '',
+          taurine: d.taurine || '',
+          glucosamine: d.glucosamine || '',
+          chondroitin: d.chondroitin || '',
+          priceBag: d.priceBag || '',
+          bagWeight: d.bagWeight || '',
+          ingredients: d.ingredients || ''
+        });
+      }
     }
-
-    // Find the selected kibble
-    const selected = kibbles.find(k => k.id === selectedKibble);
-    if (!selected) return;
-
-    setShowCustomInput(false);
-
-    // Extract data - kibbles from DB have nested .data property
-    const d = selected.data || {};
-    
-    // Force update all fields immediately
-    setTimeout(() => {
-      setFoodData({
-        dogFood: d.name || '',
-        recommendedFeeding: d.recommendedFeeding || '',
-        kcalKg: d.kcalKg || '',
-        kcalCup: d.kcalCup || '',
-        omega3: d.omega3 || '',
-        omega6: d.omega6 || '',
-        vitaminE: d.vitaminE || '',
-        selenium: d.selenium || '',
-        zinc: d.zinc || '',
-        crudeProtein: d.crudeProtein || '',
-        crudeFat: d.crudeFat || '',
-        crudeFiber: d.crudeFiber || '',
-        moisture: d.moisture || '',
-        taurine: d.taurine || '',
-        glucosamine: d.glucosamine || '',
-        chondroitin: d.chondroitin || '',
-        priceBag: d.priceBag || '',
-        bagWeight: d.bagWeight || '',
-        ingredients: d.ingredients || ''
-      });
-    }, 0);
-    
-    base44.analytics.track({ 
-      eventName: "kibble_selected_from_saved",
-      properties: { kibble_name: d.name }
-    });
-  }, [selectedKibble, kibbles]);
+  };
 
   const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
@@ -1253,7 +1239,7 @@ Return as a number. If not visible, return null.`,
                 <div className="md:col-span-2">
                   <Label>Dog Food Name</Label>
                   <div className="space-y-2">
-                    <Select value={selectedKibble} onValueChange={setSelectedKibble}>
+                    <Select value={selectedKibble} onValueChange={handleKibbleSelection}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select previous kibble or enter new" />
                       </SelectTrigger>
@@ -1266,13 +1252,11 @@ Return as a number. If not visible, return null.`,
                         ))}
                       </SelectContent>
                     </Select>
-                    {showCustomInput && (
-                      <Input
-                        placeholder="e.g., 4health Salmon & Potato"
-                        value={foodData.dogFood}
-                        onChange={(e) => handleFoodChange('dogFood', e.target.value)}
-                      />
-                    )}
+                    <Input
+                      placeholder="e.g., 4health Salmon & Potato"
+                      value={foodData.dogFood}
+                      onChange={(e) => handleFoodChange('dogFood', e.target.value)}
+                    />
                     {kibbles.length > 0 && (
                       <details className="text-sm">
                         <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
