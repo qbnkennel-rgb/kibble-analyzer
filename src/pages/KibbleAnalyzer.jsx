@@ -78,6 +78,27 @@ export default function KibbleAnalyzer() {
   useEffect(() => {
     if (selectedKibble === 'new') {
       setShowCustomInput(true);
+      setFoodData({
+        dogFood: '',
+        recommendedFeeding: '',
+        kcalKg: '',
+        kcalCup: '',
+        omega3: '',
+        omega6: '',
+        vitaminE: '',
+        selenium: '',
+        zinc: '',
+        crudeProtein: '',
+        crudeFat: '',
+        crudeFiber: '',
+        moisture: '',
+        taurine: '',
+        glucosamine: '',
+        chondroitin: '',
+        priceBag: '',
+        bagWeight: '',
+        ingredients: ''
+      });
     } else {
       setShowCustomInput(false);
       const selected = kibbles.find(k => k.id === selectedKibble);
