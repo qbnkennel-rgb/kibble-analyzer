@@ -55,6 +55,7 @@ export default function KibbleAnalyzer() {
   const [suggestion, setSuggestion] = useState('');
   const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
   const [showPreviousAnalyses, setShowPreviousAnalyses] = useState(false);
+  const [showNewDogInput, setShowNewDogInput] = useState(false);
 
   const [searchRadius, setSearchRadius] = useState('10');
   const [priceSearchResults, setPriceSearchResults] = useState(null);
@@ -76,6 +77,14 @@ export default function KibbleAnalyzer() {
     queryKey: ['analyses'],
     queryFn: () => base44.entities.Analysis.list('-created_date', 50),
   });
+
+  // Get unique dog names from previous analyses
+  const uniqueDogNames = React.useMemo(() => {
+    const names = previousAnalyses
+      .map(a => a.dogData?.dogName)
+      .filter(name => name && name.trim());
+    return [...new Set(names)];
+  }, [previousAnalyses]);
 
   const deleteKibbleMutation = useMutation({
     mutationFn: (id) => base44.entities.Kibble.delete(id),
@@ -1295,12 +1304,50 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <Label>Dog Name</Label>
-                  <Input
-                    type="text"
-                    placeholder="e.g., Max, Bella"
-                    value={dogData.dogName}
-                    onChange={(e) => handleDogChange('dogName', e.target.value)}
-                  />
+                  {showNewDogInput ? (
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Enter new dog name..."
+                        value={dogData.dogName}
+                        onChange={(e) => handleDogChange('dogName', e.target.value)}
+                        autoFocus
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowNewDogInput(false);
+                          handleDogChange('dogName', '');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Select
+                      value={dogData.dogName}
+                      onValueChange={(val) => {
+                        if (val === '_add_new_') {
+                          setShowNewDogInput(true);
+                          handleDogChange('dogName', '');
+                        } else {
+                          handleDogChange('dogName', val);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a dog or add new..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_add_new_">+ Add New Dog</SelectItem>
+                        {uniqueDogNames.map((name) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div>
