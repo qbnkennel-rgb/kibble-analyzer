@@ -1234,7 +1234,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 className="flex items-center gap-2"
               >
                 <History className="w-4 h-4" />
-                Previous Analyses ({previousAnalyses.length})
+                Previous Analysis ({previousAnalyses.length})
               </Button>
             </div>
           </CardHeader>
