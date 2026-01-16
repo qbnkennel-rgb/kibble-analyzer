@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function KibbleAnalyzer() {
   const [dogData, setDogData] = useState({
@@ -1061,7 +1062,15 @@ Return up to 10 results with the most competitive prices. Include store name, pr
       <div className="max-w-4xl mx-auto">
         <Card className="mb-8">
           <CardHeader>
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex flex-col items-center gap-2">
+                <QRCodeSVG 
+                  value={window.location.href} 
+                  size={100}
+                  level="H"
+                />
+                <p className="text-xs text-gray-600 text-center">Scan to open</p>
+              </div>
               <div className="flex-1">
                 <CardTitle className="text-3xl text-center text-blue-600 flex items-center justify-center gap-2">
                   <span>🐶</span> Kibble Analyzer App
