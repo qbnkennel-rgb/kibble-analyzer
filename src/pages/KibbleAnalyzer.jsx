@@ -1050,6 +1050,51 @@ Return as a number. If not visible, return null.`,
     });
   };
 
+  const handleBestRecommended = async () => {
+    if (previousAnalyses.length < 5) {
+      alert('You need at least 5 previous analyses to get a recommendation.');
+      return;
+    }
+
+    try {
+      const recommendation = await base44.integrations.Core.InvokeLLM({
+        prompt: `Based on the following information, recommend the BEST dog food from the previous analyses:
+
+Dog Information:
+- Weight: ${dogData.dogWeight} lbs
+- Size: ${dogData.dogSize}
+- Activity Level: ${dogData.activityLevel}
+- Dog Food Goal: ${dogData.dogFoodGoal}
+- Zip Code: ${dogData.zipCode}
+- Age: ${dogData.ageYears || 0} years ${dogData.ageMonths || 0} months
+
+Previous Analyses:
+${previousAnalyses.map(a => `
+- ${a.kibbleName}: Score ${a.overallScore}/100
+  Weight: ${a.dogWeight} lbs
+  Analysis Data: ${JSON.stringify(a.analysisData?.healthScores?.map(s => `${s.area}: ${s.score}`) || [])}
+`).join('\n')}
+
+Consider the current season (January), the dog's specific goal (${dogData.dogFoodGoal}), activity level, and location. 
+Which food from the previous analyses would you recommend and why? 
+Focus specifically on how well it matches their goal.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            recommended_food: { type: "string" },
+            reasoning: { type: "string" },
+            key_benefits: { type: "array", items: { type: "string" } }
+          }
+        }
+      });
+
+      alert(`Recommended: ${recommendation.recommended_food}\n\nReasoning: ${recommendation.reasoning}\n\nKey Benefits:\n${recommendation.key_benefits.join('\n- ')}`);
+    } catch (error) {
+      alert('Error getting recommendation: ' + error.message);
+    }
+  };
+
   const searchNearbyPrices = async () => {
     if (!dogData.zipCode || !foodData.dogFood) {
       alert('Please enter zip code and dog food name first');
@@ -1519,6 +1564,18 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       <SelectItem value="reproduction">Reproduction</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div>
+                  <Label>Best Recommended</Label>
+                  <Button
+                    onClick={handleBestRecommended}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={previousAnalyses.length < 5}
+                  >
+                    Get Recommendation
+                  </Button>
+                  <p className="text-xs text-red-600 mt-1">minimum 5 Previous Analysis</p>
                 </div>
 
                 <div>
