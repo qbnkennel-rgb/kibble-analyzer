@@ -1099,13 +1099,49 @@ Return up to 10 results with the most competitive prices. Include store name, pr
         <Card className="mb-8">
           <CardHeader>
             <div className="flex justify-between items-start gap-4">
-              <div className="flex flex-col items-center gap-2">
-                <QRCodeSVG 
-                  value={window.location.href} 
-                  size={100}
-                  level="H"
-                />
+              <div className="flex flex-col items-center gap-2 relative">
+                <div 
+                  className="cursor-pointer hover:opacity-80 transition-opacity p-2 bg-blue-50 rounded-lg"
+                  onClick={() => setShowQROptions(!showQROptions)}
+                >
+                  <QRCodeSVG 
+                    value={window.location.href} 
+                    size={100}
+                    level="H"
+                  />
+                </div>
                 <p className="text-xs text-gray-600 text-center">Scan to open</p>
+
+                {showQROptions && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-50">
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={downloadQRCode}
+                        className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
+                      >
+                        📥 Download QR Code
+                      </button>
+                      <button
+                        onClick={copyLinkToClipboard}
+                        className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
+                      >
+                        📋 Copy Link
+                      </button>
+                      <button
+                        onClick={shareViaEmail}
+                        className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
+                      >
+                        ✉️ Share via Email
+                      </button>
+                      <button
+                        onClick={() => setShowQROptions(false)}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600"
+                      >
+                        ✕ Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex-1">
                 <CardTitle className="text-3xl text-center text-blue-600 flex items-center justify-center gap-2">
