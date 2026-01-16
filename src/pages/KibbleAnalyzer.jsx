@@ -1100,6 +1100,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           <CardHeader>
             <div className="flex justify-between items-start gap-4">
               <div className="flex flex-col items-center gap-2 relative">
+                <p className="text-sm font-semibold text-blue-700 text-center">Share This App</p>
                 <div 
                   className="cursor-pointer hover:opacity-80 transition-opacity p-2 bg-blue-50 rounded-lg"
                   onClick={() => setShowQROptions(!showQROptions)}
@@ -1110,7 +1111,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     level="H"
                   />
                 </div>
-                <p className="text-xs text-gray-600 text-center">Scan to open</p>
+                <p className="text-xs text-gray-600 text-center">Click to share this QR code</p>
 
                 {showQROptions && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-50">
