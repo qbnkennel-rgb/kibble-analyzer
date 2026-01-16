@@ -63,6 +63,7 @@ export default function KibbleAnalyzer() {
   const [searchingPrices, setSearchingPrices] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [showQROptions, setShowQROptions] = useState(false);
+  const [foodDataSaved, setFoodDataSaved] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -1019,6 +1020,36 @@ Return as a number. If not visible, return null.`,
     setShowQROptions(false);
   };
 
+  const handleSaveFoodData = () => {
+    setFoodDataSaved(true);
+    alert('Saved');
+    setTimeout(() => setFoodDataSaved(false), 2000);
+  };
+
+  const handleResetFoodData = () => {
+    setFoodData({
+      dogFood: '',
+      recommendedFeeding: '',
+      kcalKg: '',
+      kcalCup: '',
+      omega3: '',
+      omega6: '',
+      vitaminE: '',
+      selenium: '',
+      zinc: '',
+      crudeProtein: '',
+      crudeFat: '',
+      crudeFiber: '',
+      moisture: '',
+      taurine: '',
+      glucosamine: '',
+      chondroitin: '',
+      priceBag: '',
+      bagWeight: '',
+      ingredients: ''
+    });
+  };
+
   const searchNearbyPrices = async () => {
     if (!dogData.zipCode || !foodData.dogFood) {
       alert('Please enter zip code and dog food name first');
@@ -1524,7 +1555,23 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl text-blue-600">Food Label Data</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl text-blue-600">Food Label Data</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSaveFoodData}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      onClick={handleResetFoodData}
+                      variant="outline"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
