@@ -62,6 +62,7 @@ export default function KibbleAnalyzer() {
   const [priceSearchResults, setPriceSearchResults] = useState(null);
   const [searchingPrices, setSearchingPrices] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
+  const [showQROptions, setShowQROptions] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -981,6 +982,41 @@ Return as a number. If not visible, return null.`,
     } finally {
       setSubmittingSuggestion(false);
     }
+  };
+
+  const downloadQRCode = () => {
+    const svg = document.getElementById('qr-code-svg');
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.download = 'kibble-analyzer-qr-code.png';
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+    
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    setShowQROptions(false);
+  };
+
+  const copyLinkToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied to clipboard!');
+    setShowQROptions(false);
+  };
+
+  const shareViaEmail = () => {
+    const subject = encodeURIComponent('Check out the Kibble Analyzer App');
+    const body = encodeURIComponent(`I found this helpful app for analyzing dog food: ${window.location.href}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    setShowQROptions(false);
   };
 
   const searchNearbyPrices = async () => {
@@ -2238,6 +2274,59 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             >
               {submittingSuggestion ? 'Sending...' : 'Submit Suggestion'}
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader>
+            <CardTitle className="text-lg text-blue-700 text-center">Share This App</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div 
+                className="cursor-pointer hover:opacity-80 transition-opacity p-4 bg-white rounded-lg shadow-md"
+                onClick={() => setShowQROptions(!showQROptions)}
+              >
+                <QRCodeSVG 
+                  id="qr-code-svg"
+                  value={window.location.href} 
+                  size={150}
+                  level="H"
+                />
+              </div>
+              <p className="text-sm text-gray-600 text-center mt-2">Click to share this QR code</p>
+
+              {showQROptions && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-10">
+                  <div className="p-2 space-y-1">
+                    <button
+                      onClick={downloadQRCode}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
+                    >
+                      📥 Download QR Code
+                    </button>
+                    <button
+                      onClick={copyLinkToClipboard}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
+                    >
+                      📋 Copy Link
+                    </button>
+                    <button
+                      onClick={shareViaEmail}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
+                    >
+                      ✉️ Share via Email
+                    </button>
+                    <button
+                      onClick={() => setShowQROptions(false)}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600"
+                    >
+                      ✕ Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
         </div>
