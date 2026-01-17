@@ -2003,6 +2003,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-600 underline hover:text-blue-800"
+                        onClick={() => base44.analytics.track({ eventName: "allergy_symptoms_playlist_clicked" })}
                       >
                         Watch Here
                       </a>
@@ -2038,6 +2039,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-blue-600 underline hover:text-blue-800"
+                          onClick={() => base44.analytics.track({ eventName: "recipe_playlist_clicked" })}
                         >
                           Watch Here
                         </a>
