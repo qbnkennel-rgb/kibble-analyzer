@@ -2318,6 +2318,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-block hover:opacity-90 transition-opacity"
+                    onClick={() => base44.analytics.track({ eventName: "nuvet_image_clicked" })}
                   >
                     <img 
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6962f30dcbc8ea78316c894a/1da1f7118_FF97F53B-72C0-4E5E-9DB9-3F5DEFBF447F.png"
@@ -2389,7 +2390,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 mt-4">
-                    Buy using code 513237 at <a href="https://nuvet.com/513237" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline">https://nuvet.com/513237</a> on autoship for 15% off.
+                    Buy using code 513237 at <a href="https://nuvet.com/513237" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline" onClick={() => base44.analytics.track({ eventName: "nuvet_text_link_clicked" })}>https://nuvet.com/513237</a> on autoship for 15% off.
                   </p>
                 </div>
               </CardContent>
