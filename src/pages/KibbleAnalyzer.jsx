@@ -217,6 +217,7 @@ export default function KibbleAnalyzer() {
       submitSuggestion: "Submit Suggestion",
       sending: "Sending...",
       learnRaw: "Learn to Feed Raw",
+      pawLicking: "Does Your Dog Lick his/her paws or smell like corn chips?",
       rawFeedingTitle: "Video Education Sources"
     },
     es: {
@@ -302,6 +303,7 @@ export default function KibbleAnalyzer() {
       submitSuggestion: "Enviar Sugerencia",
       sending: "Enviando...",
       learnRaw: "Aprende a Alimentar Crudo",
+      pawLicking: "¿Tu perro se lame las patas o huele a chips de maíz?",
       rawFeedingTitle: "Fuentes de Educación en Video"
     }
   };
@@ -2167,7 +2169,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           <CardHeader>
             <CardTitle className="text-xl text-green-700">{t.rawFeedingTitle}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Button
               onClick={() => {
                 window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRKM4NK0tWeJFmrao7o81OsI', '_blank');
@@ -2176,6 +2178,14 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               className="w-full bg-green-600 hover:bg-green-700 text-lg py-6"
             >
               🥩 {t.learnRaw}
+            </Button>
+            <Button
+              onClick={() => {
+                base44.analytics.track({ eventName: "paw_licking_question_clicked" });
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-base py-6"
+            >
+              🐾 {t.pawLicking}
             </Button>
           </CardContent>
         </Card>
