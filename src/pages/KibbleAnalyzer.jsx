@@ -11,6 +11,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { QRCodeSVG } from 'qrcode.react';
 import LegalDisclosure from '../components/LegalDisclosure';
+import KibbleRanking from '../components/KibbleRanking';
 
 export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
@@ -1258,6 +1259,13 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             </div>
           </CardHeader>
         </Card>
+
+        {previousAnalyses.length >= 2 && (
+          <KibbleRanking 
+            analyses={previousAnalyses} 
+            dogFoodGoal={dogData.dogFoodGoal}
+          />
+        )}
 
         {showPreviousAnalyses && (
           <Card className="mb-8 border-2 border-blue-300">
