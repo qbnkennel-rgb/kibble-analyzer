@@ -1589,18 +1589,6 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 </div>
 
                 <div>
-                  <Label>Best Recommended</Label>
-                  <Button
-                    onClick={handleBestRecommended}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                    disabled={previousAnalyses.length < 5}
-                  >
-                    Get Recommendation
-                  </Button>
-                  <p className="text-xs text-red-600 mt-1">minimum 5 Previous Analysis</p>
-                </div>
-
-                <div>
                   <Label>Zip Code</Label>
                   <Input
                     type="text"
