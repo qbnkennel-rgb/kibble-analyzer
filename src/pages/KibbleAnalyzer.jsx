@@ -217,7 +217,7 @@ export default function KibbleAnalyzer() {
       submitSuggestion: "Submit Suggestion",
       sending: "Sending...",
       learnRaw: "Learn to Feed Raw",
-      rawFeedingTitle: "Raw Feeding Resources"
+      rawFeedingTitle: "Video Education Sources"
     },
     es: {
       shareApp: "Compartir Esta App",
@@ -302,7 +302,7 @@ export default function KibbleAnalyzer() {
       submitSuggestion: "Enviar Sugerencia",
       sending: "Enviando...",
       learnRaw: "Aprende a Alimentar Crudo",
-      rawFeedingTitle: "Recursos de Alimentación Cruda"
+      rawFeedingTitle: "Fuentes de Educación en Video"
     }
   };
 
