@@ -218,6 +218,7 @@ export default function KibbleAnalyzer() {
       sending: "Sending...",
       learnRaw: "Learn to Feed Raw",
       pawLicking: "Does Your Dog Lick His/Her Paws or Smell Like Corn Chips?",
+      nutritionalSecrets: "Nutritional Secrets",
       rawFeedingTitle: "Video Education Sources"
     },
     es: {
@@ -304,6 +305,7 @@ export default function KibbleAnalyzer() {
       sending: "Enviando...",
       learnRaw: "Aprende a Alimentar Crudo",
       pawLicking: "¿Tu Perro Se Lame Las Patas o Huele a Chips de Maíz?",
+      nutritionalSecrets: "Secretos Nutricionales",
       rawFeedingTitle: "Fuentes de Educación en Video"
     }
   };
@@ -1472,7 +1474,15 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 >
                   🐾 {t.pawLicking}
                 </Button>
-              </CardContent>
+                <Button
+                  onClick={() => {
+                    base44.analytics.track({ eventName: "nutritional_secrets_clicked" });
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 text-base py-6"
+                >
+                  🔐 {t.nutritionalSecrets}
+                </Button>
+                </CardContent>
             </Card>
 
             <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
