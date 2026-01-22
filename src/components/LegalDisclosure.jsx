@@ -66,7 +66,7 @@ export default function LegalDisclosure({ onAccept }) {
 
               <p className="font-semibold">THIRD-PARTY LINKS AND PRODUCTS</p>
               <p>
-                This App may contain links to third-party websites, products, or services (including but not limited to NuVet Plus, NuJoint DS, and other pet nutrition products). The Creator is not responsible for the content, accuracy, or practices of these third-party sites or products. Any purchase or interaction with third-party products is solely between you and that third party.
+                This App may contain links to third-party websites, products, or services. The Creator is not responsible for the content, accuracy, or practices of these third-party sites or products. Any purchase or interaction with third-party products is solely between you and that third party.
               </p>
 
               <p className="font-semibold">NO AFFILIATION DISCLAIMER</p>
