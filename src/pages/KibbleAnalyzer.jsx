@@ -305,7 +305,7 @@ export default function KibbleAnalyzer() {
   const t = translations[language];
 
   if (!hasAcceptedTerms) {
-    return <LegalDisclosure onAccept={handleAcceptTerms} language={language} />;
+    return <LegalDisclosure onAccept={handleAcceptTerms} />;
   }
 
 
