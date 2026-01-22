@@ -26,7 +26,7 @@ export default function LegalDisclosure({ onAccept }) {
           <div
             ref={contentRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50"
+            className="overflow-y-auto border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50 max-h-[60vh]"
           >
             <div className="space-y-4 text-sm text-gray-800">
               <p className="font-bold text-lg text-center">
