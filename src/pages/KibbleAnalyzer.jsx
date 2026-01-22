@@ -82,8 +82,14 @@ export default function KibbleAnalyzer() {
   const { data: previousAnalyses = [] } = useQuery({
     queryKey: ['analyses'],
     queryFn: async () => {
-      const user = await base44.auth.me();
-      return base44.entities.Analysis.filter({ created_by: user.email }, '-created_date', 50);
+      try {
+        const user = await base44.auth.me();
+        if (!user) return [];
+        return base44.entities.Analysis.filter({ created_by: user.email }, '-created_date', 50);
+      } catch (error) {
+        console.error('Error fetching analyses:', error);
+        return [];
+      }
     },
   });
 
