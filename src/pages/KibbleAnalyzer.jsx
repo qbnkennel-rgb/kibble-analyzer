@@ -1267,14 +1267,15 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               </Button>
             </div>
           </CardHeader>
+          {previousAnalyses.length >= 2 && (
+            <CardContent>
+              <KibbleRanking 
+                analyses={previousAnalyses} 
+                dogFoodGoal={dogData.dogFoodGoal}
+              />
+            </CardContent>
+          )}
         </Card>
-
-        {previousAnalyses.length >= 2 && (
-          <KibbleRanking 
-            analyses={previousAnalyses} 
-            dogFoodGoal={dogData.dogFoodGoal}
-          />
-        )}
 
         {showPreviousAnalyses && (
           <Card className="mb-8 border-2 border-blue-300">
