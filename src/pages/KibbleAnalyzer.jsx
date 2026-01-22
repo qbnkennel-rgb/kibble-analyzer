@@ -2163,6 +2163,23 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           {t.analyzeKibble}
         </Button>
 
+        <Card className="mt-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
+          <CardHeader>
+            <CardTitle className="text-xl text-green-700">{t.rawFeedingTitle}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => {
+                window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRKM4NK0tWeJFmrao7o81OsI', '_blank');
+                base44.analytics.track({ eventName: "learn_raw_feeding_clicked" });
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-lg py-6"
+            >
+              🥩 {t.learnRaw}
+            </Button>
+          </CardContent>
+        </Card>
+
         {results && (
           <div className="mt-8 space-y-6">
             {results.weatherData && results.seasonalAllergies && (
@@ -2602,23 +2619,6 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             </Card>
           </div>
         )}
-
-        <Card className="mt-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
-          <CardHeader>
-            <CardTitle className="text-xl text-green-700">{t.rawFeedingTitle}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={() => {
-                window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRKM4NK0tWeJFmrao7o81OsI', '_blank');
-                base44.analytics.track({ eventName: "learn_raw_feeding_clicked" });
-              }}
-              className="w-full bg-green-600 hover:bg-green-700 text-lg py-6"
-            >
-              🥩 {t.learnRaw}
-            </Button>
-          </CardContent>
-        </Card>
 
         <Card className="mt-8">
           <CardHeader>
