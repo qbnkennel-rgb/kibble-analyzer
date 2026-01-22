@@ -70,23 +70,6 @@ export default function KibbleAnalyzer() {
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const accepted = localStorage.getItem('kibbleAnalyzerTermsAccepted');
-    if (accepted === 'true') {
-      setHasAcceptedTerms(true);
-    }
-  }, []);
-
-  const handleAcceptTerms = () => {
-    localStorage.setItem('kibbleAnalyzerTermsAccepted', 'true');
-    setHasAcceptedTerms(true);
-    base44.analytics.track({ eventName: "legal_terms_accepted" });
-  };
-
-  if (!hasAcceptedTerms) {
-    return <LegalDisclosure onAccept={handleAcceptTerms} />;
-  }
-
   const { data: kibbles = [] } = useQuery({
     queryKey: ['kibbles'],
     queryFn: async () => {
@@ -124,6 +107,23 @@ export default function KibbleAnalyzer() {
       queryClient.invalidateQueries({ queryKey: ['analyses'] });
     },
   });
+
+  useEffect(() => {
+    const accepted = localStorage.getItem('kibbleAnalyzerTermsAccepted');
+    if (accepted === 'true') {
+      setHasAcceptedTerms(true);
+    }
+  }, []);
+
+  const handleAcceptTerms = () => {
+    localStorage.setItem('kibbleAnalyzerTermsAccepted', 'true');
+    setHasAcceptedTerms(true);
+    base44.analytics.track({ eventName: "legal_terms_accepted" });
+  };
+
+  if (!hasAcceptedTerms) {
+    return <LegalDisclosure onAccept={handleAcceptTerms} />;
+  }
 
 
 
