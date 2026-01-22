@@ -1273,12 +1273,11 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
             {previousAnalyses.length >= 2 ? (
             <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
-            <CardContent className="pt-6">
               <KibbleRanking 
                 analyses={previousAnalyses} 
                 dogFoodGoal={dogData.dogFoodGoal}
+                onGoalChange={(val) => handleDogChange('dogFoodGoal', val)}
               />
-            </CardContent>
             </Card>
             ) : (
               <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center text-gray-600">
@@ -1593,23 +1592,6 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       <SelectItem value="neutered adult">Neutered Adult (Average)</SelectItem>
                       <SelectItem value="active/intact adult">Active/Intact Adult</SelectItem>
                       <SelectItem value="highly active/working">Highly Active/Working</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Dog Food Goal</Label>
-                  <Select value={dogData.dogFoodGoal} onValueChange={(val) => handleDogChange('dogFoodGoal', val)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="overall health">Overall Health</SelectItem>
-                      <SelectItem value="allergies">Allergies</SelectItem>
-                      <SelectItem value="skin/coat health">Skin/Coat Health</SelectItem>
-                      <SelectItem value="heart health">Heart Health</SelectItem>
-                      <SelectItem value="joint health">Joint Health</SelectItem>
-                      <SelectItem value="reproduction">Reproduction</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

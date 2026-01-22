@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Award } from 'lucide-react';
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function KibbleRanking({ analyses, dogFoodGoal }) {
+export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange }) {
   const rankedKibbles = useMemo(() => {
     if (!analyses || analyses.length === 0) return [];
 
@@ -74,17 +76,33 @@ export default function KibbleRanking({ analyses, dogFoodGoal }) {
   };
 
   return (
-    <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
+    <>
       <CardHeader>
         <CardTitle className="text-2xl text-purple-700 flex items-center gap-2">
           <Trophy className="w-6 h-6" />
-          Kibble Rankings for {dogFoodGoal.charAt(0).toUpperCase() + dogFoodGoal.slice(1)}
+          Kibble Rankings
         </CardTitle>
-        <p className="text-sm text-gray-600 mt-2">
-          Based on your previous analyses and dog's goal
+        <div className="mt-4">
+          <Label className="text-purple-700 font-semibold">Dog Food Goal</Label>
+          <Select value={dogFoodGoal} onValueChange={onGoalChange}>
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="overall health">Overall Health</SelectItem>
+              <SelectItem value="allergies">Allergies</SelectItem>
+              <SelectItem value="skin/coat health">Skin/Coat Health</SelectItem>
+              <SelectItem value="heart health">Heart Health</SelectItem>
+              <SelectItem value="joint health">Joint Health</SelectItem>
+              <SelectItem value="reproduction">Reproduction</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-sm text-gray-600 mt-3">
+          Rankings based on your {dogFoodGoal} goal
         </p>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-0">
         {topKibbles.map((kibble, index) => (
           <div
             key={kibble.name}
@@ -117,6 +135,6 @@ export default function KibbleRanking({ analyses, dogFoodGoal }) {
           </div>
         ))}
       </CardContent>
-    </Card>
+    </>
   );
 }
