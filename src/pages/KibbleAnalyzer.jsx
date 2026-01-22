@@ -1476,6 +1476,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 </Button>
                 <Button
                   onClick={() => {
+                    window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRII52jk3XKqC0nlmAk6i6ra', '_blank');
                     base44.analytics.track({ eventName: "nutritional_secrets_clicked" });
                   }}
                   className="w-full bg-green-600 hover:bg-green-700 text-base py-6"
