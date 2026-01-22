@@ -1268,16 +1268,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 Previous Analysis ({previousAnalyses.length})
               </Button>
             </div>
-          </CardHeader>
-          {previousAnalyses.length >= 2 && (
-            <CardContent>
+            </CardHeader>
+            </Card>
+
+            {previousAnalyses.length >= 2 && (
+            <Card className="mb-8">
+            <CardContent className="pt-6">
               <KibbleRanking 
                 analyses={previousAnalyses} 
                 dogFoodGoal={dogData.dogFoodGoal}
               />
             </CardContent>
-          )}
-        </Card>
+            </Card>
+            )}
 
         {showPreviousAnalyses && (
           <Card className="mb-8 border-2 border-blue-300">
