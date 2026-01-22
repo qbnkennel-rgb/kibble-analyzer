@@ -69,6 +69,7 @@ export default function KibbleAnalyzer() {
   const [showQROptions, setShowQROptions] = useState(false);
   const [foodDataSaved, setFoodDataSaved] = useState(false);
   const [recallInfo, setRecallInfo] = useState(null);
+  const [checkingRecalls, setCheckingRecalls] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -220,9 +221,14 @@ export default function KibbleAnalyzer() {
       learnRaw: "Learn to Feed Raw",
       pawLicking: "Does Your Dog Lick His/Her Paws or Smell Like Corn Chips?",
       nutritionalSecrets: "Nutritional Secrets",
-      rawFeedingTitle: "Video Education Sources"
-    },
-    es: {
+      rawFeedingTitle: "Video Education Sources",
+      fdaRecalls: "FDA Recall Checker",
+      checkRecalls: "Check FDA Recalls",
+      checkingRecalls: "Checking...",
+      recallCheckerDesc: "Search for FDA recalls on your dog food. The app will also automatically check when you analyze.",
+      enterFoodName: "Enter a dog food name to check for recalls"
+      },
+      es: {
       shareApp: "Compartir Esta App",
       clickToShare: "Haz clic para compartir este código QR",
       downloadQR: "Descargar Código QR",
@@ -307,9 +313,14 @@ export default function KibbleAnalyzer() {
       learnRaw: "Aprende a Alimentar Crudo",
       pawLicking: "¿Tu Perro Se Lame Las Patas o Huele a Chips de Maíz?",
       nutritionalSecrets: "Secretos Nutricionales",
-      rawFeedingTitle: "Fuentes de Educación en Video"
-    }
-  };
+      rawFeedingTitle: "Fuentes de Educación en Video",
+      fdaRecalls: "Verificador de Retiros de la FDA",
+      checkRecalls: "Verificar Retiros de la FDA",
+      checkingRecalls: "Verificando...",
+      recallCheckerDesc: "Busca retiros de la FDA en tu comida para perros. La aplicación también verificará automáticamente cuando analices.",
+      enterFoodName: "Ingresa un nombre de comida para perros para verificar retiros"
+      }
+      };
 
   const t = translations[language];
 
@@ -1063,7 +1074,31 @@ Return as a number. If not visible, return null.`,
     setAnalyzing(false);
     };
 
-  // Updated digestion score with microorganism consideration
+    const handleCheckRecalls = async () => {
+    if (!foodData.dogFood) {
+      alert('Please enter a dog food name first');
+      return;
+    }
+
+    setCheckingRecalls(true);
+    try {
+      const recallData = await base44.functions.invoke('checkFdaRecalls', { 
+        foodName: foodData.dogFood 
+      });
+      setRecallInfo(recallData.data);
+      base44.analytics.track({ eventName: "manual_recall_check" });
+
+      if (!recallData.data?.has_recall) {
+        alert('Good news! No FDA recalls found for this product.');
+      }
+    } catch (error) {
+      alert('Error checking recalls: ' + error.message);
+    } finally {
+      setCheckingRecalls(false);
+    }
+    };
+
+    // Updated digestion score with microorganism consideration
   const calculateDigestionScoreWithMicrobes = (fiber, microbeScore) => {
     const baseFiberScore = calculateDigestionScore(fiber);
     if (!microbeScore) return baseFiberScore;
@@ -1497,6 +1532,36 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                   🔐 {t.nutritionalSecrets}
                 </Button>
                 </CardContent>
+            </Card>
+
+            <Card className="mb-8 bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300">
+              <CardHeader>
+                <CardTitle className="text-xl text-red-700 flex items-center gap-2">
+                  ⚠️ {t.fdaRecalls}
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-2">{t.recallCheckerDesc}</p>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={handleCheckRecalls}
+                  disabled={checkingRecalls || !foodData.dogFood}
+                  className="w-full bg-red-600 hover:bg-red-700 text-lg py-6"
+                >
+                  {checkingRecalls ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      {t.checkingRecalls}
+                    </>
+                  ) : (
+                    <>
+                      🔍 {t.checkRecalls}
+                    </>
+                  )}
+                </Button>
+                {!foodData.dogFood && (
+                  <p className="text-sm text-gray-600 mt-2 text-center">{t.enterFoodName}</p>
+                )}
+              </CardContent>
             </Card>
 
             <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
