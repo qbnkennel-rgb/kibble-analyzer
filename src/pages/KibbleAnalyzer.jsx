@@ -217,7 +217,7 @@ export default function KibbleAnalyzer() {
       submitSuggestion: "Submit Suggestion",
       sending: "Sending...",
       learnRaw: "Learn to Feed Raw",
-      pawLicking: "Does Your Dog Lick his/her paws or smell like corn chips?",
+      pawLicking: "Does Your Dog Lick His/Her Paws or Smell Like Corn Chips?",
       rawFeedingTitle: "Video Education Sources"
     },
     es: {
@@ -303,7 +303,7 @@ export default function KibbleAnalyzer() {
       submitSuggestion: "Enviar Sugerencia",
       sending: "Enviando...",
       learnRaw: "Aprende a Alimentar Crudo",
-      pawLicking: "¿Tu perro se lame las patas o huele a chips de maíz?",
+      pawLicking: "¿Tu Perro Se Lame Las Patas o Huele a Chips de Maíz?",
       rawFeedingTitle: "Fuentes de Educación en Video"
     }
   };
