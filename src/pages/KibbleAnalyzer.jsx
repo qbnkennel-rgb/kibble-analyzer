@@ -1271,8 +1271,8 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             </CardHeader>
             </Card>
 
-            {previousAnalyses.length >= 2 && (
-            <Card className="mb-8">
+            {previousAnalyses.length >= 2 ? (
+            <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
             <CardContent className="pt-6">
               <KibbleRanking 
                 analyses={previousAnalyses} 
@@ -1280,6 +1280,12 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               />
             </CardContent>
             </Card>
+            ) : (
+              <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center text-gray-600">
+                {previousAnalyses.length === 0 ? 
+                  'No analyses yet - complete at least 2 analyses to see rankings' : 
+                  'Complete one more analysis to see rankings (need at least 2)'}
+              </div>
             )}
 
         {showPreviousAnalyses && (
