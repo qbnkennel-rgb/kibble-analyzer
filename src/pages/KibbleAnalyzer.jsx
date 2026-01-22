@@ -14,23 +14,6 @@ import LegalDisclosure from '../components/LegalDisclosure';
 
 export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
-
-  useEffect(() => {
-    const accepted = localStorage.getItem('kibbleAnalyzerTermsAccepted');
-    if (accepted === 'true') {
-      setHasAcceptedTerms(true);
-    }
-  }, []);
-
-  const handleAcceptTerms = () => {
-    localStorage.setItem('kibbleAnalyzerTermsAccepted', 'true');
-    setHasAcceptedTerms(true);
-    base44.analytics.track({ eventName: "legal_terms_accepted" });
-  };
-
-  if (!hasAcceptedTerms) {
-    return <LegalDisclosure onAccept={handleAcceptTerms} />;
-  }
   const [dogData, setDogData] = useState({
     dogName: '',
     dogSize: 'medium',
@@ -85,6 +68,23 @@ export default function KibbleAnalyzer() {
   const [foodDataSaved, setFoodDataSaved] = useState(false);
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const accepted = localStorage.getItem('kibbleAnalyzerTermsAccepted');
+    if (accepted === 'true') {
+      setHasAcceptedTerms(true);
+    }
+  }, []);
+
+  const handleAcceptTerms = () => {
+    localStorage.setItem('kibbleAnalyzerTermsAccepted', 'true');
+    setHasAcceptedTerms(true);
+    base44.analytics.track({ eventName: "legal_terms_accepted" });
+  };
+
+  if (!hasAcceptedTerms) {
+    return <LegalDisclosure onAccept={handleAcceptTerms} />;
+  }
 
   const { data: kibbles = [] } = useQuery({
     queryKey: ['kibbles'],
