@@ -53,9 +53,11 @@ export default function KibbleRanking({ analyses, dogFoodGoal }) {
     return scored.sort((a, b) => b.score - a.score);
   }, [analyses, dogFoodGoal]);
 
-  if (rankedKibbles.length === 0) {
+  if (rankedKibbles.length < 2) {
     return null;
   }
+
+  const topKibbles = rankedKibbles.slice(0, 5);
 
   const getRankIcon = (index) => {
     if (index === 0) return <Trophy className="w-5 h-5 text-yellow-500" />;
@@ -83,7 +85,7 @@ export default function KibbleRanking({ analyses, dogFoodGoal }) {
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
-        {rankedKibbles.map((kibble, index) => (
+        {topKibbles.map((kibble, index) => (
           <div
             key={kibble.name}
             className={`p-4 rounded-lg border-2 ${getRankBg(index)} transition-all hover:shadow-md`}
