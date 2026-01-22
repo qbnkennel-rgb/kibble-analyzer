@@ -2545,7 +2545,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="text-center">
+                <div className="text-center space-y-4">
                   <a 
                     href="https://nuvet.com/513237" 
                     target="_blank" 
@@ -2559,6 +2559,15 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       className="max-w-full h-auto rounded-lg shadow-lg"
                     />
                   </a>
+                  <Button
+                    onClick={() => {
+                      window.open('https://nuvet.com/513237', '_blank');
+                      base44.analytics.track({ eventName: "nuvet_order_button_clicked" });
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white text-lg py-6 px-8"
+                  >
+                    Click Here to Order
+                  </Button>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg">
