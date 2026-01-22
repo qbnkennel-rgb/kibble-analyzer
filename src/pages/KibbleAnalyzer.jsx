@@ -15,6 +15,7 @@ import KibbleRanking from '../components/KibbleRanking';
 
 export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [language, setLanguage] = useState('en');
   const [dogData, setDogData] = useState({
     dogName: '',
     dogSize: 'medium',
@@ -132,8 +133,179 @@ export default function KibbleAnalyzer() {
     base44.analytics.track({ eventName: "legal_terms_accepted" });
   };
 
+  const translations = {
+    en: {
+      shareApp: "Share This App",
+      clickToShare: "Click to share this QR code",
+      downloadQR: "Download QR Code",
+      copyLink: "Copy Link",
+      shareEmail: "Share via Email",
+      cancel: "Cancel",
+      appTitle: "Kibble Analyzer App",
+      enterDetails: "Enter your dog's details and food label data",
+      previousAnalysis: "Previous Analysis",
+      kibbleRankings: "Kibble Rankings",
+      dogFoodGoal: "Dog Food Goal",
+      rankingsBasedOn: "Rankings based on your",
+      goal: "goal",
+      noAnalyses: "No analyses yet - complete at least 2 analyses to see rankings",
+      oneMoreAnalysis: "Complete one more analysis to see rankings (need at least 2)",
+      overallHealth: "Overall Health",
+      allergies: "Allergies",
+      skinCoat: "Skin/Coat Health",
+      heartHealth: "Heart Health",
+      jointHealth: "Joint Health",
+      reproduction: "Reproduction",
+      dogInfo: "Dog Information",
+      language: "Language",
+      dogName: "Dog Name",
+      addNewDog: "+ Add New Dog",
+      selectDog: "Select a dog or add new...",
+      dogSize: "Dog Size",
+      toy: "Toy",
+      small: "Small",
+      medium: "Medium",
+      large: "Large",
+      xLarge: "X-Large",
+      dogWeight: "Dog Weight (lbs)",
+      activityLevel: "Activity Level",
+      inactiveSenior: "Inactive/Senior",
+      neuteredAdult: "Neutered Adult (Average)",
+      activeIntact: "Active/Intact Adult",
+      highlyActive: "Highly Active/Working",
+      zipCode: "Zip Code",
+      ageYears: "Age (Years)",
+      ageMonths: "Age (Months)",
+      optional: "Optional",
+      foodLabel: "Food Label Data",
+      save: "Save",
+      reset: "Reset",
+      quickFillNutrition: "Quick Fill: Upload Photo of Nutritional Label",
+      analyzing: "Analyzing...",
+      uploadClearPhoto: "Upload a clear photo of the nutritional label to auto-fill nutrition data",
+      quickFillIngredients: "Quick Fill: Upload Photo of Ingredients List",
+      quickFillBag: "Quick Fill: Upload Photo of Front Of Bag",
+      uploadBarcode: "Upload barcode, product bag, or price tag to auto-fill brand, product name, price, and weight",
+      quickFillPrice: "Quick Fill: Upload Photo of Price Tag",
+      uploadPriceTag: "Upload a clear photo of the price tag to auto-fill bag price",
+      quickFillFeeding: "Quick Fill: Upload Photo of Feeding Guide",
+      uploadFeeding: "Upload a clear photo of the feeding guide/chart to auto-fill recommended feeding",
+      priceBag: "Price per Bag (USD)",
+      bagWeight: "Bag Weight (lbs)",
+      recommendedFeeding: "Recommended Feeding (cups/day)",
+      dogFoodName: "Dog Food Name",
+      ingredientsList: "Ingredients List",
+      calorieKg: "Calorie Content (kcal/kg)",
+      calorieCup: "Calorie Content (kcal/cup)",
+      omega3: "Omega-3 (%)",
+      omega6: "Omega-6 (%)",
+      vitaminE: "Vitamin E (IU/kg)",
+      selenium: "Selenium (mg/kg)",
+      zinc: "Zinc (mg/kg)",
+      crudeProtein: "Crude Protein (%)",
+      crudeFat: "Crude Fat (%)",
+      crudeFiber: "Crude Fiber (%)",
+      moisture: "Moisture (%)",
+      taurine: "Taurine (%)",
+      glucosamine: "Glucosamine (mg/kg)",
+      chondroitin: "Chondroitin (mg/kg)",
+      analyzeKibble: "Analyze Kibble",
+      saved: "Saved",
+      linkCopied: "Link copied to clipboard!",
+      appSuggestions: "App Improvement Suggestions",
+      shareSuggestion: "Share your suggestions for improving this app...",
+      submitSuggestion: "Submit Suggestion",
+      sending: "Sending..."
+    },
+    es: {
+      shareApp: "Compartir Esta App",
+      clickToShare: "Haz clic para compartir este código QR",
+      downloadQR: "Descargar Código QR",
+      copyLink: "Copiar Enlace",
+      shareEmail: "Compartir por Correo",
+      cancel: "Cancelar",
+      appTitle: "Aplicación Analizador de Croquetas",
+      enterDetails: "Ingresa los detalles de tu perro y datos de la etiqueta del alimento",
+      previousAnalysis: "Análisis Anteriores",
+      kibbleRankings: "Clasificación de Croquetas",
+      dogFoodGoal: "Objetivo del Alimento",
+      rankingsBasedOn: "Clasificaciones basadas en tu objetivo de",
+      goal: "",
+      noAnalyses: "Aún no hay análisis - completa al menos 2 análisis para ver clasificaciones",
+      oneMoreAnalysis: "Completa un análisis más para ver clasificaciones (se necesitan al menos 2)",
+      overallHealth: "Salud General",
+      allergies: "Alergias",
+      skinCoat: "Salud de Piel/Pelaje",
+      heartHealth: "Salud Cardíaca",
+      jointHealth: "Salud Articular",
+      reproduction: "Reproducción",
+      dogInfo: "Información del Perro",
+      language: "Idioma",
+      dogName: "Nombre del Perro",
+      addNewDog: "+ Agregar Nuevo Perro",
+      selectDog: "Selecciona un perro o agrega uno nuevo...",
+      dogSize: "Tamaño del Perro",
+      toy: "Juguete",
+      small: "Pequeño",
+      medium: "Mediano",
+      large: "Grande",
+      xLarge: "Extra Grande",
+      dogWeight: "Peso del Perro (lbs)",
+      activityLevel: "Nivel de Actividad",
+      inactiveSenior: "Inactivo/Senior",
+      neuteredAdult: "Adulto Castrado (Promedio)",
+      activeIntact: "Adulto Activo/Intacto",
+      highlyActive: "Muy Activo/Trabajador",
+      zipCode: "Código Postal",
+      ageYears: "Edad (Años)",
+      ageMonths: "Edad (Meses)",
+      optional: "Opcional",
+      foodLabel: "Datos de la Etiqueta del Alimento",
+      save: "Guardar",
+      reset: "Reiniciar",
+      quickFillNutrition: "Llenado Rápido: Sube Foto de la Etiqueta Nutricional",
+      analyzing: "Analizando...",
+      uploadClearPhoto: "Sube una foto clara de la etiqueta nutricional para auto-llenar datos de nutrición",
+      quickFillIngredients: "Llenado Rápido: Sube Foto de la Lista de Ingredientes",
+      quickFillBag: "Llenado Rápido: Sube Foto del Frente de la Bolsa",
+      uploadBarcode: "Sube código de barras, bolsa del producto o etiqueta de precio para auto-llenar marca, nombre del producto, precio y peso",
+      quickFillPrice: "Llenado Rápido: Sube Foto de la Etiqueta de Precio",
+      uploadPriceTag: "Sube una foto clara de la etiqueta de precio para auto-llenar el precio de la bolsa",
+      quickFillFeeding: "Llenado Rápido: Sube Foto de la Guía de Alimentación",
+      uploadFeeding: "Sube una foto clara de la guía/tabla de alimentación para auto-llenar la alimentación recomendada",
+      priceBag: "Precio por Bolsa (USD)",
+      bagWeight: "Peso de la Bolsa (lbs)",
+      recommendedFeeding: "Alimentación Recomendada (tazas/día)",
+      dogFoodName: "Nombre del Alimento para Perros",
+      ingredientsList: "Lista de Ingredientes",
+      calorieKg: "Contenido Calórico (kcal/kg)",
+      calorieCup: "Contenido Calórico (kcal/taza)",
+      omega3: "Omega-3 (%)",
+      omega6: "Omega-6 (%)",
+      vitaminE: "Vitamina E (UI/kg)",
+      selenium: "Selenio (mg/kg)",
+      zinc: "Zinc (mg/kg)",
+      crudeProtein: "Proteína Cruda (%)",
+      crudeFat: "Grasa Cruda (%)",
+      crudeFiber: "Fibra Cruda (%)",
+      moisture: "Humedad (%)",
+      taurine: "Taurina (%)",
+      glucosamine: "Glucosamina (mg/kg)",
+      chondroitin: "Condroitina (mg/kg)",
+      analyzeKibble: "Analizar Croquetas",
+      saved: "Guardado",
+      linkCopied: "¡Enlace copiado al portapapeles!",
+      appSuggestions: "Sugerencias de Mejora de la App",
+      shareSuggestion: "Comparte tus sugerencias para mejorar esta aplicación...",
+      submitSuggestion: "Enviar Sugerencia",
+      sending: "Enviando..."
+    }
+  };
+
+  const t = translations[language];
+
   if (!hasAcceptedTerms) {
-    return <LegalDisclosure onAccept={handleAcceptTerms} />;
+    return <LegalDisclosure onAccept={handleAcceptTerms} language={language} />;
   }
 
 
@@ -1040,7 +1212,7 @@ Return as a number. If not visible, return null.`,
 
   const copyLinkToClipboard = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert('Link copied to clipboard!');
+    alert(t.linkCopied);
     setShowQROptions(false);
   };
 
@@ -1053,7 +1225,7 @@ Return as a number. If not visible, return null.`,
 
   const handleSaveFoodData = () => {
     setFoodDataSaved(true);
-    alert('Saved');
+    alert(t.saved);
     setTimeout(() => setFoodDataSaved(false), 2000);
   };
 
@@ -1207,7 +1379,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           <CardHeader>
             <div className="flex justify-between items-start gap-4">
               <div className="flex flex-col items-center gap-2 relative">
-                <p className="text-sm font-semibold text-blue-700 text-center">Share This App</p>
+                <p className="text-sm font-semibold text-blue-700 text-center">{t.shareApp}</p>
                 <div 
                   className="cursor-pointer hover:opacity-80 transition-opacity p-2 bg-blue-50 rounded-lg"
                   onClick={() => setShowQROptions(!showQROptions)}
@@ -1218,7 +1390,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     level="H"
                   />
                 </div>
-                <p className="text-xs text-gray-600 text-center">Click to share this QR code</p>
+                <p className="text-xs text-gray-600 text-center">{t.clickToShare}</p>
 
                 {showQROptions && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-50">
@@ -1227,25 +1399,25 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                         onClick={downloadQRCode}
                         className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
                       >
-                        📥 Download QR Code
+                        📥 {t.downloadQR}
                       </button>
                       <button
                         onClick={copyLinkToClipboard}
                         className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
                       >
-                        📋 Copy Link
+                        📋 {t.copyLink}
                       </button>
                       <button
                         onClick={shareViaEmail}
                         className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
                       >
-                        ✉️ Share via Email
+                        ✉️ {t.shareEmail}
                       </button>
                       <button
                         onClick={() => setShowQROptions(false)}
                         className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600"
                       >
-                        ✕ Cancel
+                        ✕ {t.cancel}
                       </button>
                     </div>
                   </div>
@@ -1253,10 +1425,10 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               </div>
               <div className="flex-1">
                 <CardTitle className="text-3xl text-center text-blue-600 flex items-center justify-center gap-2">
-                  <span>🐶</span> Kibble Analyzer App
+                  <span>🐶</span> {t.appTitle}
                 </CardTitle>
                 <p className="text-center text-gray-600 mt-2">
-                  Enter your dog's details and food label data
+                  {t.enterDetails}
                 </p>
               </div>
               <Button
@@ -1265,7 +1437,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 className="flex items-center gap-2"
               >
                 <History className="w-4 h-4" />
-                Previous Analysis ({previousAnalyses.length})
+                {t.previousAnalysis} ({previousAnalyses.length})
               </Button>
             </div>
             </CardHeader>
@@ -1276,6 +1448,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 analyses={previousAnalyses} 
                 dogFoodGoal={dogData.dogFoodGoal}
                 onGoalChange={(val) => handleDogChange('dogFoodGoal', val)}
+                language={language}
               />
             </Card>
 
@@ -1496,16 +1669,34 @@ Return up to 10 results with the most competitive prices. Include store name, pr
         <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl text-blue-600">Dog Information</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl text-blue-600">{t.dogInfo}</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={language === 'en' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setLanguage('en')}
+                    >
+                      English
+                    </Button>
+                    <Button
+                      variant={language === 'es' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setLanguage('es')}
+                    >
+                      Español
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <Label>Dog Name</Label>
+                  <Label>{t.dogName}</Label>
                   {showNewDogInput ? (
                     <div className="flex gap-2">
                       <Input
                         type="text"
-                        placeholder="Enter new dog name..."
+                        placeholder={language === 'en' ? "Enter new dog name..." : "Ingresa nuevo nombre del perro..."}
                         value={dogData.dogName}
                         onChange={(e) => handleDogChange('dogName', e.target.value)}
                         autoFocus
@@ -1517,7 +1708,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                           handleDogChange('dogName', '');
                         }}
                       >
-                        Cancel
+                        {t.cancel}
                       </Button>
                     </div>
                   ) : (
@@ -1533,10 +1724,10 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a dog or add new..." />
+                        <SelectValue placeholder={t.selectDog} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="_add_new_">+ Add New Dog</SelectItem>
+                        <SelectItem value="_add_new_">{t.addNewDog}</SelectItem>
                         {uniqueDogNames.map((name) => (
                           <SelectItem key={name} value={name}>
                             {name}
@@ -1548,71 +1739,71 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 </div>
 
                 <div>
-                  <Label>Dog Size</Label>
+                  <Label>{t.dogSize}</Label>
                   <Select value={dogData.dogSize} onValueChange={(val) => handleDogChange('dogSize', val)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="toy">Toy</SelectItem>
-                      <SelectItem value="small">Small</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
-                      <SelectItem value="x-large">X-Large</SelectItem>
+                      <SelectItem value="toy">{t.toy}</SelectItem>
+                      <SelectItem value="small">{t.small}</SelectItem>
+                      <SelectItem value="medium">{t.medium}</SelectItem>
+                      <SelectItem value="large">{t.large}</SelectItem>
+                      <SelectItem value="x-large">{t.xLarge}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Dog Weight (lbs)</Label>
+                  <Label>{t.dogWeight}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 50"
+                    placeholder={language === 'en' ? "e.g., 50" : "ej., 50"}
                     value={dogData.dogWeight}
                     onChange={(e) => handleDogChange('dogWeight', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Activity Level</Label>
+                  <Label>{t.activityLevel}</Label>
                   <Select value={dogData.activityLevel} onValueChange={(val) => handleDogChange('activityLevel', val)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="inactive/senior">Inactive/Senior</SelectItem>
-                      <SelectItem value="neutered adult">Neutered Adult (Average)</SelectItem>
-                      <SelectItem value="active/intact adult">Active/Intact Adult</SelectItem>
-                      <SelectItem value="highly active/working">Highly Active/Working</SelectItem>
+                      <SelectItem value="inactive/senior">{t.inactiveSenior}</SelectItem>
+                      <SelectItem value="neutered adult">{t.neuteredAdult}</SelectItem>
+                      <SelectItem value="active/intact adult">{t.activeIntact}</SelectItem>
+                      <SelectItem value="highly active/working">{t.highlyActive}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Zip Code</Label>
+                  <Label>{t.zipCode}</Label>
                   <Input
                     type="text"
-                    placeholder="e.g., 77328"
+                    placeholder={language === 'en' ? "e.g., 77328" : "ej., 77328"}
                     value={dogData.zipCode}
                     onChange={(e) => handleDogChange('zipCode', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Age (Years)</Label>
+                  <Label>{t.ageYears}</Label>
                   <Input
                     type="number"
-                    placeholder="Optional"
+                    placeholder={t.optional}
                     value={dogData.ageYears}
                     onChange={(e) => handleDogChange('ageYears', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Age (Months)</Label>
+                  <Label>{t.ageMonths}</Label>
                   <Input
                     type="number"
-                    placeholder="Optional"
+                    placeholder={t.optional}
                     value={dogData.ageMonths}
                     onChange={(e) => handleDogChange('ageMonths', e.target.value)}
                   />
@@ -1623,19 +1814,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl text-blue-600">Food Label Data</CardTitle>
+                  <CardTitle className="text-xl text-blue-600">{t.foodLabel}</CardTitle>
                   <div className="flex gap-2">
                     <Button
                       onClick={handleSaveFoodData}
                       className="bg-green-600 hover:bg-green-700"
                     >
-                      Save
+                      {t.save}
                     </Button>
                     <Button
                       onClick={handleResetFoodData}
                       variant="outline"
                     >
-                      Reset
+                      {t.reset}
                     </Button>
                   </div>
                 </div>
@@ -1643,7 +1834,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <Label className="text-base font-semibold text-blue-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Nutritional Label
+                    📸 {t.quickFillNutrition}
                   </Label>
                   <div className="flex items-center gap-3">
                     <Input
@@ -1656,18 +1847,18 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     {analyzingNutrition && (
                       <div className="flex items-center gap-2 text-blue-600">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="text-sm">Analyzing...</span>
+                        <span className="text-sm">{t.analyzing}</span>
                       </div>
                     )}
                   </div>
                   <p className="text-xs text-gray-600 mt-2">
-                    Upload a clear photo of the nutritional label to auto-fill nutrition data
+                    {t.uploadClearPhoto}
                   </p>
                 </div>
 
                 <div className="md:col-span-2 p-4 bg-green-50 rounded-lg border border-green-200">
                   <Label className="text-base font-semibold text-green-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Ingredients List
+                    📸 {t.quickFillIngredients}
                   </Label>
                   <div className="flex items-center gap-3">
                     <Input
@@ -1680,19 +1871,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     {analyzingIngredients && (
                       <div className="flex items-center gap-2 text-green-600">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="text-sm">Analyzing...</span>
+                        <span className="text-sm">{t.analyzing}</span>
                       </div>
                     )}
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">
-                    Upload a clear photo of the ingredients list to auto-fill
-                  </p>
-                </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">
+                    {t.uploadClearPhoto}
+                    </p>
+                    </div>
 
-                <div className="md:col-span-2 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <Label className="text-base font-semibold text-orange-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Front Of Bag
-                  </Label>
+                    <div className="md:col-span-2 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <Label className="text-base font-semibold text-orange-700 mb-2 block">
+                    📸 {t.quickFillBag}
+                    </Label>
                   <div className="flex items-center gap-3">
                     <Input
                       type="file"
@@ -1704,19 +1895,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     {analyzingPrice && (
                       <div className="flex items-center gap-2 text-orange-600">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="text-sm">Analyzing...</span>
+                        <span className="text-sm">{t.analyzing}</span>
                       </div>
                     )}
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">
-                    Upload barcode, product bag, or price tag to auto-fill brand, product name, price, and weight
-                  </p>
-                </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">
+                    {t.uploadBarcode}
+                    </p>
+                    </div>
 
-                <div className="md:col-span-2 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <Label className="text-base font-semibold text-purple-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Price Tag
-                  </Label>
+                    <div className="md:col-span-2 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <Label className="text-base font-semibold text-purple-700 mb-2 block">
+                    📸 {t.quickFillPrice}
+                    </Label>
                   <div className="flex items-center gap-3">
                     <Input
                       type="file"
@@ -1728,19 +1919,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     {analyzingPriceOnly && (
                       <div className="flex items-center gap-2 text-purple-600">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="text-sm">Analyzing...</span>
+                        <span className="text-sm">{t.analyzing}</span>
                       </div>
                     )}
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">
-                    Upload a clear photo of the price tag to auto-fill bag price
-                  </p>
-                </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">
+                    {t.uploadPriceTag}
+                    </p>
+                    </div>
 
-                <div className="md:col-span-2 p-4 bg-teal-50 rounded-lg border border-teal-200">
-                  <Label className="text-base font-semibold text-teal-700 mb-2 block">
-                    📸 Quick Fill: Upload Photo of Feeding Guide
-                  </Label>
+                    <div className="md:col-span-2 p-4 bg-teal-50 rounded-lg border border-teal-200">
+                    <Label className="text-base font-semibold text-teal-700 mb-2 block">
+                    📸 {t.quickFillFeeding}
+                    </Label>
                   <div className="flex items-center gap-3">
                     <Input
                       type="file"
@@ -1752,205 +1943,205 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     {analyzingFeeding && (
                       <div className="flex items-center gap-2 text-teal-600">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="text-sm">Analyzing...</span>
+                        <span className="text-sm">{t.analyzing}</span>
                       </div>
                     )}
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">
-                    Upload a clear photo of the feeding guide/chart to auto-fill recommended feeding
-                  </p>
-                </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">
+                    {t.uploadFeeding}
+                    </p>
+                    </div>
 
-                <div>
-                  <Label>Price per Bag (USD)</Label>
+                    <div>
+                    <Label>{t.priceBag}</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="e.g., 54.99"
+                    placeholder={language === 'en' ? "e.g., 54.99" : "ej., 54.99"}
                     value={foodData.priceBag}
                     onChange={(e) => handleFoodChange('priceBag', e.target.value)}
                   />
-                </div>
+                  </div>
 
-                <div>
-                  <Label>Bag Weight (lbs)</Label>
+                  <div>
+                  <Label>{t.bagWeight}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 35"
+                    placeholder={language === 'en' ? "e.g., 35" : "ej., 35"}
                     value={foodData.bagWeight}
                     onChange={(e) => handleFoodChange('bagWeight', e.target.value)}
                   />
-                </div>
+                  </div>
 
-                <div>
-                  <Label>Recommended Feeding (cups/day)</Label>
+                  <div>
+                  <Label>{t.recommendedFeeding}</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="e.g., 3.5"
+                    placeholder={language === 'en' ? "e.g., 3.5" : "ej., 3.5"}
                     value={foodData.recommendedFeeding}
                     onChange={(e) => handleFoodChange('recommendedFeeding', e.target.value)}
                   />
-                </div>
+                  </div>
 
-                <div className="md:col-span-2">
-                  <Label>Dog Food Name</Label>
+                  <div className="md:col-span-2">
+                  <Label>{t.dogFoodName}</Label>
                   <Input
-                    placeholder="e.g., 4health Salmon & Potato"
+                    placeholder={language === 'en' ? "e.g., 4health Salmon & Potato" : "ej., 4health Salmón & Papa"}
                     value={foodData.dogFood}
                     onChange={(e) => handleFoodChange('dogFood', e.target.value)}
                   />
-                </div>
+                  </div>
 
-                <div className="md:col-span-2">
-                  <Label>Ingredients List</Label>
+                  <div className="md:col-span-2">
+                  <Label>{t.ingredientsList}</Label>
                   <textarea
                     className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="e.g., Salmon, brown rice, oatmeal, chicken fat..."
+                    placeholder={language === 'en' ? "e.g., Salmon, brown rice, oatmeal, chicken fat..." : "ej., Salmón, arroz integral, avena, grasa de pollo..."}
                     value={foodData.ingredients}
                     onChange={(e) => handleFoodChange('ingredients', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Calorie Content (kcal/kg)</Label>
+                  <Label>{t.calorieKg}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 3560"
+                    placeholder={language === 'en' ? "e.g., 3560" : "ej., 3560"}
                     value={foodData.kcalKg}
                     onChange={(e) => handleFoodChange('kcalKg', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Calorie Content (kcal/cup)</Label>
+                  <Label>{t.calorieCup}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 364"
+                    placeholder={language === 'en' ? "e.g., 364" : "ej., 364"}
                     value={foodData.kcalCup}
                     onChange={(e) => handleFoodChange('kcalCup', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Omega-3 (%)</Label>
+                  <Label>{t.omega3}</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="e.g., 0.5"
+                    placeholder={language === 'en' ? "e.g., 0.5" : "ej., 0.5"}
                     value={foodData.omega3}
                     onChange={(e) => handleFoodChange('omega3', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Omega-6 (%)</Label>
+                  <Label>{t.omega6}</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="e.g., 2.5"
+                    placeholder={language === 'en' ? "e.g., 2.5" : "ej., 2.5"}
                     value={foodData.omega6}
                     onChange={(e) => handleFoodChange('omega6', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Vitamin E (IU/kg)</Label>
+                  <Label>{t.vitaminE}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 150"
+                    placeholder={language === 'en' ? "e.g., 150" : "ej., 150"}
                     value={foodData.vitaminE}
                     onChange={(e) => handleFoodChange('vitaminE', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Selenium (mg/kg)</Label>
+                  <Label>{t.selenium}</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="e.g., 0.35"
+                    placeholder={language === 'en' ? "e.g., 0.35" : "ej., 0.35"}
                     value={foodData.selenium}
                     onChange={(e) => handleFoodChange('selenium', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Zinc (mg/kg)</Label>
+                  <Label>{t.zinc}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 150"
+                    placeholder={language === 'en' ? "e.g., 150" : "ej., 150"}
                     value={foodData.zinc}
                     onChange={(e) => handleFoodChange('zinc', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Crude Protein (%)</Label>
+                  <Label>{t.crudeProtein}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 25"
+                    placeholder={language === 'en' ? "e.g., 25" : "ej., 25"}
                     value={foodData.crudeProtein}
                     onChange={(e) => handleFoodChange('crudeProtein', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Crude Fat (%)</Label>
+                  <Label>{t.crudeFat}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 14"
+                    placeholder={language === 'en' ? "e.g., 14" : "ej., 14"}
                     value={foodData.crudeFat}
                     onChange={(e) => handleFoodChange('crudeFat', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Crude Fiber (%)</Label>
+                  <Label>{t.crudeFiber}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 4"
+                    placeholder={language === 'en' ? "e.g., 4" : "ej., 4"}
                     value={foodData.crudeFiber}
                     onChange={(e) => handleFoodChange('crudeFiber', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Moisture (%)</Label>
+                  <Label>{t.moisture}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 10"
+                    placeholder={language === 'en' ? "e.g., 10" : "ej., 10"}
                     value={foodData.moisture}
                     onChange={(e) => handleFoodChange('moisture', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Taurine (%)</Label>
+                  <Label>{t.taurine}</Label>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="e.g., 0.12"
+                    placeholder={language === 'en' ? "e.g., 0.12" : "ej., 0.12"}
                     value={foodData.taurine}
                     onChange={(e) => handleFoodChange('taurine', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Glucosamine (mg/kg)</Label>
+                  <Label>{t.glucosamine}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 300"
+                    placeholder={language === 'en' ? "e.g., 300" : "ej., 300"}
                     value={foodData.glucosamine}
                     onChange={(e) => handleFoodChange('glucosamine', e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <Label>Chondroitin (mg/kg)</Label>
+                  <Label>{t.chondroitin}</Label>
                   <Input
                     type="number"
-                    placeholder="e.g., 100"
+                    placeholder={language === 'en' ? "e.g., 100" : "ej., 100"}
                     value={foodData.chondroitin}
                     onChange={(e) => handleFoodChange('chondroitin', e.target.value)}
                   />
@@ -1965,7 +2156,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6 mt-6"
         >
           <Calculator className="w-5 h-5 mr-2" />
-          Analyze Kibble
+          {t.analyzeKibble}
         </Button>
 
         {results && (
@@ -2410,13 +2601,13 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-lg text-gray-700">App Improvement Suggestions</CardTitle>
+            <CardTitle className="text-lg text-gray-700">{t.appSuggestions}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Input
               type="text"
               maxLength={100}
-              placeholder="Share your suggestions for improving this app..."
+              placeholder={t.shareSuggestion}
               className="w-full"
               value={suggestion}
               onChange={(e) => setSuggestion(e.target.value)}
@@ -2426,14 +2617,14 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               disabled={submittingSuggestion || !suggestion.trim()}
               className="w-full"
             >
-              {submittingSuggestion ? 'Sending...' : 'Submit Suggestion'}
+              {submittingSuggestion ? t.sending : t.submitSuggestion}
             </Button>
           </CardContent>
         </Card>
 
         <Card className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50">
           <CardHeader>
-            <CardTitle className="text-lg text-blue-700 text-center">Share This App</CardTitle>
+            <CardTitle className="text-lg text-blue-700 text-center">{t.shareApp}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <div className="relative">
@@ -2448,7 +2639,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                   level="H"
                 />
               </div>
-              <p className="text-sm text-gray-600 text-center mt-2">Click to share this QR code</p>
+              <p className="text-sm text-gray-600 text-center mt-2">{t.clickToShare}</p>
 
               {showQROptions && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-10">
@@ -2457,25 +2648,25 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       onClick={downloadQRCode}
                       className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
                     >
-                      📥 Download QR Code
+                      📥 {t.downloadQR}
                     </button>
                     <button
                       onClick={copyLinkToClipboard}
                       className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
                     >
-                      📋 Copy Link
+                      📋 {t.copyLink}
                     </button>
                     <button
                       onClick={shareViaEmail}
                       className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
                     >
-                      ✉️ Share via Email
+                      ✉️ {t.shareEmail}
                     </button>
                     <button
                       onClick={() => setShowQROptions(false)}
                       className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600"
                     >
-                      ✕ Cancel
+                      ✕ {t.cancel}
                     </button>
                   </div>
                 </div>

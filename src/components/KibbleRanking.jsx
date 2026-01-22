@@ -4,7 +4,41 @@ import { Trophy, Medal, Award } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange }) {
+export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, language = 'en' }) {
+  const translations = {
+    en: {
+      title: "Kibble Rankings",
+      dogFoodGoal: "Dog Food Goal",
+      rankingsBasedOn: "Rankings based on your",
+      goal: "goal",
+      noAnalyses: "No analyses yet - complete at least 2 analyses to see rankings",
+      oneMoreAnalysis: "Complete one more analysis to see rankings (need at least 2)",
+      overallHealth: "Overall Health",
+      allergies: "Allergies",
+      skinCoat: "Skin/Coat Health",
+      heartHealth: "Heart Health",
+      jointHealth: "Joint Health",
+      reproduction: "Reproduction",
+      overallScore: "Overall Score"
+    },
+    es: {
+      title: "Clasificación de Croquetas",
+      dogFoodGoal: "Objetivo del Alimento",
+      rankingsBasedOn: "Clasificaciones basadas en tu objetivo de",
+      goal: "",
+      noAnalyses: "Aún no hay análisis - completa al menos 2 análisis para ver clasificaciones",
+      oneMoreAnalysis: "Completa un análisis más para ver clasificaciones (se necesitan al menos 2)",
+      overallHealth: "Salud General",
+      allergies: "Alergias",
+      skinCoat: "Salud de Piel/Pelaje",
+      heartHealth: "Salud Cardíaca",
+      jointHealth: "Salud Articular",
+      reproduction: "Reproducción",
+      overallScore: "Puntaje General"
+    }
+  };
+
+  const t = translations[language];
   const rankedKibbles = useMemo(() => {
     if (!analyses || analyses.length === 0) return [];
 
@@ -76,34 +110,32 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange }) {
       <CardHeader>
         <CardTitle className="text-2xl text-purple-700 flex items-center gap-2">
           <Trophy className="w-6 h-6" />
-          Kibble Rankings
+          {t.title}
         </CardTitle>
         <div className="mt-4">
-          <Label className="text-purple-700 font-semibold">Dog Food Goal</Label>
+          <Label className="text-purple-700 font-semibold">{t.dogFoodGoal}</Label>
           <Select value={dogFoodGoal} onValueChange={onGoalChange}>
             <SelectTrigger className="mt-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="overall health">Overall Health</SelectItem>
-              <SelectItem value="allergies">Allergies</SelectItem>
-              <SelectItem value="skin/coat health">Skin/Coat Health</SelectItem>
-              <SelectItem value="heart health">Heart Health</SelectItem>
-              <SelectItem value="joint health">Joint Health</SelectItem>
-              <SelectItem value="reproduction">Reproduction</SelectItem>
+              <SelectItem value="overall health">{t.overallHealth}</SelectItem>
+              <SelectItem value="allergies">{t.allergies}</SelectItem>
+              <SelectItem value="skin/coat health">{t.skinCoat}</SelectItem>
+              <SelectItem value="heart health">{t.heartHealth}</SelectItem>
+              <SelectItem value="joint health">{t.jointHealth}</SelectItem>
+              <SelectItem value="reproduction">{t.reproduction}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <p className="text-sm text-gray-600 mt-3">
-          Rankings based on your {dogFoodGoal} goal
+          {t.rankingsBasedOn} {dogFoodGoal} {t.goal}
         </p>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         {rankedKibbles.length < 2 ? (
           <div className="p-4 bg-white rounded-lg text-center text-gray-600">
-            {rankedKibbles.length === 0 ? 
-              'No analyses yet - complete at least 2 analyses to see rankings' : 
-              'Complete one more analysis to see rankings (need at least 2)'}
+            {rankedKibbles.length === 0 ? t.noAnalyses : t.oneMoreAnalysis}
           </div>
         ) : (
           topKibbles.map((kibble, index) => (
