@@ -81,7 +81,10 @@ export default function KibbleAnalyzer() {
 
   const { data: previousAnalyses = [] } = useQuery({
     queryKey: ['analyses'],
-    queryFn: () => base44.entities.Analysis.list('-created_date', 50),
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.Analysis.filter({ created_by: user.email }, '-created_date', 50);
+    },
   });
 
   // Get unique dog names from previous analyses
