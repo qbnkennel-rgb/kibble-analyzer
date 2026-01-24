@@ -84,28 +84,14 @@ export default function KibbleAnalyzer() {
 
   const { data: previousAnalyses = [] } = useQuery({
     queryKey: ['analyses'],
-    queryFn: async () => {
-      try {
-        const analyses = await base44.entities.Analysis.list('-created_date', 50);
-        console.log('Loaded analyses:', analyses.length, analyses);
-        return analyses;
-      } catch (error) {
-        console.error('Error fetching analyses:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Analysis.list('-created_date', 50),
+    initialData: [],
   });
 
   const { data: savedDogs = [] } = useQuery({
     queryKey: ['dogs'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Dog.list();
-      } catch (error) {
-        console.error('Error fetching dogs:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Dog.list(),
+    initialData: [],
   });
 
   const deleteKibbleMutation = useMutation({
