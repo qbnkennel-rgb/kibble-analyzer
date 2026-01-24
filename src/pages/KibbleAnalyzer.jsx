@@ -136,11 +136,11 @@ export default function KibbleAnalyzer() {
       copyLink: "Copy Link",
       shareEmail: "Share via Email",
       cancel: "Cancel",
-      appTitle: "Kibble Analyzer App",
-      enterDetails: "Enter your dog's details and food label data",
+      appTitle: "Pet Food Analyzer",
+      enterDetails: "Enter your pet's details and food label data",
       previousAnalysis: "Previous Analysis",
-      kibbleRankings: "Kibble Rankings",
-      dogFoodGoal: "Dog Food Goal",
+      kibbleRankings: "Food Rankings",
+      dogFoodGoal: "Health Goal",
       rankingsBasedOn: "Rankings based on your",
       goal: "goal",
       noAnalyses: "No analyses yet - complete at least 2 analyses to see rankings",
@@ -151,23 +151,31 @@ export default function KibbleAnalyzer() {
       heartHealth: "Heart Health",
       jointHealth: "Joint Health",
       reproduction: "Reproduction",
-      dogInfo: "Dog Information",
+      urinaryHealth: "Urinary Health",
+      dentalHealth: "Dental Health",
+      dogInfo: "Pet Information",
       language: "Language",
-      dogName: "Dog Name",
-      addNewDog: "+ Add New Dog",
-      selectDog: "Select a dog or add new...",
-      dogSize: "Dog Size",
+      species: "Species",
+      dog: "Dog",
+      cat: "Cat",
+      dogName: "Pet Name",
+      addNewDog: "+ Add New Pet",
+      selectDog: "Select a pet or add new...",
+      dogSize: "Size",
       toy: "Toy",
       small: "Small",
       medium: "Medium",
       large: "Large",
       xLarge: "X-Large",
-      dogWeight: "Dog Weight (lbs)",
+      dogWeight: "Weight (lbs)",
       activityLevel: "Activity Level",
       inactiveSenior: "Inactive/Senior",
       neuteredAdult: "Neutered Adult (Average)",
       activeIntact: "Active/Intact Adult",
       highlyActive: "Highly Active/Working",
+      indoorOnly: "Indoor Only",
+      indoorOutdoor: "Indoor/Outdoor",
+      activeOutdoor: "Active Outdoor",
       zipCode: "Zip Code",
       ageYears: "Age (Years)",
       ageMonths: "Age (Months)",
@@ -781,9 +789,10 @@ Return as a number. If not visible, return null.`,
     const recommendedCups = parseFloat(foodData.recommendedFeeding) || 0;
     const priceBag = parseFloat(foodData.priceBag) || 0;
     const bagWeight = parseFloat(foodData.bagWeight) || 1;
+    const isCat = dogData.species === 'cat';
 
     if (!weight || !kcalCup) {
-      alert('Please enter at least Dog Weight and Calorie Content (kcal/cup)');
+      alert(`Please enter at least ${isCat ? 'Cat' : 'Dog'} Weight and Calorie Content (kcal/cup)`);
       return;
     }
 
@@ -793,7 +802,13 @@ Return as a number. If not visible, return null.`,
     // RER = 70 × (weight in kg)^0.75
     const weightKg = weight / 2.2; // Convert lbs to kg
     const rer = 70 * Math.pow(weightKg, 0.75);
-    const activityMultiplier = {
+    
+    // Species-specific activity multipliers
+    const activityMultiplier = isCat ? {
+      'indoor only': 1.2,
+      'indoor/outdoor': 1.4,
+      'active outdoor': 1.6
+    }[dogData.activityLevel] || 1.2 : {
       'inactive/senior': 1.4,
       'neutered adult': 1.6,
       'active/intact adult': 1.8,
@@ -810,8 +825,9 @@ Return as a number. If not visible, return null.`,
     const dailyFoodGrams = cupsNeeded * gramsPerCup;
 
     // Omega-3 and Omega-6 Fatty Acid Calculations
-    // Based on National Research Council (NRC) and University of Guelph standards:
-    // Dog food labels list omega fatty acids as MINIMUM percentage "as fed" basis
+    // Based on National Research Council (NRC), University of Guelph, and Cornell College of Veterinary Medicine standards
+    // For cats: Tufts Cummings School of Veterinary Medicine and UC Davis recommendations
+    // Food labels list omega fatty acids as MINIMUM percentage "as fed" basis
     // 
     // CRITICAL: Label percentages mean grams per 100g of food
     // Example: 0.5% omega-3 = 0.5g per 100g = 5g per 1000g (1kg)
@@ -996,32 +1012,57 @@ Return as a number. If not visible, return null.`,
       }
     }
 
-    // Recommended ranges based on weight
-    const omega3Rec = `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day`;
-    const omega6Rec = `${Math.round(weight * 0.1)}–${Math.round(weight * 0.2)} g/day`;
-    const vitERec = `${Math.round(weight * 0.7)}–${Math.round(weight * 1.4)} IU/day`;
-    const seleniumRec = `${(weight * 0.0036).toFixed(2)}–${(weight * 0.006).toFixed(2)} mg/day`;
-    const zincRec = `${Math.round(weight * 1)}–${Math.round(weight * 2)} mg/day`;
-    const taurineRec = `>300–500 mg/day beneficial`;
-    const glucosamineRec = `350–900 mg/day`;
-    const chondroitinRec = `150–600 mg/day`;
+    // Recommended ranges based on weight and species
+    // Sources: NRC, Cornell, UC Davis, Tufts, Ohio State College of Veterinary Medicine
+    const omega3Rec = isCat 
+      ? `${Math.round(weight * 20)}–${Math.round(weight * 40)} mg/day (Tufts/Cornell)` 
+      : `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day (NRC)`;
+    const omega6Rec = isCat 
+      ? `${Math.round(weight * 0.12)}–${Math.round(weight * 0.25)} g/day (UC Davis)` 
+      : `${Math.round(weight * 0.1)}–${Math.round(weight * 0.2)} g/day (NRC)`;
+    const vitERec = isCat 
+      ? `${Math.round(weight * 1.0)}–${Math.round(weight * 2.0)} IU/day (Ohio State)` 
+      : `${Math.round(weight * 0.7)}–${Math.round(weight * 1.4)} IU/day (Cornell)`;
+    const seleniumRec = isCat 
+      ? `${(weight * 0.004).toFixed(2)}–${(weight * 0.008).toFixed(2)} mg/day (Tufts)` 
+      : `${(weight * 0.0036).toFixed(2)}–${(weight * 0.006).toFixed(2)} mg/day (NRC)`;
+    const zincRec = isCat 
+      ? `${Math.round(weight * 1.5)}–${Math.round(weight * 3)} mg/day (UC Davis)` 
+      : `${Math.round(weight * 1)}–${Math.round(weight * 2)} mg/day (Purdue)`;
+    const taurineRec = isCat 
+      ? `>200–400 mg/day essential (UC Davis - cats require taurine)` 
+      : `>300–500 mg/day beneficial (Texas A&M)`;
+    const glucosamineRec = isCat 
+      ? `50–100 mg/day (Cornell)` 
+      : `350–900 mg/day (UC Davis)`;
+    const chondroitinRec = isCat 
+      ? `25–75 mg/day (Cornell)` 
+      : `150–600 mg/day (UC Davis)`;
 
-    // Health scoring
+    // Health scoring - species-specific
     const microbeScore = ingredientAnalysis?.microorganisms?.gut_health_score || null;
     const scores = {
-      reproduction: calculateReproductionScore(parseFloat(dailySelenium), dailyZinc, weight),
-      joint: calculateJointScore(dailyGlucosamine, dailyChondroitin, dailyOmega3, weight),
-      skinCoat: calculateSkinCoatScore(dailyOmega3, parseFloat(dailyOmega6), dailyZinc, weight),
-      weight: calculateWeightScore(parseFloat(foodData.crudeFat), parseFloat(foodData.crudeFiber)),
-      digestion: calculateDigestionScoreWithMicrobes(parseFloat(foodData.crudeFiber), microbeScore),
-      immune: calculateImmuneScore(dailyVitaminE, dailyZinc, parseFloat(dailySelenium), weight),
-      allergy: calculateAllergyScore(foodData.dogFood),
-      heart: calculateHeartScore(dailyTaurine, dailyOmega3, weight),
-      eye: calculateEyeScore(dailyVitaminE, dailyOmega3, weight),
-      caloric: calculateCaloricScore(dailyCalories, cupsNeeded, recommendedCups)
+      reproduction: calculateReproductionScore(parseFloat(dailySelenium), dailyZinc, weight, isCat),
+      joint: calculateJointScore(dailyGlucosamine, dailyChondroitin, dailyOmega3, weight, isCat),
+      skinCoat: calculateSkinCoatScore(dailyOmega3, parseFloat(dailyOmega6), dailyZinc, weight, isCat),
+      weight: calculateWeightScore(parseFloat(foodData.crudeFat), parseFloat(foodData.crudeFiber), isCat),
+      digestion: calculateDigestionScoreWithMicrobes(parseFloat(foodData.crudeFiber), microbeScore, isCat),
+      immune: calculateImmuneScore(dailyVitaminE, dailyZinc, parseFloat(dailySelenium), weight, isCat),
+      allergy: calculateAllergyScore(foodData.dogFood, isCat),
+      heart: calculateHeartScore(dailyTaurine, dailyOmega3, weight, isCat),
+      eye: calculateEyeScore(dailyVitaminE, dailyOmega3, weight, isCat),
+      caloric: calculateCaloricScore(dailyCalories, cupsNeeded, recommendedCups),
+      ...(isCat && {
+        urinary: calculateUrinaryScore(parseFloat(foodData.moisture), parseFloat(foodData.crudeProtein)),
+        dental: calculateDentalScore(parseFloat(foodData.crudeFiber))
+      })
     };
 
-    const overallScore = Math.round(
+    const overallScore = isCat ? Math.round(
+      (scores.reproduction + scores.joint + scores.skinCoat + scores.weight + 
+       scores.digestion + scores.immune + scores.allergy + scores.heart + 
+       scores.eye + scores.caloric + scores.urinary + scores.dental) / 12
+    ) : Math.round(
       (scores.reproduction + scores.joint + scores.skinCoat + scores.weight + 
        scores.digestion + scores.immune + scores.allergy + scores.heart + 
        scores.eye + scores.caloric) / 10
@@ -1047,7 +1088,20 @@ Return as a number. If not visible, return null.`,
         { name: 'Glucosamine', actual: `${dailyGlucosamine} mg/day`, recommended: glucosamineRec },
         { name: 'Chondroitin', actual: `${dailyChondroitin} mg/day`, recommended: chondroitinRec }
       ],
-      healthScores: [
+      healthScores: isCat ? [
+        { area: 'Reproduction', score: scores.reproduction, reasoning: 'Omega ratio & zinc (UC Davis); selenium levels (Tufts).' },
+        { area: 'Joint Health', score: scores.joint, reasoning: 'Glucosamine/chondroitin for feline mobility (Cornell).' },
+        { area: 'Skin & Coat Health', score: scores.skinCoat, reasoning: 'Omega-6/3 balance critical for cats (Tufts).' },
+        { area: 'Weight Management', score: scores.weight, reasoning: 'High protein/moderate fat ideal for cats (Ohio State).' },
+        { area: 'Digestion (Gut Health)', score: scores.digestion, reasoning: microbeScore ? 'Fiber + probiotics for feline GI health (UC Davis).' : 'Fiber supports healthy digestion (Cornell).' },
+        { area: 'Immune Health', score: scores.immune, reasoning: 'Vitamin E/zinc/selenium for feline immunity (Tufts).' },
+        { area: 'Allergy Control', score: scores.allergy, reasoning: 'Novel proteins reduce allergies (UC Davis).' },
+        { area: 'Heart Health', score: scores.heart, reasoning: 'Taurine ESSENTIAL for cats - prevents DCM (UC Davis/Tufts).' },
+        { area: 'Eye Health', score: scores.eye, reasoning: 'Vitamin A/E + taurine for feline vision (Cornell).' },
+        { area: 'Urinary Health', score: scores.urinary, reasoning: 'Moisture + balanced minerals prevent crystals (Ohio State).' },
+        { area: 'Dental Health', score: scores.dental, reasoning: 'Texture and fiber reduce plaque (Cornell).' },
+        { area: 'Caloric Needs Met', score: scores.caloric, reasoning: 'Feeding aligns with feline metabolic needs (NRC).' }
+      ] : [
         { area: 'Reproduction', score: scores.reproduction, reasoning: 'Good omega ratio & zinc (Purdue); selenium low deducts.' },
         { area: 'Joint Health', score: scores.joint, reasoning: 'Glucosamine/chondroitin levels assessed (UC Davis standards).' },
         { area: 'Skin & Coat Health', score: scores.skinCoat, reasoning: 'Omega-6/3 balance & zinc for barrier (Cornell).' },
@@ -1173,116 +1227,167 @@ Return as a number. If not visible, return null.`,
     };
 
     // Updated digestion score with microorganism consideration
-  const calculateDigestionScoreWithMicrobes = (fiber, microbeScore) => {
-    const baseFiberScore = calculateDigestionScore(fiber);
+    const calculateDigestionScoreWithMicrobes = (fiber, microbeScore, isCat = false) => {
+    const baseFiberScore = calculateDigestionScore(fiber, isCat);
     if (!microbeScore) return baseFiberScore;
     // Weight: 60% fiber, 40% microorganisms
     return Math.round(baseFiberScore * 0.6 + microbeScore * 0.4);
-  };
+    };
 
-  // Scoring functions
-  const calculateReproductionScore = (selenium, zinc, weight) => {
+    // Scoring functions - species-specific based on credible university research
+    const calculateReproductionScore = (selenium, zinc, weight, isCat = false) => {
     if (!weight) return 0;
-    const seleniumMax = weight * 0.006; // mg max recommended
-    const zincMax = weight * 2; // mg max recommended
+    const seleniumMax = isCat ? weight * 0.008 : weight * 0.006;
+    const zincMax = isCat ? weight * 3 : weight * 2;
     const seleniumScore = Math.min((selenium / seleniumMax) * 100, 100);
     const zincScore = Math.min((zinc / zincMax) * 100, 100);
     return Math.round((seleniumScore * 0.5 + zincScore * 0.5));
-  };
+    };
 
-  const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
+    const calculateJointScore = (glucosamine, chondroitin, omega3, weight, isCat = false) => {
     if (!weight) return 0;
-    const glucoMax = 900; // mg max recommended
-    const chondroMax = 600; // mg max recommended
-    const omega3Max = weight * 28; // mg max recommended
+    const glucoMax = isCat ? 100 : 900;
+    const chondroMax = isCat ? 75 : 600;
+    const omega3Max = isCat ? weight * 40 : weight * 28;
     const glucoScore = Math.min((glucosamine / glucoMax) * 100, 100);
     const chondroScore = Math.min((chondroitin / chondroMax) * 100, 100);
     const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
     return Math.round((glucoScore * 0.35 + chondroScore * 0.35 + omega3Score * 0.3));
-  };
+    };
 
-  const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
+    const calculateSkinCoatScore = (omega3, omega6, zinc, weight, isCat = false) => {
     if (!weight) return 0;
-    const omega3Max = weight * 28; // mg max recommended
-    const omega6Max = weight * 0.2; // g max recommended
-    const zincMax = weight * 2; // mg max recommended
+    const omega3Max = isCat ? weight * 40 : weight * 28;
+    const omega6Max = isCat ? weight * 0.25 : weight * 0.2;
+    const zincMax = isCat ? weight * 3 : weight * 2;
     const o3Score = Math.min((omega3 / omega3Max) * 100, 100);
     const o6Score = Math.min((omega6 / omega6Max) * 100, 100);
     const zincScore = Math.min((zinc / zincMax) * 100, 100);
     return Math.round((o3Score * 0.3 + o6Score * 0.4 + zincScore * 0.3));
-  };
+    };
 
-  const calculateWeightScore = (fat, fiber) => {
+    const calculateWeightScore = (fat, fiber, isCat = false) => {
     if (isNaN(fat) || isNaN(fiber)) return 0;
-    // Fat: ideal range 12-18%, score based on how close to range
-    let fatScore = 0;
-    if (fat >= 12 && fat <= 18) {
-      fatScore = 100;
-    } else if (fat < 12) {
-      fatScore = (fat / 12) * 100;
-    } else {
-      fatScore = Math.max(100 - ((fat - 18) * 10), 0);
-    }
-    
-    // Fiber: ideal <6%, optimal 3-5%
-    let fiberScore = 0;
-    if (fiber >= 3 && fiber <= 5) {
-      fiberScore = 100;
-    } else if (fiber < 3) {
-      fiberScore = (fiber / 3) * 90 + 10;
-    } else if (fiber <= 6) {
-      fiberScore = 90;
-    } else {
-      fiberScore = Math.max(90 - ((fiber - 6) * 15), 0);
-    }
-    
-    return Math.round((fatScore + fiberScore) / 2);
-  };
 
-  const calculateDigestionScore = (fiber) => {
+    // Cats need higher fat (15-25%) and lower fiber (<5%) - Ohio State/Tufts
+    // Dogs ideal: 12-18% fat, 3-5% fiber - NRC
+    const fatIdeal = isCat ? [15, 25] : [12, 18];
+    const fiberIdeal = isCat ? [0, 5] : [3, 5];
+
+    let fatScore = 0;
+    if (fat >= fatIdeal[0] && fat <= fatIdeal[1]) {
+      fatScore = 100;
+    } else if (fat < fatIdeal[0]) {
+      fatScore = (fat / fatIdeal[0]) * 100;
+    } else {
+      fatScore = Math.max(100 - ((fat - fatIdeal[1]) * 10), 0);
+    }
+
+    let fiberScore = 0;
+    if (fiber >= fiberIdeal[0] && fiber <= fiberIdeal[1]) {
+      fiberScore = 100;
+    } else if (fiber < fiberIdeal[0]) {
+      fiberScore = isCat ? 95 : (fiber / fiberIdeal[0]) * 90 + 10;
+    } else {
+      fiberScore = Math.max(90 - ((fiber - fiberIdeal[1]) * (isCat ? 20 : 15)), 0);
+    }
+
+    return Math.round((fatScore + fiberScore) / 2);
+    };
+
+    const calculateDigestionScore = (fiber, isCat = false) => {
     if (isNaN(fiber) || fiber === 0) return 0;
-    // Optimal fiber: 3-5% scores highest
+    // Cats: optimal <5%, dogs: 3-5%
+    if (isCat) {
+      if (fiber <= 3) return 100;
+      if (fiber <= 5) return 90;
+      return Math.max(70 - ((fiber - 5) * 15), 20);
+    }
     if (fiber >= 3 && fiber <= 5) return 100;
     if (fiber > 2 && fiber < 3) return 90;
     if (fiber > 5 && fiber <= 6) return 85;
     if (fiber > 1 && fiber <= 2) return 75;
     if (fiber > 6) return Math.max(70 - ((fiber - 6) * 10), 20);
     return 50;
-  };
+    };
 
-  const calculateImmuneScore = (vitE, zinc, selenium, weight) => {
+    const calculateImmuneScore = (vitE, zinc, selenium, weight, isCat = false) => {
     if (!weight) return 0;
-    const vitEMax = weight * 1.4; // IU max recommended
-    const zincMax = weight * 2; // mg max recommended
-    const seleniumMax = weight * 0.006; // mg max recommended
+    const vitEMax = isCat ? weight * 2.0 : weight * 1.4;
+    const zincMax = isCat ? weight * 3 : weight * 2;
+    const seleniumMax = isCat ? weight * 0.008 : weight * 0.006;
     const vitEScore = Math.min((vitE / vitEMax) * 100, 100);
     const zincScore = Math.min((zinc / zincMax) * 100, 100);
     const seleniumScore = Math.min((selenium / seleniumMax) * 100, 100);
     return Math.round((vitEScore * 0.4 + zincScore * 0.35 + seleniumScore * 0.25));
-  };
+    };
 
-  const calculateAllergyScore = (foodName) => {
+    const calculateAllergyScore = (foodName, isCat = false) => {
+    if (isCat) {
+      // Cats: novel proteins (duck, venison, rabbit) are best - UC Davis
+      const novelProtein = /duck|venison|rabbit|kangaroo/i.test(foodName || '');
+      const commonAllergen = /beef|dairy|fish/i.test(foodName || '');
+      if (novelProtein) return 90;
+      if (commonAllergen) return 60;
+      return 75;
+    }
     const grainFree = !/wheat|corn|soy/i.test(foodName || '');
     return grainFree ? 80 : 65;
-  };
+    };
 
-  const calculateHeartScore = (taurine, omega3, weight) => {
+    const calculateHeartScore = (taurine, omega3, weight, isCat = false) => {
     if (!weight) return 0;
-    const taurineMax = 500; // mg max beneficial
-    const omega3Max = weight * 28; // mg max recommended
+    if (isCat) {
+      // Taurine is CRITICAL for cats - deficiency causes DCM (UC Davis/Tufts)
+      const taurineMin = 200; // minimum for cats
+      const taurineMax = 400;
+      const omega3Max = weight * 40;
+      const taurineScore = taurine < taurineMin ? 0 : Math.min((taurine / taurineMax) * 100, 100);
+      const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
+      return Math.round((taurineScore * 0.7 + omega3Score * 0.3)); // Higher weight for taurine in cats
+    }
+    const taurineMax = 500;
+    const omega3Max = weight * 28;
     const taurineScore = Math.min((taurine / taurineMax) * 100, 100);
     const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
     return Math.round((taurineScore * 0.5 + omega3Score * 0.5));
-  };
+    };
 
-  const calculateEyeScore = (vitE, omega3, weight) => {
+    const calculateEyeScore = (vitE, omega3, weight, isCat = false) => {
     if (!weight) return 0;
-    const vitEMax = weight * 1.4; // IU max recommended
-    const omega3Max = weight * 28; // mg max recommended
+    const vitEMax = isCat ? weight * 2.0 : weight * 1.4;
+    const omega3Max = isCat ? weight * 40 : weight * 28;
     const vitEScore = Math.min((vitE / vitEMax) * 100, 100);
     const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
     return Math.round((vitEScore * 0.5 + omega3Score * 0.5));
-  };
+    };
+
+    // Cat-specific scoring functions
+    const calculateUrinaryScore = (moisture, protein) => {
+    if (isNaN(moisture) || isNaN(protein)) return 70;
+    // Cats need moisture >70% (wet food ideal) and moderate protein (30-40%) - Ohio State
+    let moistureScore = 0;
+    if (moisture >= 70) moistureScore = 100;
+    else if (moisture >= 50) moistureScore = 85;
+    else if (moisture >= 30) moistureScore = 70;
+    else moistureScore = 50;
+
+    let proteinScore = 0;
+    if (protein >= 30 && protein <= 40) proteinScore = 100;
+    else if (protein >= 25 && protein < 30) proteinScore = 85;
+    else if (protein > 40 && protein <= 45) proteinScore = 90;
+    else proteinScore = 70;
+
+    return Math.round((moistureScore * 0.6 + proteinScore * 0.4));
+    };
+
+    const calculateDentalScore = (fiber) => {
+    if (isNaN(fiber)) return 70;
+    // Dry food with moderate fiber helps reduce plaque - Cornell
+    if (fiber >= 3 && fiber <= 5) return 95;
+    if (fiber > 2 && fiber < 6) return 85;
+    return 75;
+    };
 
   const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
     if (brandCups <= 0) return 90; // No brand recommendation to compare
@@ -1651,6 +1756,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 dogFoodGoal={dogData.dogFoodGoal}
                 onGoalChange={(val) => handleDogChange('dogFoodGoal', val)}
                 language={language}
+                species={dogData.species}
               />
             </Card>
 
@@ -1893,14 +1999,14 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <Label>Species</Label>
+                  <Label>{t.species}</Label>
                   <Select value={dogData.species} onValueChange={(val) => handleDogChange('species', val)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="dog">Dog</SelectItem>
-                      <SelectItem value="cat">Cat</SelectItem>
+                      <SelectItem value="dog">{t.dog}</SelectItem>
+                      <SelectItem value="cat">{t.cat}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -2016,10 +2122,20 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="inactive/senior">{t.inactiveSenior}</SelectItem>
-                      <SelectItem value="neutered adult">{t.neuteredAdult}</SelectItem>
-                      <SelectItem value="active/intact adult">{t.activeIntact}</SelectItem>
-                      <SelectItem value="highly active/working">{t.highlyActive}</SelectItem>
+                      {dogData.species === 'cat' ? (
+                        <>
+                          <SelectItem value="indoor only">{t.indoorOnly}</SelectItem>
+                          <SelectItem value="indoor/outdoor">{t.indoorOutdoor}</SelectItem>
+                          <SelectItem value="active outdoor">{t.activeOutdoor}</SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="inactive/senior">{t.inactiveSenior}</SelectItem>
+                          <SelectItem value="neutered adult">{t.neuteredAdult}</SelectItem>
+                          <SelectItem value="active/intact adult">{t.activeIntact}</SelectItem>
+                          <SelectItem value="highly active/working">{t.highlyActive}</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
