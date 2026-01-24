@@ -90,7 +90,11 @@ export default function KibbleAnalyzer() {
 
   const { data: savedDogs = [] } = useQuery({
     queryKey: ['dogs'],
-    queryFn: () => base44.entities.Dog.list(),
+    queryFn: async () => {
+      const allDogs = await base44.entities.Dog.list();
+      const myDogIds = JSON.parse(localStorage.getItem('myDogIds') || '[]');
+      return allDogs.filter(dog => myDogIds.includes(dog.id));
+    },
     initialData: [],
   });
 
@@ -326,7 +330,7 @@ export default function KibbleAnalyzer() {
     }
 
     try {
-      await base44.entities.Dog.create({
+      const newDog = await base44.entities.Dog.create({
         name: dogData.dogName,
         size: dogData.dogSize,
         weight: dogData.dogWeight,
@@ -336,6 +340,12 @@ export default function KibbleAnalyzer() {
         ageYears: dogData.ageYears,
         ageMonths: dogData.ageMonths
       });
+      
+      // Track this dog as belonging to this user/browser
+      const myDogs = JSON.parse(localStorage.getItem('myDogIds') || '[]');
+      myDogs.push(newDog.id);
+      localStorage.setItem('myDogIds', JSON.stringify(myDogs));
+      
       await queryClient.invalidateQueries({ queryKey: ['dogs'] });
       setShowNewDogInput(false);
       base44.analytics.track({ eventName: "dog_profile_created", properties: { dog_name: dogData.dogName } });
@@ -353,6 +363,12 @@ export default function KibbleAnalyzer() {
     if (confirm(`Delete ${dogData.dogName}?`)) {
       try {
         await base44.entities.Dog.delete(dogToDelete.id);
+        
+        // Remove from localStorage
+        const myDogs = JSON.parse(localStorage.getItem('myDogIds') || '[]');
+        const updatedDogs = myDogs.filter(id => id !== dogToDelete.id);
+        localStorage.setItem('myDogIds', JSON.stringify(updatedDogs));
+        
         await queryClient.invalidateQueries({ queryKey: ['dogs'] });
         setDogData({
           dogName: '',
