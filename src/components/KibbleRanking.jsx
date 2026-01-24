@@ -139,36 +139,36 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
           </div>
         ) : (
           topKibbles.map((kibble, index) => (
-          <div
-            key={kibble.name}
-            className={`p-4 rounded-lg border-2 ${getRankBg(index)} transition-all hover:shadow-md`}
-          >
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                {getRankIcon(index)}
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-gray-800 text-lg">{kibble.name}</p>
-                <div className="flex gap-4 mt-2 text-sm">
-                  <div>
-                    <span className="text-gray-600">Goal Score: </span>
-                    <span className="font-bold text-purple-700">{kibble.score}/100</span>
-                  </div>
-                  {kibble.areaScore && (
+            <div
+              key={kibble.name}
+              className={`p-4 rounded-lg border-2 ${getRankBg(index)} transition-all hover:shadow-md`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  {getRankIcon(index)}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-800 text-lg">{kibble.name}</p>
+                  <div className="flex gap-4 mt-2 text-sm">
                     <div>
-                      <span className="text-gray-600">Area: </span>
-                      <span className="font-semibold text-gray-700">{kibble.areaScore}/100</span>
+                      <span className="text-gray-600">Goal Score: </span>
+                      <span className="font-bold text-purple-700">{kibble.score}/100</span>
                     </div>
-                  )}
-                  <div>
-                    <span className="text-gray-600">Overall: </span>
-                    <span className="font-semibold text-gray-700">{kibble.overallScore}/100</span>
+                    {kibble.areaScore && (
+                      <div>
+                        <span className="text-gray-600">Area: </span>
+                        <span className="font-semibold text-gray-700">{kibble.areaScore}/100</span>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-gray-600">Overall: </span>
+                      <span className="font-semibold text-gray-700">{kibble.overallScore}/100</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))
+          ))
         )}
       </CardContent>
     </>
