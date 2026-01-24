@@ -98,13 +98,19 @@ export default function KibbleAnalyzer() {
     },
   });
 
-  // Get unique dog names from previous analyses
-  const uniqueDogNames = React.useMemo(() => {
-    const names = previousAnalyses
-      .map(a => a.dogData?.dogName)
-      .filter(name => name && name.trim());
-    return [...new Set(names)];
-  }, [previousAnalyses]);
+  const { data: savedDogs = [] } = useQuery({
+    queryKey: ['dogs'],
+    queryFn: async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user) return [];
+        return await base44.entities.Dog.list();
+      } catch (error) {
+        console.error('Error fetching dogs:', error);
+        return [];
+      }
+    },
+  });
 
   const deleteKibbleMutation = useMutation({
     mutationFn: (id) => base44.entities.Kibble.delete(id),
@@ -332,13 +338,81 @@ export default function KibbleAnalyzer() {
 
 
 
-  const handleDogChange = (field, value) => {
+  const handleDogChange = async (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-save dog when name is entered for new dog
+    if (field === 'dogName' && value && showNewDogInput) {
+      const existingDog = savedDogs.find(d => d.name === value);
+      if (!existingDog) {
+        try {
+          await base44.entities.Dog.create({
+            name: value,
+            size: dogData.dogSize,
+            weight: dogData.dogWeight,
+            activityLevel: dogData.activityLevel,
+            foodGoal: dogData.dogFoodGoal,
+            zipCode: dogData.zipCode,
+            ageYears: dogData.ageYears,
+            ageMonths: dogData.ageMonths
+          });
+          await queryClient.invalidateQueries({ queryKey: ['dogs'] });
+          setShowNewDogInput(false);
+          base44.analytics.track({ eventName: "dog_profile_created", properties: { dog_name: value } });
+        } catch (error) {
+          console.error('Error saving dog:', error);
+        }
+      }
+    }
+  };
+
+  const handleLoadDog = (dogName) => {
+    const dog = savedDogs.find(d => d.name === dogName);
+    if (dog) {
+      setDogData({
+        dogName: dog.name,
+        dogSize: dog.size || 'medium',
+        dogWeight: dog.weight || '',
+        activityLevel: dog.activityLevel || 'neutered adult',
+        dogFoodGoal: dog.foodGoal || 'overall health',
+        zipCode: dog.zipCode || '',
+        ageYears: dog.ageYears || '',
+        ageMonths: dog.ageMonths || ''
+      });
+      base44.analytics.track({ eventName: "dog_profile_loaded", properties: { dog_name: dogName } });
+    }
   };
 
   const handleFoodChange = (field, value) => {
     setFoodData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Auto-update dog profile when data changes
+  useEffect(() => {
+    const updateDogProfile = async () => {
+      if (!dogData.dogName || showNewDogInput) return;
+      
+      const existingDog = savedDogs.find(d => d.name === dogData.dogName);
+      if (existingDog) {
+        try {
+          await base44.entities.Dog.update(existingDog.id, {
+            size: dogData.dogSize,
+            weight: dogData.dogWeight,
+            activityLevel: dogData.activityLevel,
+            foodGoal: dogData.dogFoodGoal,
+            zipCode: dogData.zipCode,
+            ageYears: dogData.ageYears,
+            ageMonths: dogData.ageMonths
+          });
+        } catch (error) {
+          console.error('Error updating dog:', error);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(updateDogProfile, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [dogData, savedDogs, showNewDogInput]);
 
   const handleNutritionPhotoUpload = async (event) => {
     const file = event.target.files?.[0];
@@ -1838,9 +1912,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       onValueChange={(val) => {
                         if (val === '_add_new_') {
                           setShowNewDogInput(true);
-                          handleDogChange('dogName', '');
+                          setDogData({
+                            dogName: '',
+                            dogSize: 'medium',
+                            dogWeight: '',
+                            activityLevel: 'neutered adult',
+                            dogFoodGoal: 'overall health',
+                            zipCode: '',
+                            ageYears: '',
+                            ageMonths: ''
+                          });
                         } else {
                           handleDogChange('dogName', val);
+                          handleLoadDog(val);
                         }
                       }}
                     >
@@ -1849,9 +1933,9 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="_add_new_">{t.addNewDog}</SelectItem>
-                        {uniqueDogNames.map((name) => (
-                          <SelectItem key={name} value={name}>
-                            {name}
+                        {savedDogs.map((dog) => (
+                          <SelectItem key={dog.id} value={dog.name}>
+                            {dog.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
