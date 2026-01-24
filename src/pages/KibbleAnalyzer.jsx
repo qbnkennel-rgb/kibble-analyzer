@@ -2394,11 +2394,20 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
         <Button
           onClick={analyzeKibble}
-          disabled={analyzingNutrition || analyzingIngredients || analyzingPrice}
+          disabled={analyzing || analyzingNutrition || analyzingIngredients || analyzingPrice || analyzingPriceOnly || analyzingFeeding}
           className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6 mt-6"
         >
-          <Calculator className="w-5 h-5 mr-2" />
-          {t.analyzeKibble}
+          {analyzing ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              {t.analyzing}
+            </>
+          ) : (
+            <>
+              <Calculator className="w-5 h-5 mr-2" />
+              {t.analyzeKibble}
+            </>
+          )}
         </Button>
 
         {results && (

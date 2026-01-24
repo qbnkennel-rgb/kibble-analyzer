@@ -1,10 +1,10 @@
-import KibbleAnalyzer from './pages/KibbleAnalyzer';
 import Home from './pages/Home';
+import KibbleAnalyzer from './pages/KibbleAnalyzer';
 
 
 export const PAGES = {
-    "KibbleAnalyzer": KibbleAnalyzer,
     "Home": Home,
+    "KibbleAnalyzer": KibbleAnalyzer,
 }
 
 export const pagesConfig = {
