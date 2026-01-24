@@ -312,30 +312,61 @@ export default function KibbleAnalyzer() {
 
   const t = translations[language];
 
-  const handleDogChange = async (field, value) => {
+  const handleDogChange = (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveNewDog = async () => {
+    if (!dogData.dogName || !showNewDogInput) return;
     
-    // Auto-save dog when name is entered for new dog
-    if (field === 'dogName' && value && showNewDogInput) {
-      const existingDog = savedDogs.find(d => d.name === value);
-      if (!existingDog) {
-        try {
-          await base44.entities.Dog.create({
-            name: value,
-            size: dogData.dogSize,
-            weight: dogData.dogWeight,
-            activityLevel: dogData.activityLevel,
-            foodGoal: dogData.dogFoodGoal,
-            zipCode: dogData.zipCode,
-            ageYears: dogData.ageYears,
-            ageMonths: dogData.ageMonths
-          });
-          await queryClient.invalidateQueries({ queryKey: ['dogs'] });
-          setShowNewDogInput(false);
-          base44.analytics.track({ eventName: "dog_profile_created", properties: { dog_name: value } });
-        } catch (error) {
-          console.error('Error saving dog:', error);
-        }
+    const existingDog = savedDogs.find(d => d.name === dogData.dogName);
+    if (existingDog) {
+      alert('A dog with this name already exists');
+      return;
+    }
+
+    try {
+      await base44.entities.Dog.create({
+        name: dogData.dogName,
+        size: dogData.dogSize,
+        weight: dogData.dogWeight,
+        activityLevel: dogData.activityLevel,
+        foodGoal: dogData.dogFoodGoal,
+        zipCode: dogData.zipCode,
+        ageYears: dogData.ageYears,
+        ageMonths: dogData.ageMonths
+      });
+      await queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      setShowNewDogInput(false);
+      base44.analytics.track({ eventName: "dog_profile_created", properties: { dog_name: dogData.dogName } });
+    } catch (error) {
+      alert('Error saving dog: ' + error.message);
+    }
+  };
+
+  const handleDeleteDog = async () => {
+    if (!dogData.dogName) return;
+    
+    const dogToDelete = savedDogs.find(d => d.name === dogData.dogName);
+    if (!dogToDelete) return;
+
+    if (confirm(`Delete ${dogData.dogName}?`)) {
+      try {
+        await base44.entities.Dog.delete(dogToDelete.id);
+        await queryClient.invalidateQueries({ queryKey: ['dogs'] });
+        setDogData({
+          dogName: '',
+          dogSize: 'medium',
+          dogWeight: '',
+          activityLevel: 'neutered adult',
+          dogFoodGoal: 'overall health',
+          zipCode: '',
+          ageYears: '',
+          ageMonths: ''
+        });
+        base44.analytics.track({ eventName: "dog_profile_deleted" });
+      } catch (error) {
+        alert('Error deleting dog: ' + error.message);
       }
     }
   };
@@ -1874,7 +1905,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 <div className="md:col-span-2">
                   <Label>{t.dogName}</Label>
                   {showNewDogInput ? (
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                       <Input
                         type="text"
                         placeholder={language === 'en' ? "Enter new dog name..." : "Ingresa nuevo nombre del perro..."}
@@ -1882,50 +1913,70 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                         onChange={(e) => handleDogChange('dogName', e.target.value)}
                         autoFocus
                       />
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowNewDogInput(false);
-                          handleDogChange('dogName', '');
-                        }}
-                      >
-                        {t.cancel}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleSaveNewDog}
+                          disabled={!dogData.dogName}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          {t.save}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowNewDogInput(false);
+                            handleDogChange('dogName', '');
+                          }}
+                        >
+                          {t.cancel}
+                        </Button>
+                      </div>
                     </div>
                   ) : (
-                    <Select
-                      value={dogData.dogName}
-                      onValueChange={(val) => {
-                        if (val === '_add_new_') {
-                          setShowNewDogInput(true);
-                          setDogData({
-                            dogName: '',
-                            dogSize: 'medium',
-                            dogWeight: '',
-                            activityLevel: 'neutered adult',
-                            dogFoodGoal: 'overall health',
-                            zipCode: '',
-                            ageYears: '',
-                            ageMonths: ''
-                          });
-                        } else {
-                          handleDogChange('dogName', val);
-                          handleLoadDog(val);
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t.selectDog} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_add_new_">{t.addNewDog}</SelectItem>
-                        {savedDogs.map((dog) => (
-                          <SelectItem key={dog.id} value={dog.name}>
-                            {dog.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      <Select
+                        value={dogData.dogName}
+                        onValueChange={(val) => {
+                          if (val === '_add_new_') {
+                            setShowNewDogInput(true);
+                            setDogData({
+                              dogName: '',
+                              dogSize: 'medium',
+                              dogWeight: '',
+                              activityLevel: 'neutered adult',
+                              dogFoodGoal: 'overall health',
+                              zipCode: '',
+                              ageYears: '',
+                              ageMonths: ''
+                            });
+                          } else {
+                            handleDogChange('dogName', val);
+                            handleLoadDog(val);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t.selectDog} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_add_new_">{t.addNewDog}</SelectItem>
+                          {savedDogs.map((dog) => (
+                            <SelectItem key={dog.id} value={dog.name}>
+                              {dog.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {dogData.dogName && (
+                        <Button
+                          onClick={handleDeleteDog}
+                          variant="outline"
+                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          Delete {dogData.dogName}
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
 
