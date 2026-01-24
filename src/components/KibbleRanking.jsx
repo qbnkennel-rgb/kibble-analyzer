@@ -19,8 +19,6 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
       heartHealth: "Heart Health",
       jointHealth: "Joint Health",
       reproduction: "Reproduction",
-      urinaryHealth: "Urinary Health",
-      dentalHealth: "Dental Health",
       overallScore: "Overall Score"
     },
     es: {
@@ -127,12 +125,6 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
               <SelectItem value="heart health">{t.heartHealth}</SelectItem>
               <SelectItem value="joint health">{t.jointHealth}</SelectItem>
               <SelectItem value="reproduction">{t.reproduction}</SelectItem>
-              {species === 'cat' && (
-                <>
-                  <SelectItem value="urinary health">{t.urinaryHealth}</SelectItem>
-                  <SelectItem value="dental health">{t.dentalHealth}</SelectItem>
-                </>
-              )}
             </SelectContent>
           </Select>
         </div>
