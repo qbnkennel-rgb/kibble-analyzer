@@ -389,9 +389,9 @@ export default function KibbleAnalyzer() {
 
   // Auto-update dog profile when data changes
   useEffect(() => {
-    const updateDogProfile = async () => {
-      if (!dogData.dogName || showNewDogInput) return;
-      
+    if (!dogData.dogName || showNewDogInput) return;
+    
+    const timeoutId = setTimeout(async () => {
       const existingDog = savedDogs.find(d => d.name === dogData.dogName);
       if (existingDog) {
         try {
@@ -408,9 +408,8 @@ export default function KibbleAnalyzer() {
           console.error('Error updating dog:', error);
         }
       }
-    };
-
-    const timeoutId = setTimeout(updateDogProfile, 1000);
+    }, 1000);
+    
     return () => clearTimeout(timeoutId);
   }, [dogData, savedDogs, showNewDogInput]);
 
