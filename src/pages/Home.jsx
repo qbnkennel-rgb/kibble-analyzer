@@ -9,5 +9,5 @@ export default function Home() {
     navigate(createPageUrl('KibbleAnalyzer'));
   }, [navigate]);
   
-  return null;
+  return <div>Loading...</div>;
 }
