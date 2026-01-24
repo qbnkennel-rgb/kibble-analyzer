@@ -86,9 +86,7 @@ export default function KibbleAnalyzer() {
     queryKey: ['analyses'],
     queryFn: async () => {
       try {
-        const user = await base44.auth.me();
-        if (!user) return [];
-        const analyses = await base44.entities.Analysis.filter({ created_by: user.email }, '-created_date', 50);
+        const analyses = await base44.entities.Analysis.list('-created_date', 50);
         console.log('Loaded analyses:', analyses.length, analyses);
         return analyses;
       } catch (error) {
@@ -102,8 +100,6 @@ export default function KibbleAnalyzer() {
     queryKey: ['dogs'],
     queryFn: async () => {
       try {
-        const user = await base44.auth.me();
-        if (!user) return [];
         return await base44.entities.Dog.list();
       } catch (error) {
         console.error('Error fetching dogs:', error);
