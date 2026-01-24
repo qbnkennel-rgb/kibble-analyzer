@@ -17,6 +17,7 @@ export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [language, setLanguage] = useState('en');
   const [dogData, setDogData] = useState({
+    species: 'dog',
     dogName: '',
     dogSize: 'medium',
     dogWeight: '',
@@ -331,6 +332,7 @@ export default function KibbleAnalyzer() {
 
     try {
       const newDog = await base44.entities.Dog.create({
+        species: dogData.species,
         name: dogData.dogName,
         size: dogData.dogSize,
         weight: dogData.dogWeight,
@@ -371,6 +373,7 @@ export default function KibbleAnalyzer() {
         
         await queryClient.invalidateQueries({ queryKey: ['dogs'] });
         setDogData({
+          species: 'dog',
           dogName: '',
           dogSize: 'medium',
           dogWeight: '',
@@ -391,6 +394,7 @@ export default function KibbleAnalyzer() {
     const dog = savedDogs.find(d => d.name === dogName);
     if (dog) {
       setDogData({
+        species: dog.species || 'dog',
         dogName: dog.name,
         dogSize: dog.size || 'medium',
         dogWeight: dog.weight || '',
@@ -417,6 +421,7 @@ export default function KibbleAnalyzer() {
       if (existingDog) {
         try {
           await base44.entities.Dog.update(existingDog.id, {
+            species: dogData.species,
             size: dogData.dogSize,
             weight: dogData.dogWeight,
             activityLevel: dogData.activityLevel,
@@ -1887,6 +1892,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 </div>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label>Species</Label>
+                  <Select value={dogData.species} onValueChange={(val) => handleDogChange('species', val)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dog">Dog</SelectItem>
+                      <SelectItem value="cat">Cat</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="md:col-span-2">
                   <Label>{t.dogName}</Label>
                   {showNewDogInput ? (
