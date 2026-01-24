@@ -312,14 +312,6 @@ export default function KibbleAnalyzer() {
 
   const t = translations[language];
 
-  if (!hasAcceptedTerms) {
-    return <LegalDisclosure onAccept={handleAcceptTerms} />;
-  }
-
-
-
-
-
   const handleDogChange = async (field, value) => {
     setDogData(prev => ({ ...prev, [field]: value }));
     
@@ -1482,6 +1474,10 @@ Return up to 10 results with the most competitive prices. Include store name, pr
       setSearchingPrices(false);
     }
   };
+
+  if (!hasAcceptedTerms) {
+    return <LegalDisclosure onAccept={handleAcceptTerms} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
