@@ -1085,7 +1085,7 @@ Return as a number. If not visible, return null.`,
     }
 
     // Save analysis to database
-    await base44.entities.Analysis.create({
+    const newAnalysis = await base44.entities.Analysis.create({
       kibbleName: foodData.dogFood || 'Unnamed',
       dogWeight: weight.toString(),
       overallScore: overallScore,
@@ -1093,6 +1093,12 @@ Return as a number. If not visible, return null.`,
       dogData: dogData,
       foodData: foodData
     });
+    
+    // Track this analysis as belonging to this user/browser
+    const myAnalyses = JSON.parse(localStorage.getItem('myAnalysisIds') || '[]');
+    myAnalyses.push(newAnalysis.id);
+    localStorage.setItem('myAnalysisIds', JSON.stringify(myAnalyses));
+    
     await queryClient.invalidateQueries({ queryKey: ['analyses'] });
 
     base44.analytics.track({ 
@@ -1617,7 +1623,10 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
             <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
               <KibbleRanking 
-                analyses={previousAnalyses} 
+                analyses={previousAnalyses.filter(a => {
+                  const myAnalyses = JSON.parse(localStorage.getItem('myAnalysisIds') || '[]');
+                  return myAnalyses.includes(a.id);
+                })} 
                 dogFoodGoal={dogData.dogFoodGoal}
                 onGoalChange={(val) => handleDogChange('dogFoodGoal', val)}
                 language={language}
