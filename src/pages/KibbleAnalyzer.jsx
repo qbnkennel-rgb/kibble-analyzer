@@ -21,7 +21,7 @@ export default function KibbleAnalyzer() {
     dogSize: 'medium',
     dogWeight: '',
     activityLevel: 'neutered adult',
-    dogFoodGoal: 'overall health',
+    dogFoodGoal: 'anti-yeast',
     zipCode: '',
     ageYears: '',
     ageMonths: ''
