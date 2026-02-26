@@ -46,6 +46,7 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
 
     // Map goal to health area
     const goalToAreaMap = {
+      'anti-yeast': 'Allergy Control',
       'overall health': 'overall',
       'allergies': 'Allergy Control',
       'skin/coat health': 'Skin & Coat Health',
