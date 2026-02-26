@@ -13,6 +13,7 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
       goal: "goal",
       noAnalyses: "No analyses yet - complete at least 2 analyses to see rankings",
       oneMoreAnalysis: "Complete one more analysis to see rankings (need at least 2)",
+      antiYeast: "Anti-Yeast",
       overallHealth: "Overall Health",
       allergies: "Allergies",
       skinCoat: "Skin/Coat Health",
@@ -28,6 +29,7 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
       goal: "",
       noAnalyses: "Aún no hay análisis - completa al menos 2 análisis para ver clasificaciones",
       oneMoreAnalysis: "Completa un análisis más para ver clasificaciones (se necesitan al menos 2)",
+      antiYeast: "Anti-Levadura",
       overallHealth: "Salud General",
       allergies: "Alergias",
       skinCoat: "Salud de Piel/Pelaje",
@@ -119,6 +121,7 @@ export default function KibbleRanking({ analyses, dogFoodGoal, onGoalChange, lan
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="anti-yeast">{t.antiYeast}</SelectItem>
               <SelectItem value="overall health">{t.overallHealth}</SelectItem>
               <SelectItem value="allergies">{t.allergies}</SelectItem>
               <SelectItem value="skin/coat health">{t.skinCoat}</SelectItem>
