@@ -16,7 +16,8 @@ export default function DogInfoCard({
   onDeleteDog,
   onLoadDog,
   setShowNewDogInput,
-  setLanguage
+  setLanguage,
+  setDogData
 }) {
   return (
     <Card>
@@ -79,7 +80,16 @@ export default function DogInfoCard({
                 onValueChange={(val) => {
                   if (val === '_add_new_') {
                     setShowNewDogInput(true);
-                    onDogChange('dogName', '');
+                    setDogData({
+                      dogName: '',
+                      dogSize: 'medium',
+                      dogWeight: '',
+                      activityLevel: 'neutered adult',
+                      dogFoodGoal: 'anti-yeast',
+                      zipCode: '',
+                      ageYears: '',
+                      ageMonths: ''
+                    });
                   } else {
                     onDogChange('dogName', val);
                     onLoadDog(val);
