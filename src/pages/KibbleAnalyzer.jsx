@@ -1856,12 +1856,8 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
         <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} />
 
-        {false && (
-          <div className="mt-8 space-y-6">
-            {recallInfo?.has_recall && recallInfo.recalls?.length > 0 && (
-              <div></div>
-            )}
-
+        {false && results && (
+          <div>
             {results.weatherData && results.seasonalAllergies && (
               <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300">
                 <CardHeader>
