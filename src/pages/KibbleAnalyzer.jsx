@@ -1534,6 +1534,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
       <AnnouncementBanner />
       <div className="max-w-4xl mx-auto p-6">
         <Card className="mb-8">
