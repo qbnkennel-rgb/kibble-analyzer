@@ -1975,7 +1975,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               </Card>
             )}
 
-            {results.ingredientAnalysis?.red_flags?.length > 0 && (
+            {false && results.ingredientAnalysis?.red_flags?.length > 0 && (
               <>
                 <Card className="bg-red-50 border-2 border-red-300">
                   <CardHeader>
