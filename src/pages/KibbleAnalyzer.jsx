@@ -18,6 +18,7 @@ import AnnouncementBanner from '../components/AnnouncementBanner';
 import VideoEducationCard from '../components/VideoEducationCard';
 import FdaRecallCard from '../components/FdaRecallCard';
 import AnalysisResults from '../components/AnalysisResults';
+import PaywallModal from '../components/PaywallModal';
 
 export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
@@ -76,6 +77,8 @@ export default function KibbleAnalyzer() {
   const [foodDataSaved, setFoodDataSaved] = useState(false);
   const [recallInfo, setRecallInfo] = useState(null);
   const [checkingRecalls, setCheckingRecalls] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   const queryClient = useQueryClient();
 
