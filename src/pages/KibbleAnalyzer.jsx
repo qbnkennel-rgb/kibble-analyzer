@@ -1856,7 +1856,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
         <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} />
 
-        {false && results && (<div>{results.weatherData && results.seasonalAllergies && (
+        {false && (<div>{true && (
               <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300">
                 <CardHeader>
                   <CardTitle className="text-2xl text-blue-700">🌤️ Location & Seasonal Analysis</CardTitle>
