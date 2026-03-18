@@ -801,6 +801,18 @@ Return as a number. If not visible, return null.`,
       return;
     }
 
+    // Paywall: limit free users to 2 analyses per month
+    if (!isPremium) {
+      const now = new Date();
+      const monthKey = `analyses_${now.getFullYear()}_${now.getMonth()}`;
+      const count = parseInt(localStorage.getItem(monthKey) || '0');
+      if (count >= 2) {
+        setShowPaywall(true);
+        return;
+      }
+      localStorage.setItem(monthKey, (count + 1).toString());
+    }
+
     setAnalyzing(true);
 
     // Calculate daily caloric needs (RER formula)
