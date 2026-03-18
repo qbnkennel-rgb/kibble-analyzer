@@ -1574,70 +1574,8 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             </CardHeader>
             </Card>
 
-            <Card className="mb-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
-              <CardHeader>
-                <CardTitle className="text-xl text-green-700">{t.rawFeedingTitle}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button
-                  onClick={() => {
-                    window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRKM4NK0tWeJFmrao7o81OsI', '_blank');
-                    base44.analytics.track({ eventName: "learn_raw_feeding_clicked" });
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-lg py-6"
-                >
-                  🥩 {t.learnRaw}
-                </Button>
-                <Button
-                  onClick={() => {
-                    window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRIHo9bIcXEKU98np4epAVF8', '_blank');
-                    base44.analytics.track({ eventName: "paw_licking_question_clicked" });
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-base py-6"
-                >
-                  🐾 {t.pawLicking}
-                </Button>
-                <Button
-                  onClick={() => {
-                    window.open('https://www.youtube.com/playlist?list=PLbQ5YaICgTRII52jk3XKqC0nlmAk6i6ra', '_blank');
-                    base44.analytics.track({ eventName: "nutritional_secrets_clicked" });
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-base py-6"
-                >
-                  🔐 {t.nutritionalSecrets}
-                </Button>
-                </CardContent>
-            </Card>
-
-            <Card className="mb-8 bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300">
-              <CardHeader>
-                <CardTitle className="text-xl text-red-700 flex items-center gap-2">
-                  ⚠️ {t.fdaRecalls}
-                </CardTitle>
-                <p className="text-sm text-gray-600 mt-2">{t.recallCheckerDesc}</p>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={handleCheckRecalls}
-                  disabled={checkingRecalls || !foodData.dogFood}
-                  className="w-full bg-red-600 hover:bg-red-700 text-lg py-6"
-                >
-                  {checkingRecalls ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      {t.checkingRecalls}
-                    </>
-                  ) : (
-                    <>
-                      🔍 {t.checkRecalls}
-                    </>
-                  )}
-                </Button>
-                {!foodData.dogFood && (
-                  <p className="text-sm text-gray-600 mt-2 text-center">{t.enterFoodName}</p>
-                )}
-              </CardContent>
-            </Card>
+            <VideoEducationCard t={t} />
+            <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
 
             <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
               <KibbleRanking 
