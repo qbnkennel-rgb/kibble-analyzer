@@ -1854,59 +1854,12 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           )}
         </Button>
 
-        {results && (
+        <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} />
+
+        {results && false && (
           <div className="mt-8 space-y-6">
             {recallInfo?.has_recall && recallInfo.recalls?.length > 0 && (
-              <Card className="bg-red-50 border-4 border-red-500">
-                <CardHeader>
-                  <CardTitle className="text-3xl text-red-700 flex items-center gap-3">
-                    ⚠️ FDA RECALL ALERT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-lg font-bold text-red-800">
-                    WARNING: This product or similar products have been recalled by the FDA!
-                  </p>
-                  {recallInfo.recalls.map((recall, idx) => (
-                    <div key={idx} className="p-4 bg-white rounded-lg border-2 border-red-400">
-                      <p className="font-bold text-xl text-red-700">{recall.brand_name}</p>
-                      <p className="text-gray-800 mt-2"><strong>Product:</strong> {recall.product_description}</p>
-                      <p className="text-gray-800"><strong>Recall Date:</strong> {recall.recall_date}</p>
-                      <p className="text-gray-800"><strong>Reason:</strong> {recall.reason}</p>
-                      <p className="text-gray-800"><strong>Company:</strong> {recall.company}</p>
-                      {recall.severity && (
-                        <p className="text-red-600 font-semibold mt-2">Severity: {recall.severity}</p>
-                      )}
-                      {recall.fda_link && (
-                        <a 
-                          href={recall.fda_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline hover:text-blue-800 mt-2 inline-block"
-                        >
-                          View FDA Recall Notice →
-                        </a>
-                      )}
-                      {recall.terminated && (
-                        <p className="text-sm text-gray-600 mt-2 italic">Note: This recall has been terminated by the FDA</p>
-                      )}
-                    </div>
-                  ))}
-                  <p className="text-sm text-gray-700 mt-4">
-                    If you have this product, stop feeding it immediately and consult your veterinarian.
-                    Visit{' '}
-                    <a 
-                      href="https://www.fda.gov/animal-veterinary/safety-health/recalls-withdrawals"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline hover:text-blue-800"
-                    >
-                      FDA Animal Recalls
-                    </a>
-                    {' '}for the latest information.
-                  </p>
-                </CardContent>
-              </Card>
+              <div></div>
             )}
 
             {results.weatherData && results.seasonalAllergies && (
