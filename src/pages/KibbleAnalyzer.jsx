@@ -1856,7 +1856,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
         <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} />
 
-        {results && false && (
+        {false && (
           <div className="mt-8 space-y-6">
             {recallInfo?.has_recall && recallInfo.recalls?.length > 0 && (
               <div></div>
