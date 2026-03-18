@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, Camera, Loader2, X, History, MapPin, DollarSign } from "lucide-react";
+import { Calculator, Loader2, X, History, MapPin, DollarSign } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
@@ -14,6 +14,10 @@ import LegalDisclosure from '../components/LegalDisclosure';
 import KibbleRanking from '../components/KibbleRanking';
 import DogInfoCard from '../components/DogInfoCard';
 import FoodLabelCard from '../components/FoodLabelCard';
+import AnnouncementBanner from '../components/AnnouncementBanner';
+import VideoEducationCard from '../components/VideoEducationCard';
+import FdaRecallCard from '../components/FdaRecallCard';
+import AnalysisResults from '../components/AnalysisResults';
 
 export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
