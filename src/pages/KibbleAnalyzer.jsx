@@ -128,6 +128,16 @@ export default function KibbleAnalyzer() {
     if (accepted === 'true') {
       setHasAcceptedTerms(true);
     }
+    // Check premium status and handle post-subscription redirect
+    base44.functions.invoke('getSubscriptionStatus', {}).then(res => {
+      if (res.data?.is_premium) setIsPremium(true);
+    }).catch(() => {});
+    // Handle successful subscription redirect
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subscribed') === 'true') {
+      setIsPremium(true);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
   const handleAcceptTerms = () => {
