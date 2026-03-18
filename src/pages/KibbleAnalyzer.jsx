@@ -2298,14 +2298,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                   </div>
                   <p className="text-sm text-gray-700 mt-4">
                     Buy using code 513237 at <a href="https://nuvet.com/513237" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline" onClick={() => base44.analytics.track({ eventName: "nuvet_text_link_clicked" })}>https://nuvet.com/513237</a> on autoship for 15% off.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        <Card className="mt-8">
+                  <Card className="mt-8">
           <CardHeader>
             <CardTitle className="text-lg text-gray-700">{t.appSuggestions}</CardTitle>
           </CardHeader>
