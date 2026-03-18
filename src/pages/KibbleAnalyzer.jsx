@@ -2294,11 +2294,9 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                       <p className="text-xs text-gray-600 mt-1">Improved cognition/mobility</p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-700 mt-4">
-                    Buy using code 513237 at <a href="https://nuvet.com/513237" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline" onClick={() => base44.analytics.track({ eventName: "nuvet_text_link_clicked" })}>https://nuvet.com/513237</a> on autoship for 15% off.
                   <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-lg text-gray-700">{t.appSuggestions}</CardTitle>
+                    <CardHeader>
+                      <CardTitle className="text-lg text-gray-700">{t.appSuggestions}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Input
