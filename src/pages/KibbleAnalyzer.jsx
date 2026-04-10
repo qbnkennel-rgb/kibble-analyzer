@@ -944,7 +944,7 @@ Return as a number. If not visible, return null.`,
           2. Ingredient Quality Analysis:
           Research EACH individual ingredient through credible university veterinary sources (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State).
 
-          CRITICAL RULE: Any protein source with the word "meal" after it (e.g., chicken meal, fish meal, beef meal) should score NO HIGHER than +2, regardless of quality.
+          CRITICAL RULE: Any protein source with the word "meal" after it (e.g., chicken meal, fish meal, beef meal) MUST be scored -1, regardless of quality.
 
           For EVERY ingredient in the list, provide:
           - Ingredient name
