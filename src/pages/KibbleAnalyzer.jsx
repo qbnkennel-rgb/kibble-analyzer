@@ -78,7 +78,7 @@ export default function KibbleAnalyzer() {
   const [recallInfo, setRecallInfo] = useState(null);
   const [checkingRecalls, setCheckingRecalls] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
+  const [isPremium, setIsPremium] = useState(true); // TEMP: full access mode
 
   const queryClient = useQueryClient();
 
