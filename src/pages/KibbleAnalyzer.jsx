@@ -806,7 +806,7 @@ Return as a number. If not visible, return null.`,
       const now = new Date();
       const monthKey = `analyses_${now.getFullYear()}_${now.getMonth()}`;
       const count = parseInt(localStorage.getItem(monthKey) || '0');
-      if (count >= 2) {
+      if (count >= 1) {
         setShowPaywall(true);
         return;
       }
@@ -1608,7 +1608,19 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             <VideoEducationCard t={t} />
             <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
 
-            <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300">
+            <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 relative overflow-hidden">
+              {!isPremium && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
+                  <p className="text-lg font-bold text-purple-700 mb-2">🔒 Premium Feature</p>
+                  <p className="text-sm text-gray-600 mb-3">Subscribe to unlock Kibble Rankings</p>
+                  <button
+                    onClick={() => setShowPaywall(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm"
+                  >
+                    Upgrade for $1.99/mo
+                  </button>
+                </div>
+              )}
               <KibbleRanking 
                 analyses={previousAnalyses} 
                 dogFoodGoal={dogData.dogFoodGoal}
