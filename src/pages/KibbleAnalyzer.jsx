@@ -1605,8 +1605,26 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             </CardHeader>
             </Card>
 
-            <VideoEducationCard t={t} />
-            <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
+            <div className="relative">
+              {!isPremium && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
+                  <p className="text-lg font-bold text-blue-700 mb-2">🔒 Premium Feature</p>
+                  <p className="text-sm text-gray-600 mb-3">Subscribe to access Video Education</p>
+                  <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
+                </div>
+              )}
+              <VideoEducationCard t={t} />
+            </div>
+            <div className="relative">
+              {!isPremium && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
+                  <p className="text-lg font-bold text-red-700 mb-2">🔒 Premium Feature</p>
+                  <p className="text-sm text-gray-600 mb-3">Subscribe to access FDA Recall Checker</p>
+                  <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
+                </div>
+              )}
+              <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
+            </div>
 
             <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 relative overflow-hidden">
               {!isPremium && (
