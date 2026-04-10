@@ -18,6 +18,7 @@ import AnnouncementBanner from '../components/AnnouncementBanner';
 import VideoEducationCard from '../components/VideoEducationCard';
 import FdaRecallCard from '../components/FdaRecallCard';
 import AnalysisResults from '../components/AnalysisResults';
+import BottomCards from '../components/BottomCards';
 import PaywallModal from '../components/PaywallModal';
 
 export default function KibbleAnalyzer() {
@@ -1917,55 +1918,30 @@ Return up to 10 results with the most competitive prices. Include store name, pr
 
         <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} />
 
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-lg text-gray-700">{t.appSuggestions}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input
-              type="text"
-              maxLength={100}
-              placeholder={t.shareSuggestion}
-              className="w-full"
-              value={suggestion}
-              onChange={(e) => setSuggestion(e.target.value)}
-            />
-            <Button
-              onClick={handleSuggestionSubmit}
-              disabled={submittingSuggestion || !suggestion.trim()}
-              className="w-full"
-            >
-              {submittingSuggestion ? t.sending : t.submitSuggestion}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardHeader>
-            <CardTitle className="text-lg text-blue-700 text-center">{t.shareApp}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div
-                className="cursor-pointer hover:opacity-80 transition-opacity p-4 bg-white rounded-lg shadow-md"
-                onClick={() => setShowQROptions(!showQROptions)}
-              >
-                <QRCodeSVG id="qr-code-svg" value={window.location.href} size={150} level="H" />
-              </div>
-              <p className="text-sm text-gray-600 text-center mt-2">{t.clickToShare}</p>
-              {showQROptions && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-10">
-                  <div className="p-2 space-y-1">
-                    <button onClick={downloadQRCode} className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors">📥 {t.downloadQR}</button>
-                    <button onClick={copyLinkToClipboard} className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors">📋 {t.copyLink}</button>
-                    <button onClick={shareViaEmail} className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors">✉️ {t.shareEmail}</button>
-                    <button onClick={() => setShowQROptions(false)} className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600">✕ {t.cancel}</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <BottomCards
+          t={t}
+          suggestion={suggestion}
+          setSuggestion={setSuggestion}
+          submittingSuggestion={submittingSuggestion}
+          onSuggestionSubmit={handleSuggestionSubmit}
+          showQROptions={showQROptions}
+          setShowQROptions={setShowQROptions}
+          onDownloadQR={downloadQRCode}
+          onCopyLink={copyLinkToClipboard}
+          onShareEmail={shareViaEmail}
+          onAnalyzeNew={() => {
+            setFoodData({
+              dogFood: '', recommendedFeeding: '', kcalKg: '', kcalCup: '',
+              omega3: '', omega6: '', vitaminE: '', selenium: '', zinc: '',
+              crudeProtein: '', crudeFat: '', crudeFiber: '', moisture: '',
+              taurine: '', glucosamine: '', chondroitin: '',
+              priceBag: '', bagWeight: '', ingredients: ''
+            });
+            setResults(null);
+            setRecallInfo(null);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
         </div>
         </div>
         );
