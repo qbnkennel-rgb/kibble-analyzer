@@ -1183,7 +1183,7 @@ Return as a number. If not visible, return null.`,
       eventName: "kibble_analyzed",
       properties: { 
         dog_weight: weight,
-        overall_score: overallScore,
+        overall_score: analysis.overallScore,
         kibble_name: foodData.dogFood,
         has_ingredients: !!foodData.ingredients
       }
