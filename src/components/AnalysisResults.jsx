@@ -217,6 +217,8 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
               })}
             </div>
           </CardContent>
+        </Card>
+      )}
 
       {results.ingredientAnalysis?.ingredient_grade && (
         <Card className="bg-white border-2 border-blue-300">
