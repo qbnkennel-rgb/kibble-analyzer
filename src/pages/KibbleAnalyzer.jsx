@@ -945,9 +945,7 @@ Return as a number. If not visible, return null.`,
           2. Ingredient Quality Analysis:
           Research EACH individual ingredient through credible university veterinary sources (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State).
 
-          CRITICAL RULE: Any protein source with the word "meal" after it (e.g., chicken meal, fish meal, beef meal) MUST be scored -1, regardless of quality. Additionally, any ingredient containing "by-product meal" (e.g., chicken by-product meal, poultry by-product meal, meat by-product meal) MUST also be scored -1, regardless of quality.
-
-          CRITICAL RULE: "Powdered cellulose" MUST always be scored exactly -2. It is a low-quality filler derived from wood pulp with no nutritional value for dogs. It MUST also be included as a red flag with concern: "Low-quality wood pulp filler" and health_impact: "Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food."
+          CRITICAL SCORING RULES (override all other judgment): protein-based meal (chicken meal, salmon meal, etc.) = 0.5; by-product meal = -1; cracked pearl barley = -0.5; whole grain wheat = -1; whole grain corn = -1; corn protein meal = -2; brewer's rice = -1; pea fiber = -1; soybean oil = -1; powdered cellulose = -1 (also flag as red flag: concern "Low-quality wood pulp filler", health_impact "Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.").
 
 
           For EVERY ingredient in the list, provide:
@@ -1041,18 +1039,20 @@ Return as a number. If not visible, return null.`,
 
       if (ingredientAnalysis?.ingredient_grade?.ingredients) {
         ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing => {
-          // Check fixed overrides
           for (const override of scoreOverrides) {
-            if (override.pattern.test(ing.name)) {
-              return { ...ing, score: override.score };
-            }
+            if (override.pattern.test(ing.name)) return { ...ing, score: override.score };
           }
-          // Protein-based meal: any ingredient with "meal" in name (but not "corn protein meal" already caught)
-          if (/\bmeal\b/i.test(ing.name) && !/corn protein meal/i.test(ing.name)) {
-            return { ...ing, score: 0.5 };
-          }
+          if (/\bmeal\b/i.test(ing.name) && !/by-?product/i.test(ing.name)) return { ...ing, score: 0.5 };
           return ing;
         });
+        const ings = ingredientAnalysis.ingredient_grade.ingredients;
+        const tot = ings.reduce((s, i) => s + i.score, 0);
+        const avg = ings.length > 0 ? tot / ings.length : 0;
+        ingredientAnalysis.ingredient_grade.total_score = Math.round(tot * 10) / 10;
+        ingredientAnalysis.ingredient_grade.average_score = Math.round(avg * 100) / 100;
+        ingredientAnalysis.ingredient_grade.positive_count = ings.filter(i => i.score > 0).length;
+        ingredientAnalysis.ingredient_grade.negative_count = ings.filter(i => i.score < 0).length;
+        ingredientAnalysis.ingredient_grade.grade = avg >= 3 ? 'EXCELLENT' : avg >= 2 ? 'GOOD' : avg >= 0 ? 'AVERAGE' : 'POOR';
       }
 
       // Client-side enforcement: always flag powdered cellulose
