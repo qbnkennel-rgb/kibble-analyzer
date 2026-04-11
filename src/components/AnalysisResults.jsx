@@ -151,7 +151,7 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
         </Card>
       )}
 
-      {results.ingredientAnalysis?.red_flags?.length > 0 && (
+      {(results.ingredientAnalysis?.red_flags?.length > 0 || (foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients))) && (
         <>
           <Card className="bg-red-50 border-2 border-red-300">
             <CardHeader>
@@ -161,7 +161,17 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {results.ingredientAnalysis.red_flags.map((flag, idx) => (
+                {/* Always show powdered cellulose flag if present */}
+                {foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients) &&
+                  !(results.ingredientAnalysis?.red_flags || []).some(f => /powdered cellulose/i.test(f.ingredient)) && (
+                  <li className="border-l-4 border-red-500 pl-4 py-2">
+                    <p className="font-bold text-red-600">Powdered Cellulose</p>
+                    <p className="text-gray-800 mt-1"><strong>Concern:</strong> Low-quality wood pulp filler</p>
+                    <p className="text-gray-800"><strong>Health Impact:</strong> Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.</p>
+                    <p className="text-sm text-gray-600 mt-1 italic">📚 Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.</p>
+                  </li>
+                )}
+                {(results.ingredientAnalysis?.red_flags || []).map((flag, idx) => (
                   <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
                     <p className="font-bold text-red-600">{flag.ingredient}</p>
                     <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
@@ -183,10 +193,11 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                 <div className="text-gray-800 leading-relaxed">
                   {foodData.ingredients.split(',').map((ingredient, idx) => {
                     const trimmedIngredient = ingredient.trim();
-                    const isRedFlagged = results.ingredientAnalysis.red_flags.some(flag =>
+                    const redFlags = results.ingredientAnalysis?.red_flags || [];
+                    const isRedFlagged = /powdered cellulose/i.test(trimmedIngredient) || redFlags.some(flag =>
                       trimmedIngredient.toLowerCase().includes(flag.ingredient.toLowerCase()) ||
                       flag.ingredient.toLowerCase().includes(trimmedIngredient.toLowerCase())
-                    ) || /powdered cellulose/i.test(trimmedIngredient);
+                    );
                     return (
                       <span key={idx}>
                         <span className={isRedFlagged ? 'text-red-600 font-semibold' : ''}>

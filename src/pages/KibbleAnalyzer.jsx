@@ -1026,8 +1026,11 @@ Return as a number. If not visible, return null.`,
       }
 
       // Client-side enforcement: always flag powdered cellulose
-      if (ingredientAnalysis && foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients)) {
-        // Ensure it's in red_flags
+      if (foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients)) {
+        // Create ingredientAnalysis if AI failed
+        if (!ingredientAnalysis) {
+          ingredientAnalysis = { red_flags: [], ingredient_grade: null, microorganisms: null };
+        }
         if (!ingredientAnalysis.red_flags) ingredientAnalysis.red_flags = [];
         const alreadyFlagged = ingredientAnalysis.red_flags.some(f => /powdered cellulose/i.test(f.ingredient));
         if (!alreadyFlagged) {
