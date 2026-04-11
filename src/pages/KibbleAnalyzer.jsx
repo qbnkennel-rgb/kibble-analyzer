@@ -881,8 +881,7 @@ Return as a number. If not visible, return null.`,
       try {
         [weatherData, seasonalAllergies] = await Promise.all([
           base44.integrations.Core.InvokeLLM({
-            prompt: `Look up current weather and climate information for zipcode ${dogData.zipCode}. Provide: current temperature/conditions, current season, climate characteristics of this region. Return structured data.`,
-            add_context_from_internet: true,
+            prompt: `Based on your knowledge of zipcode ${dogData.zipCode}, provide: current typical temperature/conditions for April, current season, and climate characteristics of this region.`,
             response_json_schema: {
               type: "object",
               properties: {
@@ -894,8 +893,7 @@ Return as a number. If not visible, return null.`,
             }
           }),
           base44.integrations.Core.InvokeLLM({
-            prompt: `For zipcode ${dogData.zipCode} and current season (April 2026), provide: common dog seasonal allergens in this region, common allergy symptoms in dogs, dietary recommendations for this season, ingredients to recommend and avoid. IMPORTANT: Do NOT include garlic in ingredients to avoid. Include university citations (Cornell, UC Davis, Tufts).`,
-            add_context_from_internet: true,
+            prompt: `For zipcode ${dogData.zipCode} in April, provide: common dog seasonal allergens in this region, typical allergy symptoms in dogs this season, dietary recommendations, ingredients to recommend and avoid. IMPORTANT: Do NOT include garlic in ingredients to avoid. Include university citations (Cornell, UC Davis, Tufts).`,
             response_json_schema: {
               type: "object",
               properties: {
