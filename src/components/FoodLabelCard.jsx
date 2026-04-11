@@ -9,6 +9,7 @@ export default function FoodLabelCard({
   foodData,
   language,
   t,
+  fileInputKey,
   onFoodChange,
   onNutritionPhotoUpload,
   onIngredientsPhotoUpload,
@@ -51,6 +52,7 @@ export default function FoodLabelCard({
           </Label>
           <div className="flex items-center gap-3">
             <Input
+              key={`nutrition-${fileInputKey}`}
               type="file"
               accept="image/*"
               onChange={onNutritionPhotoUpload}
@@ -75,6 +77,7 @@ export default function FoodLabelCard({
           </Label>
           <div className="flex items-center gap-3">
             <Input
+              key={`ingredients-${fileInputKey}`}
               type="file"
               accept="image/*"
               onChange={onIngredientsPhotoUpload}
@@ -99,6 +102,7 @@ export default function FoodLabelCard({
           </Label>
           <div className="flex items-center gap-3">
             <Input
+              key={`price-${fileInputKey}`}
               type="file"
               accept="image/*"
               onChange={onPricePhotoUpload}
@@ -123,6 +127,7 @@ export default function FoodLabelCard({
           </Label>
           <div className="flex items-center gap-3">
             <Input
+              key={`priceonly-${fileInputKey}`}
               type="file"
               accept="image/*"
               onChange={onPriceOnlyPhotoUpload}
@@ -147,6 +152,7 @@ export default function FoodLabelCard({
           </Label>
           <div className="flex items-center gap-3">
             <Input
+              key={`feeding-${fileInputKey}`}
               type="file"
               accept="image/*"
               onChange={onFeedingPhotoUpload}

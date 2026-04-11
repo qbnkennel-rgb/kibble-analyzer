@@ -80,6 +80,7 @@ export default function KibbleAnalyzer() {
   const [checkingRecalls, setCheckingRecalls] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isPremium, setIsPremium] = useState(true); // TEMP: full access mode
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   const queryClient = useQueryClient();
 
@@ -1443,6 +1444,7 @@ Return as a number. If not visible, return null.`,
       bagWeight: '',
       ingredients: ''
     });
+    setFileInputKey(k => k + 1);
   };
 
   const handleBestRecommended = async () => {
@@ -1917,6 +1919,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               foodData={foodData}
               language={language}
               t={t}
+              fileInputKey={fileInputKey}
               onFoodChange={handleFoodChange}
               onNutritionPhotoUpload={handleNutritionPhotoUpload}
               onIngredientsPhotoUpload={handleIngredientsPhotoUpload}
