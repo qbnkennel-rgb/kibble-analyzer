@@ -1916,10 +1916,10 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             />
 
             <FoodLabelCard
+              key={fileInputKey}
               foodData={foodData}
               language={language}
               t={t}
-              fileInputKey={fileInputKey}
               onFoodChange={handleFoodChange}
               onNutritionPhotoUpload={handleNutritionPhotoUpload}
               onIngredientsPhotoUpload={handleIngredientsPhotoUpload}
