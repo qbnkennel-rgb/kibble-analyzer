@@ -873,56 +873,41 @@ Return as a number. If not visible, return null.`,
     // (% / 100) × grams food × 1000 = mg
     const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) / 100 * dailyFoodGrams * 1000); // mg/day
 
-    // Get weather and seasonal data for zipcode
+    // Get weather and seasonal data for zipcode — run in parallel
     let weatherData = null;
     let seasonalAllergies = null;
     if (dogData.zipCode) {
       try {
-        weatherData = await base44.integrations.Core.InvokeLLM({
-          prompt: `Look up current weather and climate information for zipcode ${dogData.zipCode}. 
-
-          Provide:
-          1. Current temperature and conditions
-          2. Current season and typical weather patterns
-          3. Climate characteristics of this region
-
-          Return structured data.`,
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              current_temp: { type: "string" },
-              conditions: { type: "string" },
-              season: { type: "string" },
-              climate_type: { type: "string" }
+        [weatherData, seasonalAllergies] = await Promise.all([
+          base44.integrations.Core.InvokeLLM({
+            prompt: `Look up current weather and climate information for zipcode ${dogData.zipCode}. Provide: current temperature/conditions, current season, climate characteristics of this region. Return structured data.`,
+            add_context_from_internet: true,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                current_temp: { type: "string" },
+                conditions: { type: "string" },
+                season: { type: "string" },
+                climate_type: { type: "string" }
+              }
             }
-          }
-        });
-
-        seasonalAllergies = await base44.integrations.Core.InvokeLLM({
-          prompt: `Based on current date (January 2026) and location zipcode ${dogData.zipCode}, research:
-
-          1. Common dog allergies during this season in this region
-          2. Environmental allergens affecting dogs right now
-          3. Credible veterinary sources (Cornell, UC Davis, Tufts, etc.) recommendations for dog nutrition during this season
-          4. How weather and season affect dog dietary needs
-
-          IMPORTANT: Do NOT include garlic in the ingredients to avoid list.
-
-          Return detailed information with university citations.`,
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              seasonal_allergens: { type: "array", items: { type: "string" } },
-              common_symptoms: { type: "array", items: { type: "string" } },
-              dietary_recommendations: { type: "string" },
-              ingredient_recommendations: { type: "array", items: { type: "string" } },
-              ingredients_to_avoid: { type: "array", items: { type: "string" } },
-              university_citations: { type: "array", items: { type: "string" } }
+          }),
+          base44.integrations.Core.InvokeLLM({
+            prompt: `For zipcode ${dogData.zipCode} and current season (April 2026), provide: common dog seasonal allergens in this region, common allergy symptoms in dogs, dietary recommendations for this season, ingredients to recommend and avoid. IMPORTANT: Do NOT include garlic in ingredients to avoid. Include university citations (Cornell, UC Davis, Tufts).`,
+            add_context_from_internet: true,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                seasonal_allergens: { type: "array", items: { type: "string" } },
+                common_symptoms: { type: "array", items: { type: "string" } },
+                dietary_recommendations: { type: "string" },
+                ingredient_recommendations: { type: "array", items: { type: "string" } },
+                ingredients_to_avoid: { type: "array", items: { type: "string" } },
+                university_citations: { type: "array", items: { type: "string" } }
+              }
             }
-          }
-        });
+          })
+        ]);
       } catch (error) {
         console.error('Weather/seasonal analysis error:', error);
       }
