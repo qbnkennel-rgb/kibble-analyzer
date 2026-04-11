@@ -969,7 +969,6 @@ Return as a number. If not visible, return null.`,
           3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
 
           Return structured data with university citations and detailed scoring breakdown.`,
-          add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
