@@ -186,7 +186,7 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                     const isRedFlagged = results.ingredientAnalysis.red_flags.some(flag =>
                       trimmedIngredient.toLowerCase().includes(flag.ingredient.toLowerCase()) ||
                       flag.ingredient.toLowerCase().includes(trimmedIngredient.toLowerCase())
-                    );
+                    ) || /powdered cellulose/i.test(trimmedIngredient);
                     return (
                       <span key={idx}>
                         <span className={isRedFlagged ? 'text-red-600 font-semibold' : ''}>

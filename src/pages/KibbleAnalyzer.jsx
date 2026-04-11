@@ -1024,6 +1024,27 @@ Return as a number. If not visible, return null.`,
       } catch (error) {
         console.error('Ingredient analysis error:', error);
       }
+
+      // Client-side enforcement: always flag powdered cellulose
+      if (ingredientAnalysis && foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients)) {
+        // Ensure it's in red_flags
+        if (!ingredientAnalysis.red_flags) ingredientAnalysis.red_flags = [];
+        const alreadyFlagged = ingredientAnalysis.red_flags.some(f => /powdered cellulose/i.test(f.ingredient));
+        if (!alreadyFlagged) {
+          ingredientAnalysis.red_flags.push({
+            ingredient: 'Powdered Cellulose',
+            concern: 'Low-quality wood pulp filler',
+            health_impact: 'Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.',
+            university_citation: 'Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.'
+          });
+        }
+        // Ensure score is -2 in ingredient_grade
+        if (ingredientAnalysis.ingredient_grade?.ingredients) {
+          ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing =>
+            /powdered cellulose/i.test(ing.name) ? { ...ing, score: -2 } : ing
+          );
+        }
+      }
     }
 
     // Recommended ranges based on weight
