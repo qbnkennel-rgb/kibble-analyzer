@@ -195,7 +195,16 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
               {foodData.ingredients.split(',').map((ingredient, idx) => {
                 const trimmed = ingredient.trim();
                 const redFlags = results.ingredientAnalysis?.red_flags || [];
-                const isRed = /powdered cellulose/i.test(trimmed) || redFlags.some(f =>
+                const gradedIngredients = results.ingredientAnalysis?.ingredient_grade?.ingredients || [];
+                const KNOWN_ALLERGENS = /\b(wheat|corn|soy|soybean|gluten|dairy|milk|egg|eggs|beef|chicken|lamb|pork|fish|salmon|tuna|shrimp|barley|oat|oats|peanut|potato|sweet potato|lentil|lentils|pea|peas|legume|legumes)\b/i;
+                const hasNegativeScore = gradedIngredients.some(g =>
+                  g.score < 0 && (
+                    trimmed.toLowerCase().includes(g.name.toLowerCase()) ||
+                    g.name.toLowerCase().includes(trimmed.toLowerCase())
+                  )
+                );
+                const isKnownAllergen = KNOWN_ALLERGENS.test(trimmed);
+                const isRed = /powdered cellulose/i.test(trimmed) || hasNegativeScore || isKnownAllergen || redFlags.some(f =>
                   trimmed.toLowerCase().includes(f.ingredient.toLowerCase()) ||
                   f.ingredient.toLowerCase().includes(trimmed.toLowerCase())
                 );
@@ -208,8 +217,6 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
               })}
             </div>
           </CardContent>
-        </Card>
-      )}
 
       {results.ingredientAnalysis?.ingredient_grade && (
         <Card className="bg-white border-2 border-blue-300">
