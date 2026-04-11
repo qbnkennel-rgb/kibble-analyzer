@@ -1025,9 +1025,38 @@ Return as a number. If not visible, return null.`,
         console.error('Ingredient analysis error:', error);
       }
 
+      // Client-side score overrides for specific ingredients
+      const scoreOverrides = [
+        { pattern: /powdered cellulose/i, score: -1 },
+        { pattern: /\bcracked pearl barley\b/i, score: -0.5 },
+        { pattern: /\bwhole grain wheat\b/i, score: -1 },
+        { pattern: /\bwhole grain corn\b/i, score: -1 },
+        { pattern: /\bcorn protein meal\b/i, score: -2 },
+        { pattern: /\bbrewer'?s rice\b/i, score: -1 },
+        { pattern: /\bpea fiber\b/i, score: -1 },
+        { pattern: /\bsoybean oil\b/i, score: -1 },
+        // Protein meals: any word ending in "meal" preceded by a protein source word gets 0.5
+        // handled separately below
+      ];
+
+      if (ingredientAnalysis?.ingredient_grade?.ingredients) {
+        ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing => {
+          // Check fixed overrides
+          for (const override of scoreOverrides) {
+            if (override.pattern.test(ing.name)) {
+              return { ...ing, score: override.score };
+            }
+          }
+          // Protein-based meal: any ingredient with "meal" in name (but not "corn protein meal" already caught)
+          if (/\bmeal\b/i.test(ing.name) && !/corn protein meal/i.test(ing.name)) {
+            return { ...ing, score: 0.5 };
+          }
+          return ing;
+        });
+      }
+
       // Client-side enforcement: always flag powdered cellulose
       if (foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients)) {
-        // Create ingredientAnalysis if AI failed
         if (!ingredientAnalysis) {
           ingredientAnalysis = { red_flags: [], ingredient_grade: null, microorganisms: null };
         }
@@ -1040,12 +1069,6 @@ Return as a number. If not visible, return null.`,
             health_impact: 'Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.',
             university_citation: 'Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.'
           });
-        }
-        // Ensure score is -3 in ingredient_grade
-        if (ingredientAnalysis.ingredient_grade?.ingredients) {
-          ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing =>
-            /powdered cellulose/i.test(ing.name) ? { ...ing, score: -3 } : ing
-          );
         }
       }
     }
