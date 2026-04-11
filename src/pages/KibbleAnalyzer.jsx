@@ -1098,11 +1098,7 @@ Return as a number. If not visible, return null.`,
       caloric: calculateCaloricScore(dailyCalories, cupsNeeded, recommendedCups)
     };
 
-    const overallScore = Math.round(
-      (scores.reproduction + scores.joint + scores.skinCoat + scores.weight + 
-       scores.digestion + scores.immune + scores.allergy + scores.heart + 
-       scores.eye + scores.caloric) / 10
-    );
+    // overallScore calculated below from healthScores array
 
     const analysis = {
       dogName: foodData.dogFood || 'Your Dog',
@@ -1136,7 +1132,7 @@ Return as a number. If not visible, return null.`,
         { area: 'Eye Health', score: scores.eye, reasoning: 'Vitamin E + omega-3 for retinal health (Cornell ophthalmology).' },
         { area: 'Caloric Needs Met', score: scores.caloric, reasoning: 'Feeding aligns with calculated needs (NRC).' }
       ],
-      overallScore: overallScore,
+      overallScore: Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10),
       improvements: [
         { area: 'Reproduction', original: scores.reproduction, improved: Math.min(scores.reproduction + 7, 98) },
         { area: 'Joint Health', original: scores.joint, improved: Math.min(scores.joint + 22, 95) },
@@ -1149,7 +1145,7 @@ Return as a number. If not visible, return null.`,
         { area: 'Eye Health', original: scores.eye, improved: Math.min(scores.eye + 10, 98) },
         { area: 'Caloric Needs', original: scores.caloric, improved: Math.min(scores.caloric + 2, 99) }
       ],
-      improvedOverallScore: Math.min(overallScore + 11, 98)
+      improvedOverallScore: Math.min(Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10) + 11, 98)
     };
 
     // Save kibble data to database
@@ -1186,7 +1182,7 @@ Return as a number. If not visible, return null.`,
     const newAnalysis = await base44.entities.Analysis.create({
       kibbleName: foodData.dogFood || 'Unnamed',
       dogWeight: weight.toString(),
-      overallScore: overallScore,
+      overallScore: Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10),
       analysisData: analysis,
       dogData: dogData,
       foodData: foodData
