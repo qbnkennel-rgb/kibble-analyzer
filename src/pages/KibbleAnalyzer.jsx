@@ -815,6 +815,7 @@ Return as a number. If not visible, return null.`,
     }
 
     setAnalyzing(true);
+    try {
 
     // Calculate daily caloric needs (RER formula)
     // RER = 70 × (weight in kg)^0.75
@@ -1202,8 +1203,14 @@ Return as a number. If not visible, return null.`,
     }
 
     setResults(analysis);
-    setAnalyzing(false);
-    };
+
+    } catch (error) {
+      console.error('Analysis error:', error);
+      alert('An error occurred during analysis. Please try again.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
     const handleCheckRecalls = async () => {
     if (!foodData.dogFood) {
