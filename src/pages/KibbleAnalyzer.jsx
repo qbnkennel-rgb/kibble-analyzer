@@ -947,6 +947,9 @@ Return as a number. If not visible, return null.`,
 
           CRITICAL RULE: Any protein source with the word "meal" after it (e.g., chicken meal, fish meal, beef meal) MUST be scored -1, regardless of quality. Additionally, any ingredient containing "by-product meal" (e.g., chicken by-product meal, poultry by-product meal, meat by-product meal) MUST also be scored -1, regardless of quality.
 
+          CRITICAL RULE: "Powdered cellulose" MUST always be scored exactly -2. It is a low-quality filler derived from wood pulp with no nutritional value for dogs. It MUST also be included as a red flag with concern: "Low-quality wood pulp filler" and health_impact: "Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food."
+
+
           For EVERY ingredient in the list, provide:
           - Ingredient name
           - Score from -5 to 5 where:
