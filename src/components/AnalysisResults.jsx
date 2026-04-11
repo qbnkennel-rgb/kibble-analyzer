@@ -151,67 +151,64 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
         </Card>
       )}
 
+      {/* Red Flags Card - always show if any red flags OR powdered cellulose detected */}
       {(results.ingredientAnalysis?.red_flags?.length > 0 || (foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients))) && (
-        <>
-          <Card className="bg-red-50 border-2 border-red-300">
-            <CardHeader>
-              <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
-                🚩 Ingredient Red Flags
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {/* Always show powdered cellulose flag if present */}
-                {foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients) &&
-                  !(results.ingredientAnalysis?.red_flags || []).some(f => /powdered cellulose/i.test(f.ingredient)) && (
-                  <li className="border-l-4 border-red-500 pl-4 py-2">
-                    <p className="font-bold text-red-600">Powdered Cellulose</p>
-                    <p className="text-gray-800 mt-1"><strong>Concern:</strong> Low-quality wood pulp filler</p>
-                    <p className="text-gray-800"><strong>Health Impact:</strong> Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.</p>
-                    <p className="text-sm text-gray-600 mt-1 italic">📚 Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.</p>
-                  </li>
-                )}
-                {(results.ingredientAnalysis?.red_flags || []).map((flag, idx) => (
-                  <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
-                    <p className="font-bold text-red-600">{flag.ingredient}</p>
-                    <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
-                    <p className="text-gray-800"><strong>Health Impact:</strong> {flag.health_impact}</p>
-                    <p className="text-sm text-gray-600 mt-1 italic">📚 {flag.university_citation}</p>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+        <Card className="bg-red-50 border-2 border-red-300">
+          <CardHeader>
+            <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
+              🚩 Ingredient Red Flags
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {/* Hardcoded powdered cellulose flag - always shown if detected */}
+              {foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients) && (
+                <li className="border-l-4 border-red-500 pl-4 py-2">
+                  <p className="font-bold text-red-600">Powdered Cellulose</p>
+                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Low-quality wood pulp filler</p>
+                  <p className="text-gray-800"><strong>Health Impact:</strong> Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.</p>
+                  <p className="text-sm text-gray-600 mt-1 italic">📚 Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.</p>
+                </li>
+              )}
+              {(results.ingredientAnalysis?.red_flags || []).filter(f => !/powdered cellulose/i.test(f.ingredient)).map((flag, idx) => (
+                <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
+                  <p className="font-bold text-red-600">{flag.ingredient}</p>
+                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
+                  <p className="text-gray-800"><strong>Health Impact:</strong> {flag.health_impact}</p>
+                  <p className="text-sm text-gray-600 mt-1 italic">📚 {flag.university_citation}</p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
-          {foodData.ingredients && (
-            <Card className="bg-white border-2 border-gray-300">
-              <CardHeader>
-                <CardTitle className="text-2xl text-gray-700">Full Ingredients List</CardTitle>
-                <p className="text-sm text-gray-600 mt-2">Red-flagged ingredients shown in red</p>
-              </CardHeader>
-              <CardContent>
-                <div className="text-gray-800 leading-relaxed">
-                  {foodData.ingredients.split(',').map((ingredient, idx) => {
-                    const trimmedIngredient = ingredient.trim();
-                    const redFlags = results.ingredientAnalysis?.red_flags || [];
-                    const isRedFlagged = /powdered cellulose/i.test(trimmedIngredient) || redFlags.some(flag =>
-                      trimmedIngredient.toLowerCase().includes(flag.ingredient.toLowerCase()) ||
-                      flag.ingredient.toLowerCase().includes(trimmedIngredient.toLowerCase())
-                    );
-                    return (
-                      <span key={idx}>
-                        <span className={isRedFlagged ? 'text-red-600 font-semibold' : ''}>
-                          {trimmedIngredient}
-                        </span>
-                        {idx < foodData.ingredients.split(',').length - 1 && ', '}
-                      </span>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </>
+      {/* Full Ingredients List - always shown when ingredients exist */}
+      {foodData.ingredients && (
+        <Card className="bg-white border-2 border-gray-300">
+          <CardHeader>
+            <CardTitle className="text-2xl text-gray-700">Full Ingredients List</CardTitle>
+            <p className="text-sm text-gray-600 mt-2">Red-flagged ingredients shown in red</p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-gray-800 leading-relaxed">
+              {foodData.ingredients.split(',').map((ingredient, idx) => {
+                const trimmed = ingredient.trim();
+                const redFlags = results.ingredientAnalysis?.red_flags || [];
+                const isRed = /powdered cellulose/i.test(trimmed) || redFlags.some(f =>
+                  trimmed.toLowerCase().includes(f.ingredient.toLowerCase()) ||
+                  f.ingredient.toLowerCase().includes(trimmed.toLowerCase())
+                );
+                return (
+                  <span key={idx}>
+                    <span className={isRed ? 'text-red-600 font-semibold' : ''}>{trimmed}</span>
+                    {idx < foodData.ingredients.split(',').length - 1 && ', '}
+                  </span>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {results.ingredientAnalysis?.ingredient_grade && (

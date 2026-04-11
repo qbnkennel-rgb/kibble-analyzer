@@ -1041,10 +1041,10 @@ Return as a number. If not visible, return null.`,
             university_citation: 'Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.'
           });
         }
-        // Ensure score is -2 in ingredient_grade
+        // Ensure score is -3 in ingredient_grade
         if (ingredientAnalysis.ingredient_grade?.ingredients) {
           ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing =>
-            /powdered cellulose/i.test(ing.name) ? { ...ing, score: -2 } : ing
+            /powdered cellulose/i.test(ing.name) ? { ...ing, score: -3 } : ing
           );
         }
       }
