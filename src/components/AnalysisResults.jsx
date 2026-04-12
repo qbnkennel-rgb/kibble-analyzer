@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
+import RedFlagCard from './RedFlagCard';
 
 export default function AnalysisResults({ results, recallInfo, foodData }) {
   if (!results) return null;
@@ -151,72 +152,9 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
         </Card>
       )}
 
-      {/* Red Flags Card - always show if any red flags OR powdered cellulose/legumes detected */}
-      {(() => {
-        const ing = (foodData.ingredients || '').toLowerCase();
-        const hasLegumeOrCellulose = ing.includes('garbanzo') || ing.includes('peas') || ing.includes('lentil') || ing.includes('powdered cellulose');
-        const hasAIFlags = results.ingredientAnalysis?.red_flags?.length > 0;
-        return (hasAIFlags || hasLegumeOrCellulose) ? (
-        <Card className="bg-red-50 border-2 border-red-300">
-          <CardHeader>
-            <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
-              🚩 Ingredient Red Flags
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {/* Hardcoded powdered cellulose flag */}
-              {(foodData.ingredients || '').toLowerCase().includes('powdered cellulose') && (
-                <li className="border-l-4 border-red-500 pl-4 py-2">
-                  <p className="font-bold text-red-600">Powdered Cellulose</p>
-                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Low-quality wood pulp filler</p>
-                  <p className="text-gray-800"><strong>Health Impact:</strong> Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.</p>
-                  <p className="text-sm text-gray-600 mt-1 italic">📚 Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.</p>
-                </li>
-              )}
-              {/* Hardcoded garbanzo beans flag */}
-              {(foodData.ingredients || '').toLowerCase().includes('garbanzo') && (
-                <li className="border-l-4 border-red-500 pl-4 py-2">
-                  <p className="font-bold text-red-600">⚠️ Garbanzo Beans — Linked to Heart Disease</p>
-                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume linked to Dilated Cardiomyopathy (DCM)</p>
-                  <p className="text-gray-800"><strong>Health Impact:</strong> FDA's 2019 investigation found garbanzo beans (chickpeas) among the most common ingredients in diets associated with DCM in dogs. High legume content may interfere with taurine metabolism, weakening heart muscle function over time.</p>
-                  <p className="text-sm text-red-700 font-semibold mt-1">🫀 Heart Risk: Dilated Cardiomyopathy (DCM)</p>
-                  <p className="text-sm text-gray-600 mt-1 italic">📚 FDA, 2019 — "FDA Investigation into Potential Link Between Certain Diets and Canine Dilated Cardiomyopathy." | Adin et al., 2019 — Journal of Veterinary Cardiology: Echocardiographic phenotype of canine DCM associated with grain-free diets. | Freeman et al., 2018 — JAVMA: Diet-associated DCM in dogs.</p>
-                </li>
-              )}
-              {/* Hardcoded peas flag */}
-              {(foodData.ingredients || '').toLowerCase().includes('peas') && (
-                <li className="border-l-4 border-red-500 pl-4 py-2">
-                  <p className="font-bold text-red-600">⚠️ Peas — Linked to Heart Disease</p>
-                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume filler linked to Dilated Cardiomyopathy (DCM)</p>
-                  <p className="text-gray-800"><strong>Health Impact:</strong> Peas were the #1 most frequently reported ingredient in FDA-investigated DCM cases. Research suggests legumes like peas may reduce taurine bioavailability and disrupt cardiac function, especially when listed in the top 5 ingredients.</p>
-                  <p className="text-sm text-red-700 font-semibold mt-1">🫀 Heart Risk: Dilated Cardiomyopathy (DCM)</p>
-                  <p className="text-sm text-gray-600 mt-1 italic">📚 FDA, 2019 — "FDA Investigation into Potential Link Between Certain Diets and Canine Dilated Cardiomyopathy" (peas listed as most common ingredient). | Kaplan et al., 2018 — Journal of the American Veterinary Medical Association: Taurine deficiency and DCM in dogs eating legume-rich diets. | Adin et al., 2019 — Journal of Veterinary Cardiology.</p>
-                </li>
-              )}
-              {/* Hardcoded lentils flag */}
-              {(foodData.ingredients || '').toLowerCase().includes('lentil') && (
-                <li className="border-l-4 border-red-500 pl-4 py-2">
-                  <p className="font-bold text-red-600">⚠️ Lentils — Linked to Heart Disease</p>
-                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume filler linked to Dilated Cardiomyopathy (DCM)</p>
-                  <p className="text-gray-800"><strong>Health Impact:</strong> Lentils were among the top ingredients flagged in the FDA's DCM investigation. Like other legumes, lentils may impair taurine synthesis and absorption, contributing to weakened heart muscle and reduced cardiac output in dogs.</p>
-                  <p className="text-sm text-red-700 font-semibold mt-1">🫀 Heart Risk: Dilated Cardiomyopathy (DCM)</p>
-                  <p className="text-sm text-gray-600 mt-1 italic">📚 FDA, 2019 — "FDA Investigation into Potential Link Between Certain Diets and Canine Dilated Cardiomyopathy" (lentils listed among top flagged ingredients). | Ko & Fascetti, 2016 — Journal of Animal Physiology and Animal Nutrition: Taurine depletion in dogs fed plant-based protein diets. | Adin et al., 2019 — Journal of Veterinary Cardiology.</p>
-                </li>
-              )}
-              {(results.ingredientAnalysis?.red_flags || []).filter(f => !/powdered cellulose|garbanzo beans|peas|lentils/i.test(f.ingredient)).map((flag, idx) => (
-                <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
-                  <p className="font-bold text-red-600">{flag.ingredient}</p>
-                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
-                  <p className="text-gray-800"><strong>Health Impact:</strong> {flag.health_impact}</p>
-                  <p className="text-sm text-gray-600 mt-1 italic">📚 {flag.university_citation}</p>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-        ) : null;
-      })()}
+      {foodData.ingredients && (
+        <RedFlagCard ingredients={foodData.ingredients} aiRedFlags={results.ingredientAnalysis?.red_flags || []} />
+      )}
 
       {/* Full Ingredients List - always shown when ingredients exist */}
       {foodData.ingredients && (
