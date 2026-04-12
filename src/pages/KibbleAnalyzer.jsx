@@ -1132,76 +1132,75 @@ Return as a number. If not visible, return null.`,
       improvedOverallScore: Math.min(Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10) + 11, 98)
     };
 
+    // Show results immediately — saving is secondary
+    setResults(analysis);
+
     // Save kibble data to database
-    if (foodData.dogFood) {
-      await base44.entities.Kibble.create({
-        name: foodData.dogFood,
-        recommendedFeeding: foodData.recommendedFeeding,
-        kcalKg: foodData.kcalKg,
-        kcalCup: foodData.kcalCup,
-        omega3: foodData.omega3,
-        omega6: foodData.omega6,
-        vitaminE: foodData.vitaminE,
-        selenium: foodData.selenium,
-        zinc: foodData.zinc,
-        crudeProtein: foodData.crudeProtein,
-        crudeFat: foodData.crudeFat,
-        crudeFiber: foodData.crudeFiber,
-        moisture: foodData.moisture,
-        taurine: foodData.taurine,
-        glucosamine: foodData.glucosamine,
-        chondroitin: foodData.chondroitin,
-        priceBag: foodData.priceBag,
-        bagWeight: foodData.bagWeight,
-        ingredients: foodData.ingredients
-      });
-      await queryClient.invalidateQueries({ queryKey: ['kibbles'] });
-      base44.analytics.track({ 
-        eventName: "kibble_saved",
-        properties: { kibble_name: foodData.dogFood }
-      });
-    }
-
-    // Save analysis to database
-    const newAnalysis = await base44.entities.Analysis.create({
-      kibbleName: foodData.dogFood || 'Unnamed',
-      dogWeight: weight.toString(),
-      overallScore: Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10),
-      analysisData: analysis,
-      dogData: dogData,
-      foodData: foodData
-    });
-    
-    // Track this analysis as belonging to this user/browser
-    const myAnalyses = JSON.parse(localStorage.getItem('myAnalysisIds') || '[]');
-    myAnalyses.push(newAnalysis.id);
-    localStorage.setItem('myAnalysisIds', JSON.stringify(myAnalyses));
-    
-    await queryClient.invalidateQueries({ queryKey: ['analyses'] });
-
-    base44.analytics.track({ 
-      eventName: "kibble_analyzed",
-      properties: { 
-        dog_weight: weight,
-        overall_score: analysis.overallScore,
-        kibble_name: foodData.dogFood,
-        has_ingredients: !!foodData.ingredients
+    try {
+      if (foodData.dogFood) {
+        await base44.entities.Kibble.create({
+          name: foodData.dogFood,
+          recommendedFeeding: foodData.recommendedFeeding,
+          kcalKg: foodData.kcalKg,
+          kcalCup: foodData.kcalCup,
+          omega3: foodData.omega3,
+          omega6: foodData.omega6,
+          vitaminE: foodData.vitaminE,
+          selenium: foodData.selenium,
+          zinc: foodData.zinc,
+          crudeProtein: foodData.crudeProtein,
+          crudeFat: foodData.crudeFat,
+          crudeFiber: foodData.crudeFiber,
+          moisture: foodData.moisture,
+          taurine: foodData.taurine,
+          glucosamine: foodData.glucosamine,
+          chondroitin: foodData.chondroitin,
+          priceBag: foodData.priceBag,
+          bagWeight: foodData.bagWeight,
+          ingredients: foodData.ingredients
+        });
+        await queryClient.invalidateQueries({ queryKey: ['kibbles'] });
+        base44.analytics.track({ eventName: "kibble_saved", properties: { kibble_name: foodData.dogFood } });
       }
-    });
+
+      // Save analysis to database
+      const newAnalysis = await base44.entities.Analysis.create({
+        kibbleName: foodData.dogFood || 'Unnamed',
+        dogWeight: weight.toString(),
+        overallScore: analysis.overallScore,
+        analysisData: analysis,
+        dogData: dogData,
+        foodData: foodData
+      });
+
+      const myAnalyses = JSON.parse(localStorage.getItem('myAnalysisIds') || '[]');
+      myAnalyses.push(newAnalysis.id);
+      localStorage.setItem('myAnalysisIds', JSON.stringify(myAnalyses));
+
+      await queryClient.invalidateQueries({ queryKey: ['analyses'] });
+
+      base44.analytics.track({
+        eventName: "kibble_analyzed",
+        properties: {
+          dog_weight: weight,
+          overall_score: analysis.overallScore,
+          kibble_name: foodData.dogFood,
+          has_ingredients: !!foodData.ingredients
+        }
+      });
+    } catch (saveError) {
+      console.error('Error saving analysis:', saveError);
+    }
 
     // Check FDA recalls
     if (foodData.dogFood) {
       try {
-        const recallData = await base44.functions.invoke('checkFdaRecalls', { 
-          foodName: foodData.dogFood 
-        });
+        const recallData = await base44.functions.invoke('checkFdaRecalls', { foodName: foodData.dogFood });
         setRecallInfo(recallData.data);
       } catch (error) {
         console.error('Error checking recalls:', error);
       }
     }
-
-    setResults(analysis);
 
     } catch (error) {
       console.error('Analysis error:', error);
