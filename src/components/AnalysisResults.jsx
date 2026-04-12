@@ -152,7 +152,11 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
       )}
 
       {/* Red Flags Card - always show if any red flags OR powdered cellulose/legumes detected */}
-      {(results.ingredientAnalysis?.red_flags?.length > 0 || (foodData.ingredients && /powdered cellulose|\bgarbanzo beans?\b|\bpeas?\b|\blentils?\b/i.test(foodData.ingredients))) && (
+      {(() => {
+        const ing = (foodData.ingredients || '').toLowerCase();
+        const hasLegumeOrCellulose = ing.includes('garbanzo') || ing.includes('peas') || ing.includes('lentil') || ing.includes('powdered cellulose');
+        const hasAIFlags = results.ingredientAnalysis?.red_flags?.length > 0;
+        return (hasAIFlags || hasLegumeOrCellulose) ? (
         <Card className="bg-red-50 border-2 border-red-300">
           <CardHeader>
             <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
@@ -161,8 +165,8 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {/* Hardcoded powdered cellulose flag - always shown if detected */}
-              {foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients) && (
+              {/* Hardcoded powdered cellulose flag */}
+              {(foodData.ingredients || '').toLowerCase().includes('powdered cellulose') && (
                 <li className="border-l-4 border-red-500 pl-4 py-2">
                   <p className="font-bold text-red-600">Powdered Cellulose</p>
                   <p className="text-gray-800 mt-1"><strong>Concern:</strong> Low-quality wood pulp filler</p>
@@ -171,7 +175,7 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                 </li>
               )}
               {/* Hardcoded garbanzo beans flag */}
-              {foodData.ingredients && /\bgarbanzo beans?\b/i.test(foodData.ingredients) && (
+              {(foodData.ingredients || '').toLowerCase().includes('garbanzo') && (
                 <li className="border-l-4 border-red-500 pl-4 py-2">
                   <p className="font-bold text-red-600">Garbanzo Beans</p>
                   <p className="text-gray-800 mt-1"><strong>Concern:</strong> High-glycemic legume linked to DCM risk</p>
@@ -180,7 +184,7 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                 </li>
               )}
               {/* Hardcoded peas flag */}
-              {foodData.ingredients && /\bpeas?\b/i.test(foodData.ingredients) && (
+              {(foodData.ingredients || '').toLowerCase().includes('peas') && (
                 <li className="border-l-4 border-red-500 pl-4 py-2">
                   <p className="font-bold text-red-600">Peas</p>
                   <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume filler linked to DCM risk</p>
@@ -189,7 +193,7 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                 </li>
               )}
               {/* Hardcoded lentils flag */}
-              {foodData.ingredients && /\blentils?\b/i.test(foodData.ingredients) && (
+              {(foodData.ingredients || '').toLowerCase().includes('lentil') && (
                 <li className="border-l-4 border-red-500 pl-4 py-2">
                   <p className="font-bold text-red-600">Lentils</p>
                   <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume filler linked to DCM risk</p>
@@ -208,7 +212,8 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
             </ul>
           </CardContent>
         </Card>
-      )}
+        ) : null;
+      })()}
 
       {/* Full Ingredients List - always shown when ingredients exist */}
       {foodData.ingredients && (
