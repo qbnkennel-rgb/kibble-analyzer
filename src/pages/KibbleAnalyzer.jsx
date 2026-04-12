@@ -716,7 +716,7 @@ export default function KibbleAnalyzer() {
       const now = new Date();
       const monthKey = `analyses_${now.getFullYear()}_${now.getMonth()}`;
       const count = parseInt(localStorage.getItem(monthKey) || '0');
-      if (count >= 1) {
+      if (count >= 2) {
         setShowPaywall(true);
         return;
       }
