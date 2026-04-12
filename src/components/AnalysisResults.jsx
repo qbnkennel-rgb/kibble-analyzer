@@ -196,7 +196,7 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                 const trimmed = ingredient.trim();
                 const redFlags = results.ingredientAnalysis?.red_flags || [];
                 const gradedIngredients = results.ingredientAnalysis?.ingredient_grade?.ingredients || [];
-                const KNOWN_ALLERGENS = /\b(wheat|corn|soy|soybean|gluten|dairy|milk|egg|eggs|beef|chicken|lamb|pork|fish|salmon|tuna|shrimp|barley|oat|oats|peanut|potato|sweet potato|lentil|lentils|pea|peas|legume|legumes)\b/i;
+                const KNOWN_ALLERGENS = /\b(wheat|corn|soy|soybean|gluten|dairy|milk|egg|eggs|beef|chicken|lamb|pork|fish|salmon|tuna|shrimp|barley|oat|oats|peanut|potato|sweet potato|lentil|lentils|pea|peas|legume|legumes|garbanzo beans?|lentils?)\b/i;
                 const hasNegativeScore = gradedIngredients.some(g =>
                   g.score < 0 && (
                     trimmed.toLowerCase().includes(g.name.toLowerCase()) ||

@@ -20,6 +20,20 @@ import FdaRecallCard from '../components/FdaRecallCard';
 import AnalysisResults from '../components/AnalysisResults';
 import BottomCards from '../components/BottomCards';
 import PaywallModal from '../components/PaywallModal';
+import {
+  calculateDigestionScoreWithMicrobes,
+  calculateReproductionScore,
+  calculateJointScore,
+  calculateSkinCoatScore,
+  calculateWeightScore,
+  calculateImmuneScore,
+  calculateAllergyScore,
+  calculateHeartScore,
+  calculateEyeScore,
+  calculateCaloricScore,
+  LEGUME_FLAG_LIST,
+  SCORE_OVERRIDES,
+} from '../utils/kibbleScoring';
 
 export default function KibbleAnalyzer() {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
@@ -130,11 +144,9 @@ export default function KibbleAnalyzer() {
     if (accepted === 'true') {
       setHasAcceptedTerms(true);
     }
-    // Check premium status and handle post-subscription redirect
     base44.functions.invoke('getSubscriptionStatus', {}).then(res => {
       if (res.data?.is_premium) setIsPremium(true);
     }).catch(() => {});
-    // Handle successful subscription redirect
     const params = new URLSearchParams(window.location.search);
     if (params.get('subscribed') === 'true') {
       setIsPremium(true);
@@ -362,7 +374,6 @@ export default function KibbleAnalyzer() {
         ageMonths: dogData.ageMonths
       });
       
-      // Track this dog as belonging to this user/browser
       const myDogs = JSON.parse(localStorage.getItem('myDogIds') || '[]');
       myDogs.push(newDog.id);
       localStorage.setItem('myDogIds', JSON.stringify(myDogs));
@@ -385,7 +396,6 @@ export default function KibbleAnalyzer() {
       try {
         await base44.entities.Dog.delete(dogToDelete.id);
         
-        // Remove from localStorage
         const myDogs = JSON.parse(localStorage.getItem('myDogIds') || '[]');
         const updatedDogs = myDogs.filter(id => id !== dogToDelete.id);
         localStorage.setItem('myDogIds', JSON.stringify(updatedDogs));
@@ -429,7 +439,6 @@ export default function KibbleAnalyzer() {
     setFoodData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Auto-update dog profile when data changes
   useEffect(() => {
     if (!dogData.dogName || showNewDogInput) return;
     
@@ -517,8 +526,6 @@ export default function KibbleAnalyzer() {
         }
       });
 
-      console.log('Extracted nutrition data:', result);
-
       const updates = {};
       const fieldsFound = [];
       const fieldsNotFound = [];
@@ -552,11 +559,7 @@ export default function KibbleAnalyzer() {
       });
 
       setFoodData(prev => ({ ...prev, ...updates }));
-
-      base44.analytics.track({ 
-        eventName: "nutrition_data_extracted",
-        properties: { fields_extracted: fieldsFound.length }
-      });
+      base44.analytics.track({ eventName: "nutrition_data_extracted", properties: { fields_extracted: fieldsFound.length } });
 
       let message = `✅ Found ${fieldsFound.length} fields:\n${fieldsFound.join(', ')}\n\n`;
       if (fieldsNotFound.length > 0) {
@@ -579,35 +582,15 @@ export default function KibbleAnalyzer() {
     setAnalyzingIngredients(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract the complete ingredients list from this dog food label image. 
-
-        INSTRUCTIONS:
-        - Read ALL ingredients in the exact order they appear
-        - Return as comma-separated text
-        - Include everything from first ingredient to last
-        - Preserve exact spelling and order
-        
-        Return the full ingredients list as one string.`,
+        prompt: `Extract the complete ingredients list from this dog food label image. Read ALL ingredients in exact order, comma-separated. Return the full ingredients list as one string.`,
         file_urls: [file_url],
         add_context_from_internet: false,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            ingredients: { type: "string" }
-          }
-        }
+        response_json_schema: { type: "object", properties: { ingredients: { type: "string" } } }
       });
-
-      console.log('Extracted ingredients:', result);
-      
       if (result.ingredients) {
         setFoodData(prev => ({ ...prev, ingredients: result.ingredients }));
-        base44.analytics.track({ 
-          eventName: "ingredients_extracted",
-          properties: { ingredient_count: result.ingredients.split(',').length }
-        });
+        base44.analytics.track({ eventName: "ingredients_extracted", properties: { ingredient_count: result.ingredients.split(',').length } });
         alert(`Ingredients extracted! Found ${result.ingredients.split(',').length} ingredients. Please review and adjust if needed.`);
       } else {
         alert('No ingredients found in image. Please try a clearer photo or enter manually.');
@@ -627,33 +610,15 @@ export default function KibbleAnalyzer() {
     setAnalyzingPriceOnly(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract price information from this image (price tag, receipt, or product label).
-
-LOOK FOR:
-- Price: any $ amount, price tag, MSRP, retail price, sale price
-- Extract the numerical value only
-
-Return the price as a number. If not visible, return null.`,
+        prompt: `Extract price information from this image. Return the price as a number. If not visible, return null.`,
         file_urls: [file_url],
         add_context_from_internet: false,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            priceBag: { type: "number" }
-          }
-        }
+        response_json_schema: { type: "object", properties: { priceBag: { type: "number" } } }
       });
-
-      console.log('Extracted price:', result);
-      
       if (result.priceBag != null) {
         setFoodData(prev => ({ ...prev, priceBag: result.priceBag.toString() }));
-        base44.analytics.track({ 
-          eventName: "price_only_extracted",
-          properties: { price: result.priceBag }
-        });
+        base44.analytics.track({ eventName: "price_only_extracted", properties: { price: result.priceBag } });
         alert(`Price extracted: $${result.priceBag}. Please review and adjust if needed.`);
       } else {
         alert('No price found. Please try a clearer photo or enter manually.');
@@ -673,35 +638,15 @@ Return the price as a number. If not visible, return null.`,
     setAnalyzingFeeding(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract recommended feeding information from this dog food feeding guide/chart.
-
-LOOK FOR:
-- Feeding guide chart or table
-- Recommended cups per day based on dog weight
-- Daily feeding amount in cups
-
-Extract the numerical value for cups per day. If there's a range, use the middle value.
-Return as a number. If not visible, return null.`,
+        prompt: `Extract recommended feeding (cups/day) from this dog food feeding guide. If there's a range, use the middle value. Return as a number. If not visible, return null.`,
         file_urls: [file_url],
         add_context_from_internet: false,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            recommendedFeeding: { type: "number" }
-          }
-        }
+        response_json_schema: { type: "object", properties: { recommendedFeeding: { type: "number" } } }
       });
-
-      console.log('Extracted feeding:', result);
-      
       if (result.recommendedFeeding != null) {
         setFoodData(prev => ({ ...prev, recommendedFeeding: result.recommendedFeeding.toString() }));
-        base44.analytics.track({ 
-          eventName: "feeding_extracted",
-          properties: { cups: result.recommendedFeeding }
-        });
+        base44.analytics.track({ eventName: "feeding_extracted", properties: { cups: result.recommendedFeeding } });
         alert(`Feeding amount extracted: ${result.recommendedFeeding} cups/day. Please review and adjust if needed.`);
       } else {
         alert('No feeding information found. Please try a clearer photo or enter manually.');
@@ -721,38 +666,8 @@ Return as a number. If not visible, return null.`,
     setAnalyzingPrice(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this image to extract dog food product information. This may be a barcode, price tag, product bag, or label.
-
-  EXTRACTION INSTRUCTIONS:
-  1. BARCODE RECOGNITION: If you see a UPC/barcode (series of vertical lines with numbers below):
-   - Read the numerical barcode digits carefully
-   - Use internet search to look up the product by barcode number
-   - Extract brand, formula/product name, bag weight, and price from search results
-
-  2. PRODUCT BAG/LABEL: If this is a photo of the actual dog food bag:
-   - Read the brand name prominently displayed (e.g., "Blue Buffalo", "Purina", "Hill's Science Diet")
-   - Read the specific formula/product line (e.g., "Chicken & Brown Rice Recipe", "Adult Large Breed")
-   - Look for bag size: any weight like "30 lb", "15 kg", "40 lbs"
-   - Look for price if visible on tag/sticker
-
-  3. PRICE TAG/SHELF LABEL: If this is a store price label:
-   - Read product name and brand from the label text
-   - Extract price (any $ amount, MSRP, retail price, sale price)
-   - Extract weight/size from label text
-
-  4. GENERAL TEXT: Scan ALL visible text for:
-   - Brand names (Blue Buffalo, Purina, Royal Canin, Hill's, IAMS, etc.)
-   - Formula names (Life Protection Formula, Salmon & Potato, etc.)
-   - Any numerical price ($XX.XX)
-   - Any weight indication with "lb", "lbs", "kg", "pound", "ounces", "oz"
-
-  IMPORTANT: 
-  - Be thorough - extract EVERY piece of information you can find
-  - If you find a barcode, USE INTERNET SEARCH to get complete product details
-  - Return null only if truly not visible anywhere
-  - Product name should include both brand AND specific formula`,
+        prompt: `Analyze this image to extract dog food product info (barcode, bag, or price tag). Extract brand+product name, price, and bag weight. If barcode, use internet search to look up details. Return null for anything not found.`,
         file_urls: [file_url],
         add_context_from_internet: true,
         response_json_schema: {
@@ -765,21 +680,15 @@ Return as a number. If not visible, return null.`,
         }
       });
 
-      console.log('Extracted product data:', result);
-
       const updates = {};
       if (result.dogFood) updates.dogFood = result.dogFood;
       if (result.priceBag != null) updates.priceBag = result.priceBag.toString();
       if (result.bagWeight != null) updates.bagWeight = result.bagWeight.toString();
 
       setFoodData(prev => ({ ...prev, ...updates }));
-
       const extractedCount = Object.keys(updates).length;
       if (extractedCount > 0) {
-        base44.analytics.track({ 
-          eventName: "price_data_extracted",
-          properties: { fields_extracted: extractedCount }
-        });
+        base44.analytics.track({ eventName: "price_data_extracted", properties: { fields_extracted: extractedCount } });
         alert(`Extracted ${extractedCount} field(s)! Please review and adjust if needed.`);
       } else {
         alert('No product data found. Please try a clearer photo or enter manually.');
@@ -803,7 +712,6 @@ Return as a number. If not visible, return null.`,
       return;
     }
 
-    // Paywall: limit free users to 2 analyses per month
     if (!isPremium) {
       const now = new Date();
       const monthKey = `analyses_${now.getFullYear()}_${now.getMonth()}`;
@@ -817,390 +725,335 @@ Return as a number. If not visible, return null.`,
 
     setAnalyzing(true);
     try {
+      const weightKg = weight / 2.2;
+      const rer = 70 * Math.pow(weightKg, 0.75);
+      const activityMultiplier = {
+        'inactive/senior': 1.4,
+        'neutered adult': 1.6,
+        'active/intact adult': 1.8,
+        'highly active/working': 2.0
+      }[dogData.activityLevel] || 1.6;
+      
+      const dailyCalories = rer * activityMultiplier;
+      const cupsNeeded = dailyCalories / kcalCup;
+      const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0;
+      
+      const gramsPerCup = 115;
+      const dailyFoodGrams = cupsNeeded * gramsPerCup;
 
-    // Calculate daily caloric needs (RER formula)
-    // RER = 70 × (weight in kg)^0.75
-    const weightKg = weight / 2.2; // Convert lbs to kg
-    const rer = 70 * Math.pow(weightKg, 0.75);
-    const activityMultiplier = {
-      'inactive/senior': 1.4,
-      'neutered adult': 1.6,
-      'active/intact adult': 1.8,
-      'highly active/working': 2.0
-    }[dogData.activityLevel] || 1.6;
-    
-    const dailyCalories = rer * activityMultiplier;
-    const cupsNeeded = dailyCalories / kcalCup;
-    const costPerDay = priceBag > 0 && bagWeight > 0 ? (priceBag / bagWeight) * (cupsNeeded / 4) : 0;
-    
-    // Calculate daily nutrient intake
-    // Research-based formula: cups × grams per cup = total grams consumed per day
-    const gramsPerCup = 115; // AAFCO standard cup weight for dry kibble
-    const dailyFoodGrams = cupsNeeded * gramsPerCup;
+      const omega3Percentage = parseFloat(foodData.omega3) || 0;
+      const omega6Percentage = parseFloat(foodData.omega6) || 0;
+      const omega3GramsPerDay = (omega3Percentage / 100) * dailyFoodGrams;
+      const omega6GramsPerDay = (omega6Percentage / 100) * dailyFoodGrams;
+      const dailyOmega3 = Math.round(omega3GramsPerDay * 1000);
+      const dailyOmega6 = omega6GramsPerDay.toFixed(1);
+      const dailyFoodKg = dailyFoodGrams / 1000;
 
-    // Omega-3 and Omega-6 Fatty Acid Calculations
-    // Based on National Research Council (NRC) and University of Guelph standards:
-    // Dog food labels list omega fatty acids as MINIMUM percentage "as fed" basis
-    // 
-    // CRITICAL: Label percentages mean grams per 100g of food
-    // Example: 0.5% omega-3 = 0.5g per 100g = 5g per 1000g (1kg)
-    // 
-    // Calculation: (percentage / 100) × daily food grams = grams per day
-    // Then convert: omega-3 to mg (×1000), omega-6 stays in g
+      const dailyVitaminE = Math.round((parseFloat(foodData.vitaminE) || 0) * dailyFoodKg);
+      const dailySelenium = ((parseFloat(foodData.selenium) || 0) * dailyFoodKg).toFixed(3);
+      const dailyZinc = Math.round((parseFloat(foodData.zinc) || 0) * dailyFoodKg);
+      const dailyGlucosamine = Math.round((parseFloat(foodData.glucosamine) || 0) * dailyFoodKg);
+      const dailyChondroitin = Math.round((parseFloat(foodData.chondroitin) || 0) * dailyFoodKg);
+      const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) / 100 * dailyFoodGrams * 1000);
 
-    const omega3Percentage = parseFloat(foodData.omega3) || 0;
-    const omega6Percentage = parseFloat(foodData.omega6) || 0;
-
-    // Calculate grams per day first
-    const omega3GramsPerDay = (omega3Percentage / 100) * dailyFoodGrams;
-    const omega6GramsPerDay = (omega6Percentage / 100) * dailyFoodGrams;
-
-    // Omega-3: convert g to mg for display
-    const dailyOmega3 = Math.round(omega3GramsPerDay * 1000);
-
-    // Omega-6: keep in grams for display
-    const dailyOmega6 = omega6GramsPerDay.toFixed(1);
-
-    // For nutrients listed as concentration per kg of food (IU/kg or mg/kg)
-    // Formula: (concentration per kg) × (kg food consumed) = daily amount
-    const dailyFoodKg = dailyFoodGrams / 1000;
-
-    const dailyVitaminE = Math.round((parseFloat(foodData.vitaminE) || 0) * dailyFoodKg); // IU/day
-    const dailySelenium = ((parseFloat(foodData.selenium) || 0) * dailyFoodKg).toFixed(3); // mg/day
-    const dailyZinc = Math.round((parseFloat(foodData.zinc) || 0) * dailyFoodKg); // mg/day
-    const dailyGlucosamine = Math.round((parseFloat(foodData.glucosamine) || 0) * dailyFoodKg); // mg/day
-    const dailyChondroitin = Math.round((parseFloat(foodData.chondroitin) || 0) * dailyFoodKg); // mg/day
-
-    // Taurine (listed as percentage): convert to mg/day
-    // (% / 100) × grams food × 1000 = mg
-    const dailyTaurine = Math.round((parseFloat(foodData.taurine) || 0) / 100 * dailyFoodGrams * 1000); // mg/day
-
-    // Get weather and seasonal data for zipcode — run in parallel
-    let weatherData = null;
-    let seasonalAllergies = null;
-    if (dogData.zipCode) {
-      try {
-        [weatherData, seasonalAllergies] = await Promise.all([
-          base44.integrations.Core.InvokeLLM({
-            prompt: `Based on your knowledge of zipcode ${dogData.zipCode}, provide: current typical temperature/conditions for April, current season, and climate characteristics of this region.`,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                current_temp: { type: "string" },
-                conditions: { type: "string" },
-                season: { type: "string" },
-                climate_type: { type: "string" }
+      let weatherData = null;
+      let seasonalAllergies = null;
+      if (dogData.zipCode) {
+        try {
+          [weatherData, seasonalAllergies] = await Promise.all([
+            base44.integrations.Core.InvokeLLM({
+              prompt: `Based on your knowledge of zipcode ${dogData.zipCode}, provide: current typical temperature/conditions for April, current season, and climate characteristics of this region.`,
+              response_json_schema: {
+                type: "object",
+                properties: {
+                  current_temp: { type: "string" },
+                  conditions: { type: "string" },
+                  season: { type: "string" },
+                  climate_type: { type: "string" }
+                }
               }
-            }
-          }),
-          base44.integrations.Core.InvokeLLM({
-            prompt: `For zipcode ${dogData.zipCode} in April, provide: common dog seasonal allergens in this region, typical allergy symptoms in dogs this season, dietary recommendations, ingredients to recommend and avoid. IMPORTANT: Do NOT include garlic in ingredients to avoid. Include university citations (Cornell, UC Davis, Tufts).`,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                seasonal_allergens: { type: "array", items: { type: "string" } },
-                common_symptoms: { type: "array", items: { type: "string" } },
-                dietary_recommendations: { type: "string" },
-                ingredient_recommendations: { type: "array", items: { type: "string" } },
-                ingredients_to_avoid: { type: "array", items: { type: "string" } },
-                university_citations: { type: "array", items: { type: "string" } }
+            }),
+            base44.integrations.Core.InvokeLLM({
+              prompt: `For zipcode ${dogData.zipCode} in April, provide: common dog seasonal allergens in this region, typical allergy symptoms in dogs this season, dietary recommendations, ingredients to recommend and avoid. IMPORTANT: Do NOT include garlic in ingredients to avoid. Include university citations (Cornell, UC Davis, Tufts).`,
+              response_json_schema: {
+                type: "object",
+                properties: {
+                  seasonal_allergens: { type: "array", items: { type: "string" } },
+                  common_symptoms: { type: "array", items: { type: "string" } },
+                  dietary_recommendations: { type: "string" },
+                  ingredient_recommendations: { type: "array", items: { type: "string" } },
+                  ingredients_to_avoid: { type: "array", items: { type: "string" } },
+                  university_citations: { type: "array", items: { type: "string" } }
+                }
               }
-            }
-          })
-        ]);
-      } catch (error) {
-        console.error('Weather/seasonal analysis error:', error);
+            })
+          ]);
+        } catch (error) {
+          console.error('Weather/seasonal analysis error:', error);
+        }
       }
-    }
 
-    // Analyze ingredients with AI (using credible university sources)
-    let ingredientAnalysis = null;
-    if (foodData.ingredients) {
-      try {
-        const seasonalContext = weatherData && seasonalAllergies ? 
-          `\n\nSEASONAL CONTEXT: Current season is ${weatherData.season}, climate: ${weatherData.climate_type}. Seasonal allergens in this region: ${seasonalAllergies.seasonal_allergens?.join(', ')}. Consider these factors when analyzing ingredients.` : '';
+      let ingredientAnalysis = null;
+      if (foodData.ingredients) {
+        try {
+          const seasonalContext = weatherData && seasonalAllergies ? 
+            `\n\nSEASONAL CONTEXT: Current season is ${weatherData.season}, climate: ${weatherData.climate_type}. Seasonal allergens in this region: ${seasonalAllergies.seasonal_allergens?.join(', ')}. Consider these factors when analyzing ingredients.` : '';
 
-        ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
-          prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}".${seasonalContext}
+          ingredientAnalysis = await base44.integrations.Core.InvokeLLM({
+            prompt: `Analyze these dog food ingredients for a ${weight} lb dog: "${foodData.ingredients}".${seasonalContext}
 
-          Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
+            Provide analysis based on credible university veterinary studies (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State):
 
-          1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
+            1. Microorganisms: Identify any probiotics/prebiotics (e.g., Lactobacillus, Bacillus, chicory root, dried fermentation products). Estimate total CFU count if probiotics are listed, and list specific strains. Rate gut microbiome support (1-100).
 
-          2. Ingredient Quality Analysis:
-          Research EACH individual ingredient through credible university veterinary sources (Cornell, UC Davis, Tufts, Purdue, Texas A&M, Ohio State).
+            2. Ingredient Quality Analysis:
+            Research EACH individual ingredient through credible university veterinary sources.
 
-          CRITICAL SCORING RULES (override all other judgment): protein-based meal (chicken meal, salmon meal, etc.) = 0.5; by-product meal = -1; cracked pearl barley = -0.5; whole grain wheat = -1; whole grain corn = -1; corn protein meal = -2; brewer's rice = -1; pea fiber = -1; soybean oil = -1; powdered cellulose = -1 (also flag as red flag: concern "Low-quality wood pulp filler", health_impact "Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.").
+            CRITICAL SCORING RULES (override all other judgment): protein-based meal (chicken meal, salmon meal, etc.) = 0.5; by-product meal = -1; cracked pearl barley = -0.5; whole grain wheat = -1; whole grain corn = -1; corn protein meal = -2; brewer's rice = -1; pea fiber = -1; soybean oil = -1; powdered cellulose = -1; garbanzo beans = -2; peas = -2; lentils = -2.
 
+            For EVERY ingredient in the list, provide:
+            - Ingredient name
+            - Score from -5 to 5
+            - Brief reasoning with university citation
 
-          For EVERY ingredient in the list, provide:
-          - Ingredient name
-          - Score from -5 to 5 where:
-           * -5: Horribly bad for dogs (toxic, dangerous, linked to serious health issues)
-           * -4 to -3: Very poor quality (known allergens, fillers with no nutritional value, controversial additives)
-           * -2 to -1: Low quality (by-products, low-grade proteins, questionable ingredients)
-           * 0: Neutral (neither beneficial nor harmful)
-           * 1 to 2: Decent quality (provides some nutrition, generally safe) - MEALS MAX OUT AT +2
-           * 3 to 4: Good quality (beneficial nutrients, good protein sources, healthy additions)
-           * 5: Excellent for dogs (premium proteins, superfoods, proven health benefits)
-          - Brief reasoning with university citation
+            Then calculate: Total score, average score, positive/negative counts, grade: EXCELLENT (avg ≥3), GOOD (avg ≥2), AVERAGE (avg ≥0), POOR (avg <0)
 
-          Then calculate:
-          - Total score (sum of all ingredient scores)
-          - Average score per ingredient
-          - Count of positive vs negative ingredients
-          - Overall grade: EXCELLENT (avg ≥3), GOOD (avg ≥2), AVERAGE (avg ≥0), POOR (avg <0)
+            3. Red Flags: Identify problematic ingredients with specific university study citations. Include artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens, legumes (garbanzo beans, peas, lentils - DCM risk).
 
-          3. Red Flags: Identify problematic ingredients with specific university study citations. Include: artificial colors/preservatives (BHA, BHT, ethoxyquin), controversial grains, low-quality proteins, excessive fillers, allergens.
-
-          Return structured data with university citations and detailed scoring breakdown.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              microorganisms: {
-                type: "object",
-                properties: {
-                  types: { type: "array", items: { type: "string" } },
-                  total_cfu: { type: "string" },
-                  gut_health_score: { type: "number" },
-                  summary: { type: "string" }
-                }
-              },
-              ingredient_grade: {
-                type: "object",
-                properties: {
-                  ingredients: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        name: { type: "string" },
-                        score: { type: "number" },
-                        reasoning: { type: "string" },
-                        citation: { type: "string" }
-                      }
-                    }
-                  },
-                  total_score: { type: "number" },
-                  average_score: { type: "number" },
-                  positive_count: { type: "number" },
-                  negative_count: { type: "number" },
-                  grade: { type: "string", enum: ["EXCELLENT", "GOOD", "AVERAGE", "POOR"] }
-                }
-              },
-              red_flags: {
-                type: "array",
-                items: {
+            Return structured data with university citations and detailed scoring breakdown.`,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                microorganisms: {
                   type: "object",
                   properties: {
-                    ingredient: { type: "string" },
-                    concern: { type: "string" },
-                    health_impact: { type: "string" },
-                    university_citation: { type: "string" }
+                    types: { type: "array", items: { type: "string" } },
+                    total_cfu: { type: "string" },
+                    gut_health_score: { type: "number" },
+                    summary: { type: "string" }
+                  }
+                },
+                ingredient_grade: {
+                  type: "object",
+                  properties: {
+                    ingredients: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          score: { type: "number" },
+                          reasoning: { type: "string" },
+                          citation: { type: "string" }
+                        }
+                      }
+                    },
+                    total_score: { type: "number" },
+                    average_score: { type: "number" },
+                    positive_count: { type: "number" },
+                    negative_count: { type: "number" },
+                    grade: { type: "string", enum: ["EXCELLENT", "GOOD", "AVERAGE", "POOR"] }
+                  }
+                },
+                red_flags: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      ingredient: { type: "string" },
+                      concern: { type: "string" },
+                      health_impact: { type: "string" },
+                      university_citation: { type: "string" }
+                    }
                   }
                 }
               }
             }
-          }
-        });
-      } catch (error) {
-        console.error('Ingredient analysis error:', error);
-      }
-
-      // Client-side score overrides for specific ingredients
-      const scoreOverrides = [
-        { pattern: /powdered cellulose/i, score: -1 },
-        { pattern: /\bcracked pearl barley\b/i, score: -0.5 },
-        { pattern: /\bwhole grain wheat\b/i, score: -1 },
-        { pattern: /\bwhole grain corn\b/i, score: -1 },
-        { pattern: /\bcorn protein meal\b/i, score: -2 },
-        { pattern: /\bbrewer'?s rice\b/i, score: -1 },
-        { pattern: /\bpea fiber\b/i, score: -1 },
-        { pattern: /\bsoybean oil\b/i, score: -1 },
-        // Protein meals: any word ending in "meal" preceded by a protein source word gets 0.5
-        // handled separately below
-      ];
-
-      if (ingredientAnalysis?.ingredient_grade?.ingredients) {
-        ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing => {
-          for (const override of scoreOverrides) {
-            if (override.pattern.test(ing.name)) return { ...ing, score: override.score };
-          }
-          if (/\bmeal\b/i.test(ing.name) && !/by-?product/i.test(ing.name)) return { ...ing, score: 0.5 };
-          return ing;
-        });
-        const ings = ingredientAnalysis.ingredient_grade.ingredients;
-        const tot = ings.reduce((s, i) => s + i.score, 0);
-        const avg = ings.length > 0 ? tot / ings.length : 0;
-        ingredientAnalysis.ingredient_grade.total_score = Math.round(tot * 10) / 10;
-        ingredientAnalysis.ingredient_grade.average_score = Math.round(avg * 100) / 100;
-        ingredientAnalysis.ingredient_grade.positive_count = ings.filter(i => i.score > 0).length;
-        ingredientAnalysis.ingredient_grade.negative_count = ings.filter(i => i.score < 0).length;
-        ingredientAnalysis.ingredient_grade.grade = avg >= 3 ? 'EXCELLENT' : avg >= 2 ? 'GOOD' : avg >= 0 ? 'AVERAGE' : 'POOR';
-      }
-
-      // Client-side enforcement: always flag powdered cellulose
-      if (foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients)) {
-        if (!ingredientAnalysis) {
-          ingredientAnalysis = { red_flags: [], ingredient_grade: null, microorganisms: null };
-        }
-        if (!ingredientAnalysis.red_flags) ingredientAnalysis.red_flags = [];
-        const alreadyFlagged = ingredientAnalysis.red_flags.some(f => /powdered cellulose/i.test(f.ingredient));
-        if (!alreadyFlagged) {
-          ingredientAnalysis.red_flags.push({
-            ingredient: 'Powdered Cellulose',
-            concern: 'Low-quality wood pulp filler',
-            health_impact: 'Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.',
-            university_citation: 'Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.'
           });
+        } catch (error) {
+          console.error('Ingredient analysis error:', error);
+        }
+
+        // Client-side score overrides
+        if (ingredientAnalysis?.ingredient_grade?.ingredients) {
+          ingredientAnalysis.ingredient_grade.ingredients = ingredientAnalysis.ingredient_grade.ingredients.map(ing => {
+            for (const override of SCORE_OVERRIDES) {
+              if (override.pattern.test(ing.name)) return { ...ing, score: override.score };
+            }
+            if (/\bmeal\b/i.test(ing.name) && !/by-?product/i.test(ing.name)) return { ...ing, score: 0.5 };
+            return ing;
+          });
+          const ings = ingredientAnalysis.ingredient_grade.ingredients;
+          const tot = ings.reduce((s, i) => s + i.score, 0);
+          const avg = ings.length > 0 ? tot / ings.length : 0;
+          ingredientAnalysis.ingredient_grade.total_score = Math.round(tot * 10) / 10;
+          ingredientAnalysis.ingredient_grade.average_score = Math.round(avg * 100) / 100;
+          ingredientAnalysis.ingredient_grade.positive_count = ings.filter(i => i.score > 0).length;
+          ingredientAnalysis.ingredient_grade.negative_count = ings.filter(i => i.score < 0).length;
+          ingredientAnalysis.ingredient_grade.grade = avg >= 3 ? 'EXCELLENT' : avg >= 2 ? 'GOOD' : avg >= 0 ? 'AVERAGE' : 'POOR';
+        }
+
+        // Always flag powdered cellulose
+        if (/powdered cellulose/i.test(foodData.ingredients)) {
+          if (!ingredientAnalysis) ingredientAnalysis = { red_flags: [], ingredient_grade: null, microorganisms: null };
+          if (!ingredientAnalysis.red_flags) ingredientAnalysis.red_flags = [];
+          if (!ingredientAnalysis.red_flags.some(f => /powdered cellulose/i.test(f.ingredient))) {
+            ingredientAnalysis.red_flags.push({
+              ingredient: 'Powdered Cellulose',
+              concern: 'Low-quality wood pulp filler',
+              health_impact: 'Provides zero nutritional value; used as a cheap bulk filler that dilutes nutrient density in dog food.',
+              university_citation: 'Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.'
+            });
+          }
+        }
+
+        // Always flag garbanzo beans, peas, lentils
+        if (!ingredientAnalysis) ingredientAnalysis = { red_flags: [], ingredient_grade: null, microorganisms: null };
+        if (!ingredientAnalysis.red_flags) ingredientAnalysis.red_flags = [];
+        for (const legume of LEGUME_FLAG_LIST) {
+          if (legume.pattern.test(foodData.ingredients)) {
+            if (!ingredientAnalysis.red_flags.some(f => f.ingredient.toLowerCase() === legume.name.toLowerCase())) {
+              ingredientAnalysis.red_flags.push({
+                ingredient: legume.name,
+                concern: legume.concern,
+                health_impact: legume.health_impact,
+                university_citation: legume.citation
+              });
+            }
+          }
         }
       }
-    }
 
-    // Recommended ranges based on weight
-    const omega3Rec = `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day`;
-    const omega6Rec = `${Math.round(weight * 0.1)}–${Math.round(weight * 0.2)} g/day`;
-    const vitERec = `${Math.round(weight * 0.7)}–${Math.round(weight * 1.4)} IU/day`;
-    const seleniumRec = `${(weight * 0.0036).toFixed(2)}–${(weight * 0.006).toFixed(2)} mg/day`;
-    const zincRec = `${Math.round(weight * 1)}–${Math.round(weight * 2)} mg/day`;
-    const taurineRec = `>300–500 mg/day beneficial`;
-    const glucosamineRec = `350–900 mg/day`;
-    const chondroitinRec = `150–600 mg/day`;
+      const omega3Rec = `${Math.round(weight * 14)}–${Math.round(weight * 28)} mg/day`;
+      const omega6Rec = `${Math.round(weight * 0.1)}–${Math.round(weight * 0.2)} g/day`;
+      const vitERec = `${Math.round(weight * 0.7)}–${Math.round(weight * 1.4)} IU/day`;
+      const seleniumRec = `${(weight * 0.0036).toFixed(2)}–${(weight * 0.006).toFixed(2)} mg/day`;
+      const zincRec = `${Math.round(weight * 1)}–${Math.round(weight * 2)} mg/day`;
+      const taurineRec = `>300–500 mg/day beneficial`;
+      const glucosamineRec = `350–900 mg/day`;
+      const chondroitinRec = `150–600 mg/day`;
 
-    // Health scoring
-    const microbeScore = ingredientAnalysis?.microorganisms?.gut_health_score || null;
-    const scores = {
-      reproduction: calculateReproductionScore(parseFloat(dailySelenium), dailyZinc, weight),
-      joint: calculateJointScore(dailyGlucosamine, dailyChondroitin, dailyOmega3, weight),
-      skinCoat: calculateSkinCoatScore(dailyOmega3, parseFloat(dailyOmega6), dailyZinc, weight),
-      weight: calculateWeightScore(parseFloat(foodData.crudeFat), parseFloat(foodData.crudeFiber)),
-      digestion: calculateDigestionScoreWithMicrobes(parseFloat(foodData.crudeFiber), microbeScore),
-      immune: calculateImmuneScore(dailyVitaminE, dailyZinc, parseFloat(dailySelenium), weight),
-      allergy: calculateAllergyScore(foodData.dogFood),
-      heart: calculateHeartScore(dailyTaurine, dailyOmega3, weight),
-      eye: calculateEyeScore(dailyVitaminE, dailyOmega3, weight),
-      caloric: calculateCaloricScore(dailyCalories, cupsNeeded, recommendedCups)
-    };
+      const microbeScore = ingredientAnalysis?.microorganisms?.gut_health_score || null;
+      const scores = {
+        reproduction: calculateReproductionScore(parseFloat(dailySelenium), dailyZinc, weight),
+        joint: calculateJointScore(dailyGlucosamine, dailyChondroitin, dailyOmega3, weight),
+        skinCoat: calculateSkinCoatScore(dailyOmega3, parseFloat(dailyOmega6), dailyZinc, weight),
+        weight: calculateWeightScore(parseFloat(foodData.crudeFat), parseFloat(foodData.crudeFiber)),
+        digestion: calculateDigestionScoreWithMicrobes(parseFloat(foodData.crudeFiber), microbeScore),
+        immune: calculateImmuneScore(dailyVitaminE, dailyZinc, parseFloat(dailySelenium), weight),
+        allergy: calculateAllergyScore(foodData.dogFood),
+        heart: calculateHeartScore(dailyTaurine, dailyOmega3, weight),
+        eye: calculateEyeScore(dailyVitaminE, dailyOmega3, weight),
+        caloric: calculateCaloricScore(dailyCalories, cupsNeeded, recommendedCups)
+      };
 
-    // overallScore calculated below from healthScores array
+      const analysis = {
+        dogName: foodData.dogFood || 'Your Dog',
+        costPerServing: costPerDay.toFixed(2),
+        lifeStage: 'Adult',
+        weatherData,
+        seasonalAllergies,
+        ingredientAnalysis,
+        nutrients: [
+          { name: 'Omega-3', actual: `${dailyOmega3} mg/day`, recommended: omega3Rec },
+          { name: 'Omega-6', actual: `${dailyOmega6} g/day`, recommended: omega6Rec },
+          { name: 'Vitamin E', actual: `${dailyVitaminE} IU/day`, recommended: vitERec },
+          { name: 'Selenium', actual: `${dailySelenium} mg/day`, recommended: seleniumRec },
+          { name: 'Zinc', actual: `${dailyZinc} mg/day`, recommended: zincRec },
+          { name: 'Crude Protein', actual: `${foodData.crudeProtein}%`, recommended: '22–32%' },
+          { name: 'Crude Fat', actual: `${foodData.crudeFat}%`, recommended: '12–18%' },
+          { name: 'Crude Fiber', actual: `${foodData.crudeFiber}%`, recommended: '<6% max' },
+          { name: 'Taurine', actual: `${dailyTaurine} mg/day`, recommended: taurineRec },
+          { name: 'Glucosamine', actual: `${dailyGlucosamine} mg/day`, recommended: glucosamineRec },
+          { name: 'Chondroitin', actual: `${dailyChondroitin} mg/day`, recommended: chondroitinRec }
+        ],
+        healthScores: [
+          { area: 'Reproduction', score: scores.reproduction, reasoning: 'Good omega ratio & zinc (Purdue); selenium low deducts.' },
+          { area: 'Joint Health', score: scores.joint, reasoning: 'Glucosamine/chondroitin levels assessed (UC Davis standards).' },
+          { area: 'Skin & Coat Health', score: scores.skinCoat, reasoning: 'Omega-6/3 balance & zinc for barrier (Cornell).' },
+          { area: 'Weight Management', score: scores.weight, reasoning: 'Balanced fat/fiber; calories match moderate MER (NRC).' },
+          { area: 'Digestion (Gut Health)', score: scores.digestion, reasoning: microbeScore ? 'Fiber + microorganism content for gut microbiome health.' : 'Fiber content supports healthy gut function.' },
+          { area: 'Immune Health', score: scores.immune, reasoning: 'Vitamin E/zinc levels evaluated (Texas A&M).' },
+          { area: 'Allergy Control', score: scores.allergy, reasoning: 'Ingredient analysis for common allergens.' },
+          { area: 'Heart Health', score: scores.heart, reasoning: 'Taurine & omegas support cardiac function.' },
+          { area: 'Eye Health', score: scores.eye, reasoning: 'Vitamin E + omega-3 for retinal health (Cornell ophthalmology).' },
+          { area: 'Caloric Needs Met', score: scores.caloric, reasoning: 'Feeding aligns with calculated needs (NRC).' }
+        ],
+        overallScore: Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10),
+        improvements: [
+          { area: 'Reproduction', original: scores.reproduction, improved: Math.min(scores.reproduction + 7, 98) },
+          { area: 'Joint Health', original: scores.joint, improved: Math.min(scores.joint + 22, 95) },
+          { area: 'Skin & Coat', original: scores.skinCoat, improved: Math.min(scores.skinCoat + 7, 98) },
+          { area: 'Weight Management', original: scores.weight, improved: Math.min(scores.weight + 4, 95) },
+          { area: 'Digestion', original: scores.digestion, improved: Math.min(scores.digestion + 7, 98) },
+          { area: 'Immune Health', original: scores.immune, improved: Math.min(scores.immune + 14, 98) },
+          { area: 'Allergy Control', original: scores.allergy, improved: Math.min(scores.allergy + 11, 95) },
+          { area: 'Heart Health', original: scores.heart, improved: Math.min(scores.heart + 12, 95) },
+          { area: 'Eye Health', original: scores.eye, improved: Math.min(scores.eye + 10, 98) },
+          { area: 'Caloric Needs', original: scores.caloric, improved: Math.min(scores.caloric + 2, 99) }
+        ],
+        improvedOverallScore: Math.min(Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10) + 11, 98)
+      };
 
-    const analysis = {
-      dogName: foodData.dogFood || 'Your Dog',
-      costPerServing: costPerDay.toFixed(2),
-      lifeStage: 'Adult',
-      weatherData: weatherData,
-      seasonalAllergies: seasonalAllergies,
-      ingredientAnalysis: ingredientAnalysis,
-      nutrients: [
-        { name: 'Omega-3', actual: `${dailyOmega3} mg/day`, recommended: omega3Rec },
-        { name: 'Omega-6', actual: `${dailyOmega6} g/day`, recommended: omega6Rec },
-        { name: 'Vitamin E', actual: `${dailyVitaminE} IU/day`, recommended: vitERec },
-        { name: 'Selenium', actual: `${dailySelenium} mg/day`, recommended: seleniumRec },
-        { name: 'Zinc', actual: `${dailyZinc} mg/day`, recommended: zincRec },
-        { name: 'Crude Protein', actual: `${foodData.crudeProtein}%`, recommended: '22–32%' },
-        { name: 'Crude Fat', actual: `${foodData.crudeFat}%`, recommended: '12–18%' },
-        { name: 'Crude Fiber', actual: `${foodData.crudeFiber}%`, recommended: '<6% max' },
-        { name: 'Taurine', actual: `${dailyTaurine} mg/day`, recommended: taurineRec },
-        { name: 'Glucosamine', actual: `${dailyGlucosamine} mg/day`, recommended: glucosamineRec },
-        { name: 'Chondroitin', actual: `${dailyChondroitin} mg/day`, recommended: chondroitinRec }
-      ],
-      healthScores: [
-        { area: 'Reproduction', score: scores.reproduction, reasoning: 'Good omega ratio & zinc (Purdue); selenium low deducts.' },
-        { area: 'Joint Health', score: scores.joint, reasoning: 'Glucosamine/chondroitin levels assessed (UC Davis standards).' },
-        { area: 'Skin & Coat Health', score: scores.skinCoat, reasoning: 'Omega-6/3 balance & zinc for barrier (Cornell).' },
-        { area: 'Weight Management', score: scores.weight, reasoning: 'Balanced fat/fiber; calories match moderate MER (NRC).' },
-        { area: 'Digestion (Gut Health)', score: scores.digestion, reasoning: microbeScore ? 'Fiber + microorganism content for gut microbiome health.' : 'Fiber content supports healthy gut function.' },
-        { area: 'Immune Health', score: scores.immune, reasoning: 'Vitamin E/zinc levels evaluated (Texas A&M).' },
-        { area: 'Allergy Control', score: scores.allergy, reasoning: 'Ingredient analysis for common allergens.' },
-        { area: 'Heart Health', score: scores.heart, reasoning: 'Taurine & omegas support cardiac function.' },
-        { area: 'Eye Health', score: scores.eye, reasoning: 'Vitamin E + omega-3 for retinal health (Cornell ophthalmology).' },
-        { area: 'Caloric Needs Met', score: scores.caloric, reasoning: 'Feeding aligns with calculated needs (NRC).' }
-      ],
-      overallScore: Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10),
-      improvements: [
-        { area: 'Reproduction', original: scores.reproduction, improved: Math.min(scores.reproduction + 7, 98) },
-        { area: 'Joint Health', original: scores.joint, improved: Math.min(scores.joint + 22, 95) },
-        { area: 'Skin & Coat', original: scores.skinCoat, improved: Math.min(scores.skinCoat + 7, 98) },
-        { area: 'Weight Management', original: scores.weight, improved: Math.min(scores.weight + 4, 95) },
-        { area: 'Digestion', original: scores.digestion, improved: Math.min(scores.digestion + 7, 98) },
-        { area: 'Immune Health', original: scores.immune, improved: Math.min(scores.immune + 14, 98) },
-        { area: 'Allergy Control', original: scores.allergy, improved: Math.min(scores.allergy + 11, 95) },
-        { area: 'Heart Health', original: scores.heart, improved: Math.min(scores.heart + 12, 95) },
-        { area: 'Eye Health', original: scores.eye, improved: Math.min(scores.eye + 10, 98) },
-        { area: 'Caloric Needs', original: scores.caloric, improved: Math.min(scores.caloric + 2, 99) }
-      ],
-      improvedOverallScore: Math.min(Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10) + 11, 98)
-    };
+      setResults(analysis);
 
-    // Show results immediately — saving is secondary
-    setResults(analysis);
-
-    // Save kibble data to database
-    try {
-      if (foodData.dogFood) {
-        await base44.entities.Kibble.create({
-          name: foodData.dogFood,
-          recommendedFeeding: foodData.recommendedFeeding,
-          kcalKg: foodData.kcalKg,
-          kcalCup: foodData.kcalCup,
-          omega3: foodData.omega3,
-          omega6: foodData.omega6,
-          vitaminE: foodData.vitaminE,
-          selenium: foodData.selenium,
-          zinc: foodData.zinc,
-          crudeProtein: foodData.crudeProtein,
-          crudeFat: foodData.crudeFat,
-          crudeFiber: foodData.crudeFiber,
-          moisture: foodData.moisture,
-          taurine: foodData.taurine,
-          glucosamine: foodData.glucosamine,
-          chondroitin: foodData.chondroitin,
-          priceBag: foodData.priceBag,
-          bagWeight: foodData.bagWeight,
-          ingredients: foodData.ingredients
-        });
-        await queryClient.invalidateQueries({ queryKey: ['kibbles'] });
-        base44.analytics.track({ eventName: "kibble_saved", properties: { kibble_name: foodData.dogFood } });
-      }
-
-      // Save analysis to database
-      const newAnalysis = await base44.entities.Analysis.create({
-        kibbleName: foodData.dogFood || 'Unnamed',
-        dogWeight: weight.toString(),
-        overallScore: analysis.overallScore,
-        analysisData: analysis,
-        dogData: dogData,
-        foodData: foodData
-      });
-
-      const myAnalyses = JSON.parse(localStorage.getItem('myAnalysisIds') || '[]');
-      myAnalyses.push(newAnalysis.id);
-      localStorage.setItem('myAnalysisIds', JSON.stringify(myAnalyses));
-
-      await queryClient.invalidateQueries({ queryKey: ['analyses'] });
-
-      base44.analytics.track({
-        eventName: "kibble_analyzed",
-        properties: {
-          dog_weight: weight,
-          overall_score: analysis.overallScore,
-          kibble_name: foodData.dogFood,
-          has_ingredients: !!foodData.ingredients
-        }
-      });
-    } catch (saveError) {
-      console.error('Error saving analysis:', saveError);
-    }
-
-    // Check FDA recalls
-    if (foodData.dogFood) {
       try {
-        const recallData = await base44.functions.invoke('checkFdaRecalls', { foodName: foodData.dogFood });
-        setRecallInfo(recallData.data);
-      } catch (error) {
-        console.error('Error checking recalls:', error);
+        if (foodData.dogFood) {
+          await base44.entities.Kibble.create({
+            name: foodData.dogFood,
+            recommendedFeeding: foodData.recommendedFeeding,
+            kcalKg: foodData.kcalKg,
+            kcalCup: foodData.kcalCup,
+            omega3: foodData.omega3,
+            omega6: foodData.omega6,
+            vitaminE: foodData.vitaminE,
+            selenium: foodData.selenium,
+            zinc: foodData.zinc,
+            crudeProtein: foodData.crudeProtein,
+            crudeFat: foodData.crudeFat,
+            crudeFiber: foodData.crudeFiber,
+            moisture: foodData.moisture,
+            taurine: foodData.taurine,
+            glucosamine: foodData.glucosamine,
+            chondroitin: foodData.chondroitin,
+            priceBag: foodData.priceBag,
+            bagWeight: foodData.bagWeight,
+            ingredients: foodData.ingredients
+          });
+          await queryClient.invalidateQueries({ queryKey: ['kibbles'] });
+          base44.analytics.track({ eventName: "kibble_saved", properties: { kibble_name: foodData.dogFood } });
+        }
+
+        const newAnalysis = await base44.entities.Analysis.create({
+          kibbleName: foodData.dogFood || 'Unnamed',
+          dogWeight: weight.toString(),
+          overallScore: analysis.overallScore,
+          analysisData: analysis,
+          dogData,
+          foodData
+        });
+
+        const myAnalyses = JSON.parse(localStorage.getItem('myAnalysisIds') || '[]');
+        myAnalyses.push(newAnalysis.id);
+        localStorage.setItem('myAnalysisIds', JSON.stringify(myAnalyses));
+        await queryClient.invalidateQueries({ queryKey: ['analyses'] });
+
+        base44.analytics.track({
+          eventName: "kibble_analyzed",
+          properties: { dog_weight: weight, overall_score: analysis.overallScore, kibble_name: foodData.dogFood, has_ingredients: !!foodData.ingredients }
+        });
+      } catch (saveError) {
+        console.error('Error saving analysis:', saveError);
       }
-    }
+
+      if (foodData.dogFood) {
+        try {
+          const recallData = await base44.functions.invoke('checkFdaRecalls', { foodName: foodData.dogFood });
+          setRecallInfo(recallData.data);
+        } catch (error) {
+          console.error('Error checking recalls:', error);
+        }
+      }
 
     } catch (error) {
       console.error('Analysis error:', error);
@@ -1210,20 +1063,16 @@ Return as a number. If not visible, return null.`,
     }
   };
 
-    const handleCheckRecalls = async () => {
+  const handleCheckRecalls = async () => {
     if (!foodData.dogFood) {
       alert('Please enter a dog food name first');
       return;
     }
-
     setCheckingRecalls(true);
     try {
-      const recallData = await base44.functions.invoke('checkFdaRecalls', { 
-        foodName: foodData.dogFood 
-      });
+      const recallData = await base44.functions.invoke('checkFdaRecalls', { foodName: foodData.dogFood });
       setRecallInfo(recallData.data);
       base44.analytics.track({ eventName: "manual_recall_check" });
-
       if (!recallData.data?.has_recall) {
         alert('Good news! No FDA recalls found for this product.');
       }
@@ -1232,126 +1081,6 @@ Return as a number. If not visible, return null.`,
     } finally {
       setCheckingRecalls(false);
     }
-    };
-
-    // Updated digestion score with microorganism consideration
-    const calculateDigestionScoreWithMicrobes = (fiber, microbeScore) => {
-    const baseFiberScore = calculateDigestionScore(fiber);
-    if (!microbeScore) return baseFiberScore;
-    // Weight: 60% fiber, 40% microorganisms
-    return Math.round(baseFiberScore * 0.6 + microbeScore * 0.4);
-    };
-
-    // Scoring functions
-    const calculateReproductionScore = (selenium, zinc, weight) => {
-    if (!weight) return 0;
-    const seleniumMax = weight * 0.006; // mg max recommended
-    const zincMax = weight * 2; // mg max recommended
-    const seleniumScore = Math.min((selenium / seleniumMax) * 100, 100);
-    const zincScore = Math.min((zinc / zincMax) * 100, 100);
-    return Math.round((seleniumScore * 0.5 + zincScore * 0.5));
-    };
-
-    const calculateJointScore = (glucosamine, chondroitin, omega3, weight) => {
-    if (!weight) return 0;
-    const glucoMax = 900; // mg max recommended
-    const chondroMax = 600; // mg max recommended
-    const omega3Max = weight * 28; // mg max recommended
-    const glucoScore = Math.min((glucosamine / glucoMax) * 100, 100);
-    const chondroScore = Math.min((chondroitin / chondroMax) * 100, 100);
-    const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
-    return Math.round((glucoScore * 0.35 + chondroScore * 0.35 + omega3Score * 0.3));
-    };
-
-    const calculateSkinCoatScore = (omega3, omega6, zinc, weight) => {
-    if (!weight) return 0;
-    const omega3Max = weight * 28; // mg max recommended
-    const omega6Max = weight * 0.2; // g max recommended
-    const zincMax = weight * 2; // mg max recommended
-    const o3Score = Math.min((omega3 / omega3Max) * 100, 100);
-    const o6Score = Math.min((omega6 / omega6Max) * 100, 100);
-    const zincScore = Math.min((zinc / zincMax) * 100, 100);
-    return Math.round((o3Score * 0.3 + o6Score * 0.4 + zincScore * 0.3));
-    };
-
-    const calculateWeightScore = (fat, fiber) => {
-    if (isNaN(fat) || isNaN(fiber)) return 0;
-    // Fat: ideal range 12-18%, score based on how close to range
-    let fatScore = 0;
-    if (fat >= 12 && fat <= 18) {
-      fatScore = 100;
-    } else if (fat < 12) {
-      fatScore = (fat / 12) * 100;
-    } else {
-      fatScore = Math.max(100 - ((fat - 18) * 10), 0);
-    }
-
-    // Fiber: ideal <6%, optimal 3-5%
-    let fiberScore = 0;
-    if (fiber >= 3 && fiber <= 5) {
-      fiberScore = 100;
-    } else if (fiber < 3) {
-      fiberScore = (fiber / 3) * 90 + 10;
-    } else if (fiber <= 6) {
-      fiberScore = 90;
-    } else {
-      fiberScore = Math.max(90 - ((fiber - 6) * 15), 0);
-    }
-
-    return Math.round((fatScore + fiberScore) / 2);
-    };
-
-    const calculateDigestionScore = (fiber) => {
-    if (isNaN(fiber) || fiber === 0) return 0;
-    // Optimal fiber: 3-5% scores highest
-    if (fiber >= 3 && fiber <= 5) return 100;
-    if (fiber > 2 && fiber < 3) return 90;
-    if (fiber > 5 && fiber <= 6) return 85;
-    if (fiber > 1 && fiber <= 2) return 75;
-    if (fiber > 6) return Math.max(70 - ((fiber - 6) * 10), 20);
-    return 50;
-    };
-
-    const calculateImmuneScore = (vitE, zinc, selenium, weight) => {
-    if (!weight) return 0;
-    const vitEMax = weight * 1.4; // IU max recommended
-    const zincMax = weight * 2; // mg max recommended
-    const seleniumMax = weight * 0.006; // mg max recommended
-    const vitEScore = Math.min((vitE / vitEMax) * 100, 100);
-    const zincScore = Math.min((zinc / zincMax) * 100, 100);
-    const seleniumScore = Math.min((selenium / seleniumMax) * 100, 100);
-    return Math.round((vitEScore * 0.4 + zincScore * 0.35 + seleniumScore * 0.25));
-    };
-
-    const calculateAllergyScore = (foodName) => {
-    const grainFree = !/wheat|corn|soy/i.test(foodName || '');
-    return grainFree ? 80 : 65;
-    };
-
-    const calculateHeartScore = (taurine, omega3, weight) => {
-    if (!weight) return 0;
-    const taurineMax = 500; // mg max beneficial
-    const omega3Max = weight * 28; // mg max recommended
-    const taurineScore = Math.min((taurine / taurineMax) * 100, 100);
-    const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
-    return Math.round((taurineScore * 0.5 + omega3Score * 0.5));
-    };
-
-    const calculateEyeScore = (vitE, omega3, weight) => {
-    if (!weight) return 0;
-    const vitEMax = weight * 1.4; // IU max recommended
-    const omega3Max = weight * 28; // mg max recommended
-    const vitEScore = Math.min((vitE / vitEMax) * 100, 100);
-    const omega3Score = Math.min((omega3 / omega3Max) * 100, 100);
-    return Math.round((vitEScore * 0.5 + omega3Score * 0.5));
-    };
-
-  const calculateCaloricScore = (dailyCal, cupsNeeded, brandCups) => {
-    if (brandCups <= 0) return 90; // No brand recommendation to compare
-    const diff = Math.abs(cupsNeeded - brandCups) / cupsNeeded;
-    // Perfect match = 100, scale down based on % difference
-    const score = Math.max(100 - (diff * 100), 0);
-    return Math.round(score);
   };
 
   const handleSuggestionSubmit = async () => {
@@ -1359,18 +1088,10 @@ Return as a number. If not visible, return null.`,
       alert('Please enter a suggestion');
       return;
     }
-
     setSubmittingSuggestion(true);
     try {
-      await base44.integrations.Core.SendEmail({
-        to: 'raulfagundez@ymail.com',
-        subject: 'APP SUGGESTION',
-        body: suggestion
-      });
-      base44.analytics.track({ 
-        eventName: "suggestion_submitted",
-        properties: { suggestion_length: suggestion.length }
-      });
+      await base44.integrations.Core.SendEmail({ to: 'raulfagundez@ymail.com', subject: 'APP SUGGESTION', body: suggestion });
+      base44.analytics.track({ eventName: "suggestion_submitted", properties: { suggestion_length: suggestion.length } });
       alert('Thank you! Your suggestion has been sent.');
       setSuggestion('');
     } catch (error) {
@@ -1386,7 +1107,6 @@ Return as a number. If not visible, return null.`,
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
@@ -1397,7 +1117,6 @@ Return as a number. If not visible, return null.`,
       downloadLink.href = pngFile;
       downloadLink.click();
     };
-    
     img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
     setShowQROptions(false);
   };
@@ -1423,72 +1142,13 @@ Return as a number. If not visible, return null.`,
 
   const handleResetFoodData = () => {
     setFoodData({
-      dogFood: '',
-      recommendedFeeding: '',
-      kcalKg: '',
-      kcalCup: '',
-      omega3: '',
-      omega6: '',
-      vitaminE: '',
-      selenium: '',
-      zinc: '',
-      crudeProtein: '',
-      crudeFat: '',
-      crudeFiber: '',
-      moisture: '',
-      taurine: '',
-      glucosamine: '',
-      chondroitin: '',
-      priceBag: '',
-      bagWeight: '',
-      ingredients: ''
+      dogFood: '', recommendedFeeding: '', kcalKg: '', kcalCup: '',
+      omega3: '', omega6: '', vitaminE: '', selenium: '', zinc: '',
+      crudeProtein: '', crudeFat: '', crudeFiber: '', moisture: '',
+      taurine: '', glucosamine: '', chondroitin: '',
+      priceBag: '', bagWeight: '', ingredients: ''
     });
     setFileInputKey(k => k + 1);
-  };
-
-  const handleBestRecommended = async () => {
-    if (previousAnalyses.length < 5) {
-      alert('You need at least 5 previous analyses to get a recommendation.');
-      return;
-    }
-
-    try {
-      const recommendation = await base44.integrations.Core.InvokeLLM({
-        prompt: `Based on the following information, recommend the BEST dog food from the previous analyses:
-
-Dog Information:
-- Weight: ${dogData.dogWeight} lbs
-- Size: ${dogData.dogSize}
-- Activity Level: ${dogData.activityLevel}
-- Dog Food Goal: ${dogData.dogFoodGoal}
-- Zip Code: ${dogData.zipCode}
-- Age: ${dogData.ageYears || 0} years ${dogData.ageMonths || 0} months
-
-Previous Analyses:
-${previousAnalyses.map(a => `
-- ${a.kibbleName}: Score ${a.overallScore}/100
-  Weight: ${a.dogWeight} lbs
-  Analysis Data: ${JSON.stringify(a.analysisData?.healthScores?.map(s => `${s.area}: ${s.score}`) || [])}
-`).join('\n')}
-
-Consider the current season (January), the dog's specific goal (${dogData.dogFoodGoal}), activity level, and location. 
-Which food from the previous analyses would you recommend and why? 
-Focus specifically on how well it matches their goal.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            recommended_food: { type: "string" },
-            reasoning: { type: "string" },
-            key_benefits: { type: "array", items: { type: "string" } }
-          }
-        }
-      });
-
-      alert(`Recommended: ${recommendation.recommended_food}\n\nReasoning: ${recommendation.reasoning}\n\nKey Benefits:\n${recommendation.key_benefits.join('\n- ')}`);
-    } catch (error) {
-      alert('Error getting recommendation: ' + error.message);
-    }
   };
 
   const searchNearbyPrices = async () => {
@@ -1496,12 +1156,9 @@ Focus specifically on how well it matches their goal.`,
       alert('Please enter zip code and dog food name first');
       return;
     }
-
     setSearchingPrices(true);
     setPriceSearchResults(null);
-
     try {
-      // Get location coordinates
       const locationData = await base44.integrations.Core.InvokeLLM({
         prompt: `Get the latitude and longitude coordinates for zip code ${dogData.zipCode}. Return only the coordinates.`,
         add_context_from_internet: true,
@@ -1515,20 +1172,10 @@ Focus specifically on how well it matches their goal.`,
           }
         }
       });
-
       setUserLocation(locationData);
 
-      // Search for prices
       const priceData = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for "${foodData.dogFood}" dog food prices and availability within ${searchRadius} miles of ${locationData.city}, ${locationData.state} (zip: ${dogData.zipCode}).
-
-Find:
-1. Local pet stores (Petco, PetSmart, local shops) with in-store or online prices
-2. Online retailers (Chewy, Amazon, Walmart) that ship to this area
-3. Current prices, any sales/promotions
-4. Store addresses and phone numbers
-
-Return up to 10 results with the most competitive prices. Include store name, price, bag size, location/website, and contact info.`,
+        prompt: `Search for "${foodData.dogFood}" dog food prices and availability within ${searchRadius} miles of ${locationData.city}, ${locationData.state} (zip: ${dogData.zipCode}). Find local pet stores and online retailers. Return up to 10 results with store name, price, bag size, location/website, and contact info.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -1552,12 +1199,8 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           }
         }
       });
-
       setPriceSearchResults(priceData.results);
-      base44.analytics.track({ 
-        eventName: "price_search_completed",
-        properties: { results_count: priceData.results?.length || 0, radius: searchRadius }
-      });
+      base44.analytics.track({ eventName: "price_search_completed", properties: { results_count: priceData.results?.length || 0, radius: searchRadius } });
     } catch (error) {
       alert('Error searching prices: ' + error.message);
     } finally {
@@ -1583,41 +1226,16 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                   className="cursor-pointer hover:opacity-80 transition-opacity p-2 bg-blue-50 rounded-lg"
                   onClick={() => setShowQROptions(!showQROptions)}
                 >
-                  <QRCodeSVG 
-                    value={window.location.href} 
-                    size={100}
-                    level="H"
-                  />
+                  <QRCodeSVG value={window.location.href} size={100} level="H" />
                 </div>
                 <p className="text-xs text-gray-600 text-center">{t.clickToShare}</p>
-
                 {showQROptions && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-blue-300 z-50">
                     <div className="p-2 space-y-1">
-                      <button
-                        onClick={downloadQRCode}
-                        className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
-                      >
-                        📥 {t.downloadQR}
-                      </button>
-                      <button
-                        onClick={copyLinkToClipboard}
-                        className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
-                      >
-                        📋 {t.copyLink}
-                      </button>
-                      <button
-                        onClick={shareViaEmail}
-                        className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors"
-                      >
-                        ✉️ {t.shareEmail}
-                      </button>
-                      <button
-                        onClick={() => setShowQROptions(false)}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600"
-                      >
-                        ✕ {t.cancel}
-                      </button>
+                      <button onClick={downloadQRCode} className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors">📥 {t.downloadQR}</button>
+                      <button onClick={copyLinkToClipboard} className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors">📋 {t.copyLink}</button>
+                      <button onClick={shareViaEmail} className="w-full px-4 py-2 text-left hover:bg-blue-50 rounded transition-colors">✉️ {t.shareEmail}</button>
+                      <button onClick={() => setShowQROptions(false)} className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded transition-colors text-gray-600">✕ {t.cancel}</button>
                     </div>
                   </div>
                 )}
@@ -1626,63 +1244,53 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 <CardTitle className="text-3xl text-center text-blue-600 flex items-center justify-center gap-2">
                   <span>🐶</span> {t.appTitle}
                 </CardTitle>
-                <p className="text-center text-gray-600 mt-2">
-                  {t.enterDetails}
-                </p>
+                <p className="text-center text-gray-600 mt-2">{t.enterDetails}</p>
               </div>
-              <Button
-                variant="outline"
-                onClick={() => setShowPreviousAnalyses(true)}
-                className="flex items-center gap-2"
-              >
+              <Button variant="outline" onClick={() => setShowPreviousAnalyses(true)} className="flex items-center gap-2">
                 <History className="w-4 h-4" />
                 {t.previousAnalysis} ({previousAnalyses.length})
               </Button>
             </div>
-            </CardHeader>
-            </Card>
+          </CardHeader>
+        </Card>
 
-            <div className="relative">
-              {!isPremium && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
-                  <p className="text-lg font-bold text-blue-700 mb-2">🔒 Premium Feature</p>
-                  <p className="text-sm text-gray-600 mb-3">Subscribe to access Video Education</p>
-                  <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
-                </div>
-              )}
-              <VideoEducationCard t={t} />
+        <div className="relative">
+          {!isPremium && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
+              <p className="text-lg font-bold text-blue-700 mb-2">🔒 Premium Feature</p>
+              <p className="text-sm text-gray-600 mb-3">Subscribe to access Video Education</p>
+              <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
             </div>
-            <div className="relative">
-              {!isPremium && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
-                  <p className="text-lg font-bold text-red-700 mb-2">🔒 Premium Feature</p>
-                  <p className="text-sm text-gray-600 mb-3">Subscribe to access FDA Recall Checker</p>
-                  <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
-                </div>
-              )}
-              <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
-            </div>
+          )}
+          <VideoEducationCard t={t} />
+        </div>
 
-            <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 relative overflow-hidden">
-              {!isPremium && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
-                  <p className="text-lg font-bold text-purple-700 mb-2">🔒 Premium Feature</p>
-                  <p className="text-sm text-gray-600 mb-3">Subscribe to unlock Kibble Rankings</p>
-                  <button
-                    onClick={() => setShowPaywall(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm"
-                  >
-                    Upgrade for $1.99/mo
-                  </button>
-                </div>
-              )}
-              <KibbleRanking 
-                analyses={previousAnalyses} 
-                dogFoodGoal={dogData.dogFoodGoal}
-                onGoalChange={(val) => handleDogChange('dogFoodGoal', val)}
-                language={language}
-              />
-            </Card>
+        <div className="relative">
+          {!isPremium && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
+              <p className="text-lg font-bold text-red-700 mb-2">🔒 Premium Feature</p>
+              <p className="text-sm text-gray-600 mb-3">Subscribe to access FDA Recall Checker</p>
+              <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
+            </div>
+          )}
+          <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
+        </div>
+
+        <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 relative overflow-hidden">
+          {!isPremium && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
+              <p className="text-lg font-bold text-purple-700 mb-2">🔒 Premium Feature</p>
+              <p className="text-sm text-gray-600 mb-3">Subscribe to unlock Kibble Rankings</p>
+              <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
+            </div>
+          )}
+          <KibbleRanking 
+            analyses={previousAnalyses} 
+            dogFoodGoal={dogData.dogFoodGoal}
+            onGoalChange={(val) => handleDogChange('dogFoodGoal', val)}
+            language={language}
+          />
+        </Card>
 
         {showPreviousAnalyses && (
           <Card className="mb-8 border-2 border-blue-300">
@@ -1698,9 +1306,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {previousAnalyses.map((analysis) => (
-                    <div
-                      key={analysis.id}
-                      className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
+                    <div key={analysis.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
                         setResults(analysis.analysisData);
                         setDogData(analysis.dogData);
@@ -1720,9 +1326,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <Button variant="outline" size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               setResults(analysis.analysisData);
@@ -1731,22 +1335,15 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                               setShowPreviousAnalyses(false);
                               window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
                             }}
-                          >
-                            View Results
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >View Results</Button>
+                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (confirm(`Delete analysis for "${analysis.kibbleName}"?`)) {
                                 deleteAnalysisMutation.mutate(analysis.id);
                               }
                             }}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
+                          ><X className="w-4 h-4" /></Button>
                         </div>
                       </div>
                     </div>
@@ -1764,18 +1361,14 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                 <MapPin className="w-6 h-6" />
                 Find Best Prices Near You
               </CardTitle>
-              <p className="text-gray-600 mt-2">
-                Search for {foodData.dogFood} prices within your area
-              </p>
+              <p className="text-gray-600 mt-2">Search for {foodData.dogFood} prices within your area</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-4 items-end">
                 <div className="flex-1">
                   <Label>Search Radius</Label>
                   <Select value={searchRadius} onValueChange={setSearchRadius}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="5">5 miles</SelectItem>
                       <SelectItem value="10">10 miles</SelectItem>
@@ -1785,102 +1378,43 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                     </SelectContent>
                   </Select>
                 </div>
-                <Button
-                  onClick={searchNearbyPrices}
-                  disabled={searchingPrices}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  {searchingPrices ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <DollarSign className="w-4 h-4 mr-2" />
-                      Search Prices
-                    </>
-                  )}
+                <Button onClick={searchNearbyPrices} disabled={searchingPrices} className="bg-green-600 hover:bg-green-700">
+                  {searchingPrices ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Searching...</> : <><DollarSign className="w-4 h-4 mr-2" />Search Prices</>}
                 </Button>
               </div>
 
               {userLocation && (
                 <div className="h-64 rounded-lg overflow-hidden border-2 border-green-300">
-                  <MapContainer
-                    center={[userLocation.latitude, userLocation.longitude]}
-                    zoom={11}
-                    style={{ height: '100%', width: '100%' }}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    />
+                  <MapContainer center={[userLocation.latitude, userLocation.longitude]} zoom={11} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
                     <Marker position={[userLocation.latitude, userLocation.longitude]}>
-                      <Popup>
-                        Your Location<br />
-                        {userLocation.city}, {userLocation.state}
-                      </Popup>
+                      <Popup>Your Location<br />{userLocation.city}, {userLocation.state}</Popup>
                     </Marker>
-                    <Circle
-                      center={[userLocation.latitude, userLocation.longitude]}
-                      radius={parseInt(searchRadius) * 1609.34}
-                      pathOptions={{ color: 'green', fillColor: 'green', fillOpacity: 0.1 }}
-                    />
+                    <Circle center={[userLocation.latitude, userLocation.longitude]} radius={parseInt(searchRadius) * 1609.34} pathOptions={{ color: 'green', fillColor: 'green', fillOpacity: 0.1 }} />
                   </MapContainer>
                 </div>
               )}
 
               {priceSearchResults && priceSearchResults.length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-lg text-gray-800">
-                    Found {priceSearchResults.length} Results
-                  </h3>
+                  <h3 className="font-semibold text-lg text-gray-800">Found {priceSearchResults.length} Results</h3>
                   <div className="grid gap-3">
                     {priceSearchResults.map((result, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 bg-white rounded-lg border border-gray-200 hover:border-green-400 transition-all"
-                      >
+                      <div key={idx} className="p-4 bg-white rounded-lg border border-gray-200 hover:border-green-400 transition-all">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <p className="font-bold text-lg text-gray-800">{result.store_name}</p>
                             <p className="text-sm text-gray-600">{result.location}</p>
-                            {result.distance && (
-                              <p className="text-xs text-green-600 font-semibold mt-1">
-                                📍 {result.distance}
-                              </p>
-                            )}
-                            {result.notes && (
-                              <p className="text-sm text-gray-700 mt-2">{result.notes}</p>
-                            )}
+                            {result.distance && <p className="text-xs text-green-600 font-semibold mt-1">📍 {result.distance}</p>}
+                            {result.notes && <p className="text-sm text-gray-700 mt-2">{result.notes}</p>}
                             <div className="flex gap-3 mt-2">
-                              {result.phone && (
-                                <a
-                                  href={`tel:${result.phone}`}
-                                  className="text-sm text-blue-600 hover:underline"
-                                >
-                                  📞 {result.phone}
-                                </a>
-                              )}
-                              {result.website && (
-                                <a
-                                  href={result.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:underline"
-                                >
-                                  🌐 Visit Website
-                                </a>
-                              )}
+                              {result.phone && <a href={`tel:${result.phone}`} className="text-sm text-blue-600 hover:underline">📞 {result.phone}</a>}
+                              {result.website && <a href={result.website} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">🌐 Visit Website</a>}
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-green-700">
-                              ${result.price?.toFixed(2) || 'N/A'}
-                            </p>
-                            {result.bag_size && (
-                              <p className="text-sm text-gray-600">{result.bag_size}</p>
-                            )}
+                            <p className="text-2xl font-bold text-green-700">${result.price?.toFixed(2) || 'N/A'}</p>
+                            {result.bag_size && <p className="text-sm text-gray-600">{result.bag_size}</p>}
                           </div>
                         </div>
                       </div>
@@ -1888,52 +1422,48 @@ Return up to 10 results with the most competitive prices. Include store name, pr
                   </div>
                 </div>
               )}
-
               {priceSearchResults && priceSearchResults.length === 0 && (
-                <p className="text-gray-500 text-center py-4">
-                  No results found. Try increasing your search radius or checking online retailers.
-                </p>
+                <p className="text-gray-500 text-center py-4">No results found. Try increasing your search radius or checking online retailers.</p>
               )}
             </CardContent>
           </Card>
         )}
 
         <div className="space-y-6">
-            <DogInfoCard
-              dogData={dogData}
-              savedDogs={savedDogs}
-              showNewDogInput={showNewDogInput}
-              language={language}
-              t={t}
-              onDogChange={handleDogChange}
-              onSaveNewDog={handleSaveNewDog}
-              onDeleteDog={handleDeleteDog}
-              onLoadDog={handleLoadDog}
-              setShowNewDogInput={setShowNewDogInput}
-              setLanguage={setLanguage}
-              setDogData={setDogData}
-            />
-
-            <FoodLabelCard
-              key={fileInputKey}
-              foodData={foodData}
-              language={language}
-              t={t}
-              onFoodChange={handleFoodChange}
-              onNutritionPhotoUpload={handleNutritionPhotoUpload}
-              onIngredientsPhotoUpload={handleIngredientsPhotoUpload}
-              onPricePhotoUpload={handlePricePhotoUpload}
-              onPriceOnlyPhotoUpload={handlePriceOnlyPhotoUpload}
-              onFeedingPhotoUpload={handleFeedingPhotoUpload}
-              onSaveFoodData={handleSaveFoodData}
-              onResetFoodData={handleResetFoodData}
-              analyzingNutrition={analyzingNutrition}
-              analyzingIngredients={analyzingIngredients}
-              analyzingPrice={analyzingPrice}
-              analyzingPriceOnly={analyzingPriceOnly}
-              analyzingFeeding={analyzingFeeding}
-            />
-              </div>
+          <DogInfoCard
+            dogData={dogData}
+            savedDogs={savedDogs}
+            showNewDogInput={showNewDogInput}
+            language={language}
+            t={t}
+            onDogChange={handleDogChange}
+            onSaveNewDog={handleSaveNewDog}
+            onDeleteDog={handleDeleteDog}
+            onLoadDog={handleLoadDog}
+            setShowNewDogInput={setShowNewDogInput}
+            setLanguage={setLanguage}
+            setDogData={setDogData}
+          />
+          <FoodLabelCard
+            key={fileInputKey}
+            foodData={foodData}
+            language={language}
+            t={t}
+            onFoodChange={handleFoodChange}
+            onNutritionPhotoUpload={handleNutritionPhotoUpload}
+            onIngredientsPhotoUpload={handleIngredientsPhotoUpload}
+            onPricePhotoUpload={handlePricePhotoUpload}
+            onPriceOnlyPhotoUpload={handlePriceOnlyPhotoUpload}
+            onFeedingPhotoUpload={handleFeedingPhotoUpload}
+            onSaveFoodData={handleSaveFoodData}
+            onResetFoodData={handleResetFoodData}
+            analyzingNutrition={analyzingNutrition}
+            analyzingIngredients={analyzingIngredients}
+            analyzingPrice={analyzingPrice}
+            analyzingPriceOnly={analyzingPriceOnly}
+            analyzingFeeding={analyzingFeeding}
+          />
+        </div>
 
         <Button
           onClick={analyzeKibble}
@@ -1941,15 +1471,9 @@ Return up to 10 results with the most competitive prices. Include store name, pr
           className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6 mt-6"
         >
           {analyzing ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              {t.analyzing}
-            </>
+            <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t.analyzing}</>
           ) : (
-            <>
-              <Calculator className="w-5 h-5 mr-2" />
-              {t.analyzeKibble}
-            </>
+            <><Calculator className="w-5 h-5 mr-2" />{t.analyzeKibble}</>
           )}
         </Button>
 
@@ -1979,7 +1503,7 @@ Return up to 10 results with the most competitive prices. Include store name, pr
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
-        </div>
-        </div>
-        );
-        }
+      </div>
+    </div>
+  );
+}
