@@ -117,9 +117,9 @@ export const LEGUME_FLAG_LIST = [
 
 export const SCORE_OVERRIDES = [
   { pattern: /powdered cellulose/i, score: -1 },
-  { pattern: /garbanzo/i, score: -1 },
-  { pattern: /pea/i, score: -1 },
-  { pattern: /lentil/i, score: -1 },
+  { pattern: /garbanzo/i, score: -2 },
+  { pattern: /pea/i, score: -2 },
+  { pattern: /lentil/i, score: -2 },
   { pattern: /\bcracked pearl barley\b/i, score: -0.5 },
   { pattern: /\bwhole grain wheat\b/i, score: -1 },
   { pattern: /\bwhole grain corn\b/i, score: -1 },
