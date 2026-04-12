@@ -1204,7 +1204,7 @@ Return as a number. If not visible, return null.`,
 
     } catch (error) {
       console.error('Analysis error:', error);
-      alert('An error occurred during analysis. Please try again.');
+      alert('Analysis error: ' + (error?.message || String(error)));
     } finally {
       setAnalyzing(false);
     }
