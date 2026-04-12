@@ -151,8 +151,8 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
         </Card>
       )}
 
-      {/* Red Flags Card - always show if any red flags OR powdered cellulose detected */}
-      {(results.ingredientAnalysis?.red_flags?.length > 0 || (foodData.ingredients && /powdered cellulose/i.test(foodData.ingredients))) && (
+      {/* Red Flags Card - always show if any red flags OR powdered cellulose/legumes detected */}
+      {(results.ingredientAnalysis?.red_flags?.length > 0 || (foodData.ingredients && /powdered cellulose|\bgarbanzo beans?\b|\bpeas?\b|\blentils?\b/i.test(foodData.ingredients))) && (
         <Card className="bg-red-50 border-2 border-red-300">
           <CardHeader>
             <CardTitle className="text-2xl text-red-700 flex items-center gap-2">
@@ -170,7 +170,34 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
                   <p className="text-sm text-gray-600 mt-1 italic">📚 Carciofi et al., 2008 - Journal of Animal Physiology and Animal Nutrition: Cellulose provides no digestible nutrients for dogs.</p>
                 </li>
               )}
-              {(results.ingredientAnalysis?.red_flags || []).filter(f => !/powdered cellulose/i.test(f.ingredient)).map((flag, idx) => (
+              {/* Hardcoded garbanzo beans flag */}
+              {foodData.ingredients && /\bgarbanzo beans?\b/i.test(foodData.ingredients) && (
+                <li className="border-l-4 border-red-500 pl-4 py-2">
+                  <p className="font-bold text-red-600">Garbanzo Beans</p>
+                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> High-glycemic legume linked to DCM risk</p>
+                  <p className="text-gray-800"><strong>Health Impact:</strong> Associated with dilated cardiomyopathy (DCM) in dogs; FDA investigated legume-heavy grain-free diets.</p>
+                  <p className="text-sm text-gray-600 mt-1 italic">📚 FDA, 2019 - Investigation into potential link between legume-heavy diets and DCM in dogs.</p>
+                </li>
+              )}
+              {/* Hardcoded peas flag */}
+              {foodData.ingredients && /\bpeas?\b/i.test(foodData.ingredients) && (
+                <li className="border-l-4 border-red-500 pl-4 py-2">
+                  <p className="font-bold text-red-600">Peas</p>
+                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume filler linked to DCM risk</p>
+                  <p className="text-gray-800"><strong>Health Impact:</strong> Frequently used as cheap protein/starch filler; FDA flagged peas as a common ingredient in DCM-associated diets.</p>
+                  <p className="text-sm text-gray-600 mt-1 italic">📚 FDA, 2019 - Investigation into potential link between legume-heavy diets and DCM in dogs.</p>
+                </li>
+              )}
+              {/* Hardcoded lentils flag */}
+              {foodData.ingredients && /\blentils?\b/i.test(foodData.ingredients) && (
+                <li className="border-l-4 border-red-500 pl-4 py-2">
+                  <p className="font-bold text-red-600">Lentils</p>
+                  <p className="text-gray-800 mt-1"><strong>Concern:</strong> Legume filler linked to DCM risk</p>
+                  <p className="text-gray-800"><strong>Health Impact:</strong> Associated with DCM in dogs when used as a primary ingredient; acts as a cheap protein substitute.</p>
+                  <p className="text-sm text-gray-600 mt-1 italic">📚 FDA, 2019 - Investigation into potential link between legume-heavy diets and DCM in dogs.</p>
+                </li>
+              )}
+              {(results.ingredientAnalysis?.red_flags || []).filter(f => !/powdered cellulose|garbanzo beans|peas|lentils/i.test(f.ingredient)).map((flag, idx) => (
                 <li key={idx} className="border-l-4 border-red-500 pl-4 py-2">
                   <p className="font-bold text-red-600">{flag.ingredient}</p>
                   <p className="text-gray-800 mt-1"><strong>Concern:</strong> {flag.concern}</p>
