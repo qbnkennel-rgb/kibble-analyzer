@@ -10,7 +10,7 @@ const HARDCODED_FLAGS = [
     citation: 'FDA, 2019 — "FDA Investigation into Potential Link Between Certain Diets and Canine Dilated Cardiomyopathy." | Adin et al., 2019 — Journal of Veterinary Cardiology. | Freeman et al., 2018 — JAVMA: Diet-associated DCM in dogs.',
   },
   {
-    match: 'peas',
+    match: 'pea',
     name: '⚠️ Peas — Linked to Heart Disease',
     concern: 'Legume filler linked to Dilated Cardiomyopathy (DCM)',
     impact: "Peas were the #1 most frequently reported ingredient in FDA-investigated DCM cases. Research suggests legumes like peas may reduce taurine bioavailability and disrupt cardiac function, especially when listed in the top 5 ingredients.",
