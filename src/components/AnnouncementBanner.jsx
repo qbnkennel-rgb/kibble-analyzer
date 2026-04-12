@@ -19,7 +19,7 @@ export default function AnnouncementBanner() {
           }
         }}
       >
-        🐾 In order To Improve Eасty/Westy, Dog Skin Allergy or Skin Issues, Joints Issues and Help Improve your dog's Overall Health — <span className="underline font-bold">Click this Text to order Nuvet & NuJoint DS W/AutoShip So you Can get 15% Off</span>
+        🐾 In order To Improve Easty/Westy, Dog Skin Allergy or Skin Issues, Joints Issues and Help Improve your dog's Overall Health — <span className="underline font-bold">Click this Text to order Nuvet & NuJoint DS W/AutoShip So you Can get 15% Off</span>
       </a>
       <button
         onClick={() => setDismissed(true)}
