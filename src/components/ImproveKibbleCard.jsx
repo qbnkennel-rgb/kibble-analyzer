@@ -148,9 +148,7 @@ Focus on practical, affordable whole foods. Include at least 6 recommendations. 
               💡 <strong>Pro Tip:</strong> Mix all additions into the kibble thoroughly — pour any liquid (sardine water, egg) over it so picky eaters eat everything in the bowl.
             </p>
 
-            <Button onClick={() => setRecommendations(null)} variant="outline" className="w-full mt-2">
-              Refresh Recommendations
-            </Button>
+
           </CardContent>
         </Card>
       )}
