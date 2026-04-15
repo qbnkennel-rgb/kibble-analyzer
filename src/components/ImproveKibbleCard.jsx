@@ -95,19 +95,7 @@ Focus on practical, affordable whole foods. Include at least 6 recommendations. 
           }
         }
       });
-      const nuvet = {
-        food: "NuVet Plus & NuJoint DS",
-        benefit: "NuVet Plus is a veterinarian-formulated multivitamin with 30+ ingredients including antioxidants, vitamins, minerals, and enzymes that kibble processing destroys. NuJoint DS provides glucosamine, chondroitin, and MSM for joint support and inflammation reduction. Together they fill the nutritional gaps left by any kibble.",
-        dosage: {
-          small: "1/2 NuVet wafer + 1/2 NuJoint DS wafer daily",
-          medium: "1 NuVet wafer + 1 NuJoint DS wafer daily",
-          large: "1 NuVet wafer + 1–2 NuJoint DS wafers daily",
-          xlarge: "1–2 NuVet wafers + 2 NuJoint DS wafers daily"
-        },
-        preparation: "Crush or crumble wafers directly over kibble and mix in. Use code 513237 at nuvet.com/513237 — get 15% off with AutoShip.",
-        citation: "UC Davis School of Veterinary Medicine: antioxidants reduce oxidative stress and cancer risk. Texas A&M College of Veterinary Medicine: taurine & vitamin E support cardiac function. Cornell University College of Veterinary Medicine: glucosamine/chondroitin prevent cartilage degeneration."
-      };
-      setRecommendations([nuvet, ...(result.additions || [])]);
+      setRecommendations(result.additions || []);
     } catch (error) {
       alert('Error getting recommendations: ' + error.message);
     } finally {
@@ -127,8 +115,32 @@ Focus on practical, affordable whole foods. Include at least 6 recommendations. 
   const sizeLabel = { small: 'Small (<20 lbs)', medium: 'Medium (20–50 lbs)', large: 'Large (50–90 lbs)', xlarge: 'X-Large (90+ lbs)' };
   const size = dogSize();
 
+  const nuvet = {
+    food: "NuVet Plus & NuJoint DS",
+    benefit: "NuVet Plus is a veterinarian-formulated multivitamin with 30+ ingredients including antioxidants, vitamins, minerals, and enzymes that kibble processing destroys. NuJoint DS provides glucosamine, chondroitin, and MSM for joint support and inflammation reduction. Together they fill the nutritional gaps left by any kibble.",
+    dosage: {
+      small: "1/2 NuVet wafer + 1/2 NuJoint DS wafer daily",
+      medium: "1 NuVet wafer + 1 NuJoint DS wafer daily",
+      large: "1 NuVet wafer + 1–2 NuJoint DS wafers daily",
+      xlarge: "1–2 NuVet wafers + 2 NuJoint DS wafers daily"
+    },
+    preparation: "Crush or crumble wafers directly over kibble and mix in. Use code 513237 at nuvet.com/513237 — get 15% off with AutoShip.",
+    citation: "UC Davis School of Veterinary Medicine: antioxidants reduce oxidative stress and cancer risk. Texas A&M College of Veterinary Medicine: taurine & vitamin E support cardiac function. Cornell University College of Veterinary Medicine: glucosamine/chondroitin prevent cartilage degeneration."
+  };
+
   return (
-    <div className="mt-6">
+    <div className="mt-6 space-y-4">
+
+      {/* NuVet always-visible card */}
+      <Card className="border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-yellow-50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg text-orange-700">⭐ #1 Recommended Addition For Any Kibble</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FoodItem item={nuvet} size={size} sizeLabel={sizeLabel} />
+        </CardContent>
+      </Card>
+
       {!recommendations ? (
         <Button
           onClick={handleImprove}
@@ -138,7 +150,7 @@ Focus on practical, affordable whole foods. Include at least 6 recommendations. 
           {loading ? (
             <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Finding Recommendations...</>
           ) : (
-            <>🥩 How To Improve This Kibble</>
+            <>🥩 How To Improve This Kibble — More Whole Food Additions</>
           )}
         </Button>
       ) : (
