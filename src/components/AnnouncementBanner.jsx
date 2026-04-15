@@ -3,8 +3,15 @@ import { X } from 'lucide-react';
 
 export default function AnnouncementBanner() {
   const [dismissed, setDismissed] = useState(false);
+  const [shouldShow, setShouldShow] = useState(false);
 
-  if (dismissed) return null;
+  useState(() => {
+    const count = parseInt(localStorage.getItem('appOpenCount') || '0') + 1;
+    localStorage.setItem('appOpenCount', count.toString());
+    setShouldShow(count % 5 === 0);
+  });
+
+  if (!shouldShow || dismissed) return null;
 
   return (
     <div className="w-full bg-gradient-to-r from-red-600 to-orange-500 text-white px-4 py-3 flex items-center justify-between gap-3 shadow-md">
