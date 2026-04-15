@@ -1473,7 +1473,7 @@ export default function KibbleAnalyzer() {
           )}
         </Button>
 
-        <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} />
+        <AnalysisResults results={results} recallInfo={recallInfo} foodData={foodData} dogData={dogData} />
 
         <BottomCards
           t={t}

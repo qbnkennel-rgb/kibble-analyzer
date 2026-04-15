@@ -2,8 +2,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import RedFlagCard from './RedFlagCard';
+import ImproveKibbleCard from './ImproveKibbleCard';
 
-export default function AnalysisResults({ results, recallInfo, foodData }) {
+export default function AnalysisResults({ results, recallInfo, foodData, dogData }) {
   if (!results) return null;
 
   return (
@@ -362,6 +363,8 @@ export default function AnalysisResults({ results, recallInfo, foodData }) {
           </div>
         </CardContent>
       </Card>
+
+      <ImproveKibbleCard foodData={foodData} dogData={dogData} />
 
       <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300">
         <CardHeader>
