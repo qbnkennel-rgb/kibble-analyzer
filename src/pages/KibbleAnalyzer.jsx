@@ -984,13 +984,6 @@ export default function KibbleAnalyzer() {
         improvedOverallScore: Math.min(Math.round((scores.reproduction + scores.joint + scores.skinCoat + scores.weight + scores.digestion + scores.immune + scores.allergy + scores.heart + scores.eye + scores.caloric) / 10) + 11, 98)
       };
 
-      // Paywall check: show paywall before displaying any results
-      if (!isPremium) {
-        setShowPaywall(true);
-        setAnalyzing(false);
-        return;
-      }
-
       setResults(analysis);
 
       try {
@@ -1250,36 +1243,11 @@ export default function KibbleAnalyzer() {
           </CardHeader>
         </Card>
 
-        <div className="relative">
-          {!isPremium && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
-              <p className="text-lg font-bold text-blue-700 mb-2">🔒 Premium Feature</p>
-              <p className="text-sm text-gray-600 mb-3">Subscribe to access Video Education</p>
-              <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
-            </div>
-          )}
-          <VideoEducationCard t={t} />
-        </div>
+        <VideoEducationCard t={t} />
 
-        <div className="relative">
-          {!isPremium && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
-              <p className="text-lg font-bold text-red-700 mb-2">🔒 Premium Feature</p>
-              <p className="text-sm text-gray-600 mb-3">Subscribe to access FDA Recall Checker</p>
-              <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
-            </div>
-          )}
-          <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
-        </div>
+        <FdaRecallCard t={t} foodData={foodData} checkingRecalls={checkingRecalls} onCheckRecalls={handleCheckRecalls} />
 
         <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 relative overflow-hidden">
-          {!isPremium && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
-              <p className="text-lg font-bold text-purple-700 mb-2">🔒 Premium Feature</p>
-              <p className="text-sm text-gray-600 mb-3">Subscribe to unlock Kibble Rankings</p>
-              <button onClick={() => setShowPaywall(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm">Upgrade for $1.99/mo</button>
-            </div>
-          )}
           <KibbleRanking 
             analyses={previousAnalyses} 
             dogFoodGoal={dogData.dogFoodGoal}
