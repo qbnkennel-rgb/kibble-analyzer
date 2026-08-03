@@ -1,0 +1,95 @@
+{
+  "name": "Kibble",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the dog food/kibble"
+    },
+    "recommendedFeeding": {
+      "type": "string",
+      "description": "Recommended feeding in cups per day"
+    },
+    "kcalKg": {
+      "type": "string",
+      "description": "Calorie content per kg"
+    },
+    "kcalCup": {
+      "type": "string",
+      "description": "Calorie content per cup"
+    },
+    "omega3": {
+      "type": "string",
+      "description": "Omega-3 percentage"
+    },
+    "omega6": {
+      "type": "string",
+      "description": "Omega-6 percentage"
+    },
+    "vitaminE": {
+      "type": "string",
+      "description": "Vitamin E in IU/kg"
+    },
+    "selenium": {
+      "type": "string",
+      "description": "Selenium in mg/kg"
+    },
+    "zinc": {
+      "type": "string",
+      "description": "Zinc in mg/kg"
+    },
+    "crudeProtein": {
+      "type": "string",
+      "description": "Crude protein percentage"
+    },
+    "crudeFat": {
+      "type": "string",
+      "description": "Crude fat percentage"
+    },
+    "crudeFiber": {
+      "type": "string",
+      "description": "Crude fiber percentage"
+    },
+    "moisture": {
+      "type": "string",
+      "description": "Moisture percentage"
+    },
+    "taurine": {
+      "type": "string",
+      "description": "Taurine percentage"
+    },
+    "glucosamine": {
+      "type": "string",
+      "description": "Glucosamine in mg/kg"
+    },
+    "chondroitin": {
+      "type": "string",
+      "description": "Chondroitin in mg/kg"
+    },
+    "priceBag": {
+      "type": "string",
+      "description": "Price per bag in USD"
+    },
+    "bagWeight": {
+      "type": "string",
+      "description": "Bag weight in lbs"
+    },
+    "ingredients": {
+      "type": "string",
+      "description": "Full ingredients list"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "created_by": "{{user.email}}"
+    },
+    "delete": {
+      "created_by": "{{user.email}}"
+    }
+  }
+}

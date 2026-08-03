@@ -1,0 +1,39 @@
+{
+  "name": "Analysis",
+  "type": "object",
+  "properties": {
+    "kibbleName": {
+      "type": "string",
+      "description": "Name of the kibble analyzed"
+    },
+    "dogWeight": {
+      "type": "string",
+      "description": "Dog weight in lbs"
+    },
+    "overallScore": {
+      "type": "number",
+      "description": "Overall health score"
+    },
+    "analysisData": {
+      "type": "object",
+      "description": "Complete analysis results"
+    },
+    "dogData": {
+      "type": "object",
+      "description": "Dog information used"
+    },
+    "foodData": {
+      "type": "object",
+      "description": "Food data used"
+    }
+  },
+  "required": [
+    "kibbleName"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {}
+  }
+}

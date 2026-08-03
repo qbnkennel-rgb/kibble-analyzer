@@ -1,0 +1,69 @@
+{
+  "name": "Dog",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Dog's name"
+    },
+    "size": {
+      "type": "string",
+      "enum": [
+        "toy",
+        "small",
+        "medium",
+        "large",
+        "x-large"
+      ],
+      "description": "Dog's size"
+    },
+    "weight": {
+      "type": "string",
+      "description": "Dog's weight in lbs"
+    },
+    "activityLevel": {
+      "type": "string",
+      "enum": [
+        "inactive/senior",
+        "neutered adult",
+        "active/intact adult",
+        "highly active/working"
+      ],
+      "description": "Dog's activity level"
+    },
+    "foodGoal": {
+      "type": "string",
+      "enum": [
+        "anti-yeast",
+        "overall health",
+        "allergies",
+        "skin/coat health",
+        "heart health",
+        "joint health",
+        "reproduction"
+      ],
+      "description": "Primary food goal"
+    },
+    "zipCode": {
+      "type": "string",
+      "description": "Location zip code"
+    },
+    "ageYears": {
+      "type": "string",
+      "description": "Age in years"
+    },
+    "ageMonths": {
+      "type": "string",
+      "description": "Age in months"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {}
+  }
+}
